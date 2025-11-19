@@ -87,18 +87,34 @@ type Process struct {
 
 // NetworkConfig contains network configuration
 type NetworkConfig struct {
-	RcConf     map[string]string
-	Hostname   string
-	Interfaces []NetworkInterface
-	DefaultGW  string
+	RcConf          map[string]string
+	Hostname        string
+	Interfaces      []NetworkInterface
+	DefaultGW       string
+	RawIfconfigData string
 }
 
 // NetworkInterface represents a network interface config
 type NetworkInterface struct {
-	Name      string
-	IPAddress string
-	Netmask   string
-	Config    string
+	Name             string
+	PhysicalName     string // e.g., igb0, em0 (from rc.conf mapping)
+	IPAddress        string
+	Netmask          string
+	NetmaskHex       string
+	NetmaskDecimal   string
+	Broadcast        string
+	MACAddress       string
+	Status           string // active, no carrier, etc.
+	Media            string
+	MTU              string
+	Metric           string
+	Flags            []string
+	FlagsCount       int
+	FlagsHex         string
+	Options          string
+	OptionsHex       string
+	Config           string // Original rc.conf config line
+	RawIfconfigBlock string // Raw ifconfig output for this interface
 }
 
 // Storage contains storage-related information

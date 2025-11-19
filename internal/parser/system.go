@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"penny/internal/models"
+	"strings"
 )
 
 // ParseSystemInfo parses system information files
@@ -64,10 +64,33 @@ func ParseNetworkConfig(baseDir string, data *models.ArchiveData) error {
 		data.NetworkConfig.DefaultGW = gw
 	}
 
-	// Parse interfaces
-	data.NetworkConfig.Interfaces = extractInterfaces(rcConf)
+	// Parse ifconfig with mapping
+	interfaces, rawIfconfig, err := ParseIfconfigWithMapping(baseDir, rcConf)
+	if err != nil {
+		// If ifconfig parsing fails, fall back to rc.conf extraction
+		interfaces = extractInterfaces(rcConf)
+	} else {
+		// Merge ifconfig data with rc.conf data
+		interfaces = mergeInterfaceData(interfaces, rcConf)
+	}
+
+	data.NetworkConfig.Interfaces = interfaces
+	data.NetworkConfig.RawIfconfigData = rawIfconfig
 
 	return nil
+}
+
+// mergeInterfaceData merges ifconfig data with rc.conf configuration
+func mergeInterfaceData(ifconfigInterfaces []models.NetworkInterface, rcConf map[string]string) []models.NetworkInterface {
+	// For each interface, try to add the rc.conf config line
+	for i := range ifconfigInterfaces {
+		// Try to find matching rc.conf line
+		configKey := "ifconfig_" + ifconfigInterfaces[i].Name
+		if config, ok := rcConf[configKey]; ok {
+			ifconfigInterfaces[i].Config = config
+		}
+	}
+	return ifconfigInterfaces
 }
 
 // ParseStorage parses storage information

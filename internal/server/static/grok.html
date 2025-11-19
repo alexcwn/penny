@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Penny • Nozomi Support Analyzer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="h-full bg-gray-100" x-data="app()" x-init="loadAllData()">
+
+<div class="min-h-full flex flex-col">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-700 text-white shadow-xl">
+    <div class="max-w-7xl mx-auto px-6 py-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-4xl font-extrabold tracking-tight">Penny</h1>
+          <p class="mt-2 text-lg opacity-90" x-text="meta"></p>
+        </div>
+        <div class="text-right">
+          <div class="text-3xl font-bold" x-text="system.Product || 'Unknown Product'"></div>
+          <div class="text-xl" x-text="system.Version || '-'"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <div class="bg-white border-b sticky top-0 z-10 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6">
+      <nav class="flex space-x-8 overflow-x-auto py-4">
+        <button @click="tab = 'overview'"   :class="tab === 'overview' ? 'border-indigo-600 text-indigo-600' : 'text-gray-600 hover:text-gray-900'" class="pb-4 px-1 border-b-4 font-semibold text-sm">Overview</button>
+        <button @click="tab = 'logs'"       :class="tab === 'logs' ? 'border-indigo-600 text-indigo-600' : 'text-gray-600 hover:text-gray-900'" class="pb-4 px-1 border-b-4 font-semibold text-sm">Syslog (<span x-text="syslog.length"></span>)</button>
+        <button @click="tab = 'nginx'"      :class="tab === 'nginx' ? 'border-indigo-600 text-indigo-600' : 'text-gray-600 hover:text-gray-900'" class="pb-4 px-1 border-b-4 font-semibold text-sm">Nginx Errors (<span x-text="nginx.length"></span>)</button>
+        <button @click="tab = 'processes'"  :class="tab === 'processes' ? 'border-indigo-600 text-indigo-600' : 'text-gray-600 hover:text-gray-900'" class="pb-4 px-1 border-b-4 font-semibold text-sm">Processes</button>
+        <button @click="tab = 'storage'"    :class="tab === 'storage' ? 'border-indigo-600586 text-indigo-600' : 'text-gray-600 hover:text-gray-900'" class="pb-4 px-1 border-b-4 font-semibold text-sm">Storage & ZFS</button>
+        <button @click="tab = 'network'"    :class="tab === 'network' ? 'border-indigo-600 text-indigo-600' : 'text-gray-600 hover:text-gray-900'" class="pb-4 px-1 border-b-4 font-semibold text-sm">Network</button>
+        <button @click="tab = 'n2os'"       :class="tab === 'n2os' ? 'border-indigo-600 text-indigo-600' : 'text-gray-600 hover:text-gray-900'" class="pb-4 px-1 border-b-4 font-semibold text-sm">N2OS Config</button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Overview -->
+    <div x-show="tab === 'overview'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-white rounded-xl shadow p-6 border-l-4 border-green-500">
+        <div class="text-3xl font-bold" x-text="system.Uptime || '-'"></div>
+        <div class="text-sm text-gray-600">Uptime</div>
+      </div>
+      <div class="bg-white rounded-xl shadow p-6 border-l-4 border-blue-500">
+        <div class="text-3xl font-bold" x-text="processes.length"></div>
+        <div class="text-sm text-gray-600">Running Processes</div>
+      </div>
+      <div class="bg-white rounded-xl shadow p-6 border-l-4 border-purple-500">
+        <div class="text-3xl font-bold" x-text="storage.ZfsList ? storage.ZfsList.length : 0"></div>
+        <div class="text-sm text-gray-600">ZFS Datasets</div>
+      </div>
+      <div class="bg-white rounded-xl shadow p-6 border-l-4 border-pink-500">
+        <div class="text-3xl font-bold" x-text="network.Interfaces ? network.Interfaces.length : 0"></div>
+        <div class="text-sm text-gray-600">Network Interfaces</div>
+      </div>
+    </div>
+
+    <!-- Syslog -->
+    <div x-show="tab === 'logs'" x-cloak>
+      <input type="text" x-model="filter" placeholder="Search logs..." class="w-full max-w-md px-4 py-3 border rounded-lg mb-6 text-lg">
+      <div class="space-y-3">
+        <template x-for="log in filteredLogs" :key="log.RawLine">
+          <div :class="log.Level && (log.Level.includes('ERROR') || log.Level.includes('FATAL')) ? 'bg-red-50 border-l-4 border-red-600' : log.Level && log.Level.includes('WARN') ? 'bg-yellow-50 border-l-4 border-yellow-600' : 'bg-gray-50'" class="p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow font-mono text-sm">
+            <div class="flex items-center justify-between text-xs text-gray-600 mb-1">
+              <span x-text="new Date(log.Timestamp).toLocaleString()"></span>
+              <span class="font-bold text-indigo-700" x-text="log.Process"></span>
+              <span x-show="log.PID" class="text-gray-500">[<span x-text="log.PID"></span>]</span>
+              <span class="px-2 py-1 rounded text-xs font-bold" :class="log.Level && log.Level.includes('ERROR') || log.Level.includes('FATAL') ? 'bg-red-600 text-white' : log.Level && log.Level.includes('WARN') ? 'bg-yellow-600 text-white' : 'bg-blue-600 text-white'" x-text="log.Level || 'INFO'"></span>
+            </div>
+            <div class="text-gray-800 break-words" x-text="log.Message"></div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Nginx Errors -->
+    <div x-show="tab === 'nginx'" x-cloak>
+      <div class="space-y-4">
+        <template x-for="log in nginx" :key="log.RawLine">
+          <div class="bg-orange-50 border-l-4 border-orange-500 p-5 rounded-lg shadow">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-sm text-gray-600" x-text="new Date(log.Timestamp).toLocaleString()"></span>
+                <span class="ml-3 font-bold text-orange-800" x-text="log.Level"></span>
+              </div>
+            </div>
+            <div class="mt-3 font-mono text-sm space-y-1">
+              <div x-show="log.Client"><strong>client:</strong> <span x-text="log.Client"></span></div>
+              <div x-show="log.Request"><strong>request:</strong> <span class="text-blue-700" x-text="log.Request"></span></div>
+              <div x-show="log.Host"><strong>host:</strong> <span x-text="log.Host"></span></div>
+              <div x-show="log.Upstream"><strong>upstream:</strong> <span x-text="log.Upstream"></span></div>
+              <div class="mt-3 text-orange-900 font-medium" x-text="log.Message"></div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Processes -->
+    <div x-show="tab === 'processes'" class="bg-white rounded-xl shadow overflow-hidden" x-cloak>
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">User</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">PID</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">%CPU</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">%MEM</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Command</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <template x-for="p in processes">
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 text-sm" x-text="p.User"></td>
+              <td class="px-6 py-4 text-sm font-mono" x-text="p.PID"></td>
+              <td class="px-6 py-4 text-sm" x-text="p.CPU"></td>
+              <td class="px-6 py-4 text-sm" x-text="p.Memory"></td>
+              <td class="px-6 py-4 text-sm font-mono text-gray-700 break-all" x-text="p.Command"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Storage & ZFS -->
+    <div x-show="tab === 'storage'" class="space-y-8" x-cloak>
+      <template x-for="pool in storage.ZpoolStatus || []">
+        <div class="bg-white rounded-xl shadow p-6">
+          <h3 class="text-xl font-bold mb-4" x-text="pool.Pool"></h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div><strong>State:</strong> <span :class="pool.State === 'ONLINE' ? 'text-green-600' : 'text-red-600'" x-text="pool.State"></span></div>
+            <div><strong>Scan:</strong> <span x-text="pool.Scan || 'N/A'"></span></div>
+            <div><strong>Errors:</strong> <span x-text="pool.Errors || 'None'"></span></div>
+          </div>
+        </div>
+      </template>
+
+      <h3 class="text-2xl font-bold mt-8 mb-4">ZFS Datasets</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <template x-for="ds in storage.ZfsList || []">
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="font-mono text-sm text-gray-700 mb-2" x-text="ds.Name"></div>
+            <div class="text-2xl font-bold" x-text="ds.Used"></div>
+            <div class="w-full bg-gray-200 rounded-full h-6 mt-2 relative">
+              <div class="bg-purple-600 h-6 rounded-full text-white text-center text-sm font-bold" :style="{ width: ds.UsedPercent + '%' }" x-text="ds.UsedPercent.toFixed(1) + '%'"></div>
+            </div>
+            <div class="text-sm text-gray-600 mt-2">Available: <span x-text="ds.Available"></span></div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Network -->
+    <div x-show="tab === 'network'" class="bg-white rounded-xl shadow overflow-hidden" x-cloak>
+      <table class="min-w-full">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Interface</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">IP Address</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Netmask</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Config</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="i in network.Interfaces || []">
+            <tr class="border-b hover:bg-gray-50">
+              <td class="px-6 py-4 font-mono" x-text="i.Name"></td>
+              <td class="px-6 py-4" x-text="i.IPAddress || '-'"></td>
+              <td class="px-6 py-4" x-text="i.Netmask || '-'"></td>
+              <td class="px-6 py-4 font-mono text-sm text-gray-600" x-text="i.Config"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- N2OS Config -->
+    <div x-show="tab === 'n2os'" class="space-y-4" x-cloak>
+      <template x-for="s in n2os.Settings || []">
+        <div class="bg-white rounded-lg shadow p-6 flex justify-between items-start">
+          <div class="flex-1">
+            <div class="font-bold text-lg text-indigo-700" x-text="s.Key"></div>
+            <div class="font-mono text-gray-800 mt-2" x-text="s.Value || s.MaskedValue"></div>
+            <div x-show="s.Description" class="text-sm text-gray-600 mt-3" x-text="s.Description"></div>
+          </div>
+          <a :href="s.DocsURL" target="_blank" class="ml-4 text-indigo-600 hover:underline text-sm">Docs →</a>
+        </div>
+      </template>
+    </div>
+
+  </main>
+
+  <footer class="bg-white border-t mt-auto">
+    <div class="max-w-7xl mx-auto px-6 py-6 text-center text-sm text-gray-600">
+      Penny • Nozomi Guardian & CMC Support Analyzer • Made with ❤️ by alexcwn
+    </div>
+  </footer>
+</div>
+
+<script>
+function app() {
+  return {
+    tab: 'overview',
+    filter: '',
+    metadata: {}, system: {}, processes: [], network: {}, storage: {}, n2os: {}, syslog: [], nginx: [],
+    meta: 'Loading data from server...',
+
+    async loadAllData() {
+      try {
+        const responses = await Promise.all([
+          fetch('/api/metadata'),
+          fetch('/api/system'),
+          fetch('/api/processes'),
+          fetch('/api/network'),
+          fetch('/api/storage'),
+          fetch('/api/n2os-config'),
+          fetch('/api/logs?type=syslog'),
+          fetch('/api/logs?type=nginx')
+        ]);
+
+        const [
+          meta, sys, proc, net, stor, n2osCfg,
+          sysLogs, ngLogs
+        ] = await Promise.all(responses.map(r => r.ok ? r.json() : {}));
+
+        this.metadata = meta || {};
+        this.system = sys || {};
+        this.processes = proc || [];
+        this.network = net || {};
+        this.storage = stor || {};
+        this.n2os = n2osCfg || {};
+        this.syslog = sysLogs || [];
+        this.nginx = ngLogs || [];
+
+        this.meta = `${this.metadata.Hostname || 'Unknown'} • ${this.system.Version || ''} • ${this.system.Product || ''}`;
+      } catch (err) {
+        console.error('Load failed:', err);
+        this.meta = 'Failed to load data — open DevTools for details';
+      }
+    },
+
+    get filteredLogs() {
+      if (!this.filter) return this.syslog;
+      const q = this.filter.toLowerCase();
+      return this.syslog.filter(log =>
+        (log.Message && log.Message.toLowerCase().includes(q)) ||
+        (log.Process && log.Process.toLowerCase().includes(q)) ||
+        (log.RawLine && log.RawLine.toLowerCase().includes(q))
+      );
+    }
+  }
+}
+</script>
+
+</body>
+</html>

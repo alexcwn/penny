@@ -3,1448 +3,430 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FreeBSD Support Archive Analyzer</title>
+    <title>Support Archive Analyzer</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border-bottom: 1px solid #334155;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: white;
-        }
-
-        .logo h1 {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        .archive-info {
-            display: flex;
-            gap: 2rem;
-            font-size: 0.875rem;
-        }
-
-        .archive-info-item {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .archive-info-label {
-            color: #64748b;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-        }
-
-        .archive-info-value {
-            color: #e2e8f0;
-            font-weight: 500;
-        }
-
-        body.light-mode .logo h1,
-        body.light-mode .archive-info-value {
-            color: #1e293b;
-        }
-
-        body.light-mode .archive-info-label {
-            color: #64748b;
-        }
-
-        .theme-toggle {
-            background: #334155;
-            border: none;
-            color: #e2e8f0;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1.25rem;
-            transition: all 0.3s;
-            margin-left: 1rem;
-        }
-
-        .theme-toggle:hover {
-            background: #475569;
-            transform: scale(1.1);
-        }
-
-        body.light-mode .theme-toggle {
-            background: #e2e8f0;
-            color: #1e293b;
-        }
-
-        body.light-mode .theme-toggle:hover {
-            background: #cbd5e1;
-        }
-
-        .container {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            height: calc(100vh - 73px);
-            transition: grid-template-columns 0.3s ease;
-        }
-
-        .container.sidebar-collapsed {
-            grid-template-columns: 60px 1fr;
-        }
-
-        .sidebar {
-            background: #1e293b;
-            border-right: 1px solid #334155;
-            padding: 1.5rem;
-            overflow-y: auto;
-            overflow-x: hidden;
-            transition: padding 0.3s ease, background 0.3s, border-color 0.3s;
-        }
-
-        body.light-mode .sidebar {
-            background: #ffffff;
-            border-right: 1px solid #e2e8f0;
-        }
-
-        .sidebar.collapsed {
-            padding: 1rem 0.5rem;
-        }
-
-        .sidebar-toggle {
-            position: absolute;
-            top: 1rem;
-            right: -12px;
-            width: 24px;
-            height: 24px;
-            background: #3b82f6;
-            border: 2px solid #334155;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.75rem;
-            z-index: 10;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar-toggle:hover {
-            background: #2563eb;
-            transform: scale(1.1);
-        }
-
-        .nav-section {
-            margin-bottom: 2rem;
-        }
-
-        .nav-section-title {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: #64748b;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            transition: color 0.3s;
-        }
-
-        body.light-mode .nav-section-title {
-            color: #475569;
-        }
-
-        .sidebar.collapsed .nav-section-title {
-            opacity: 0;
-            height: 0;
-            margin: 0;
-        }
-
-        .nav-item {
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            color: #cbd5e1;
-            white-space: nowrap;
-        }
-
-        .sidebar.collapsed .nav-item {
-            justify-content: center;
-            padding: 0.75rem 0.5rem;
-        }
-
-        .nav-item-text {
-            transition: opacity 0.2s ease;
-        }
-
-        .sidebar.collapsed .nav-item-text {
-            opacity: 0;
-            width: 0;
-            overflow: hidden;
-        }
-
-        .nav-item:hover {
-            background: #334155;
-            color: #fff;
-        }
-
-        body.light-mode .nav-item {
-            color: #475569;
-        }
-
-        body.light-mode .nav-item:hover {
-            background: #f1f5f9;
-            color: #1e293b;
-        }
-
-        .nav-item.active {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            color: white;
-            font-weight: 500;
-        }
-
-        .main-content {
-            padding: 2rem;
-            overflow-y: auto;
-            background: #0f172a;
-            transition: background 0.3s;
-        }
-
-        body.light-mode .main-content {
-            background: #f8fafc;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .card {
-            background: linear-gradient(135deg, #1e293b 0%, #1a2332 100%);
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            transition: background 0.3s, border-color 0.3s;
-        }
-
-        body.light-mode .card {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
-
-        .card-title {
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            color: #94a3b8;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            transition: color 0.3s;
-        }
-
-        body.light-mode .card-title {
-            color: #475569;
-        }
-
-        .card-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 0.5rem;
-            transition: color 0.3s;
-        }
-
-        body.light-mode .card-value {
-            color: #1e293b;
-        }
-
-        .card-subtitle {
-            font-size: 0.875rem;
-            color: #64748b;
-            transition: color 0.3s;
-        }
-
-        body.light-mode .card-subtitle {
-            color: #64748b;
-        }
-
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: #f1f5f9;
-            transition: color 0.3s;
-        }
-
-        body.light-mode .section-title {
-            color: #1e293b;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #1e293b;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: background 0.3s, border-color 0.3s;
-        }
-
-        body.light-mode .data-table {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-        }
-
-        .data-table th {
-            background: #334155;
-            padding: 1rem;
-            text-align: left;
-            font-size: 0.875rem;
-            color: #94a3b8;
-            font-weight: 600;
-            transition: background 0.3s, color 0.3s;
-        }
-
-        body.light-mode .data-table th {
-            background: #f1f5f9;
-            color: #475569;
-        }
-
-        .data-table td {
-            padding: 1rem;
-            border-top: 1px solid #334155;
-            font-size: 0.875rem;
-            transition: border-color 0.3s, color 0.3s;
-            color: #e2e8f0;
-        }
-
-        body.light-mode .data-table td {
-            border-top: 1px solid #e2e8f0;
-            color: #1e293b;
-        }
-
-        .data-table tr:hover {
-            background: rgba(51, 65, 85, 0.3);
-        }
-
-        body.light-mode .data-table tr:hover {
-            background: rgba(241, 245, 249, 0.5);
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .status-error {
-            background: rgba(239, 68, 68, 0.2);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .status-warning {
-            background: rgba(245, 158, 11, 0.2);
-            color: #fbbf24;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-        }
-
-        .status-info {
-            background: rgba(59, 130, 246, 0.2);
-            color: #93c5fd;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-
-        .usage-bar {
-            height: 20px;
-            background: #334155;
-            border-radius: 4px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .usage-bar-fill {
-            height: 100%;
-            transition: width 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: white;
-        }
-
-        .usage-green {
-            background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
-        }
-
-        .usage-yellow {
-            background: linear-gradient(90deg, #eab308 0%, #f59e0b 100%);
-        }
-
-        .usage-red {
-            background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
-        }
-
-        .usage-text {
-            position: absolute;
-            right: 0.5rem;
-            color: #e2e8f0;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .log-entry {
-            background: #1e293b;
-            border-left: 3px solid #334155;
-            padding: 1rem;
-            margin-bottom: 0.5rem;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-        }
-
-        .log-entry.error {
-            border-left-color: #ef4444;
-        }
-
-        .log-entry.warning {
-            border-left-color: #f59e0b;
-        }
-
-        .log-timestamp {
-            color: #64748b;
-            margin-right: 1rem;
-        }
-
-        .log-process {
-            color: #8b5cf6;
-            margin-right: 1rem;
-        }
-
-        .log-message {
-            color: #e2e8f0;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-        }
-
-        .modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 900px;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid #334155;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #f1f5f9;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            line-height: 1;
-            transition: color 0.2s;
-        }
-
-        .modal-close:hover {
-            color: #f1f5f9;
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .modal-footer {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid #334155;
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-        }
-
-        .raw-content {
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.875rem;
-            line-height: 1.6;
-            color: #e2e8f0;
-            white-space: pre-wrap;
-            word-break: break-all;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
-        .n2os-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #1e293b;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .n2os-table th {
-            background: #334155;
-            padding: 1rem;
-            text-align: left;
-            font-size: 0.875rem;
-            color: #94a3b8;
-            font-weight: 600;
-        }
-
-        .n2os-table td {
-            padding: 0.875rem 1rem;
-            border-top: 1px solid #334155;
-            font-size: 0.875rem;
-            font-family: 'Courier New', monospace;
-        }
-
-        .n2os-table tr:hover {
-            background: rgba(51, 65, 85, 0.3);
-        }
-
-        .n2os-key {
-            color: #8b5cf6;
-            font-weight: 500;
-        }
-
-        .n2os-value {
-            color: #e2e8f0;
-        }
-
-        .n2os-sensitive {
-            color: #f59e0b;
-        }
-
-        .info-icon {
-            color: #3b82f6;
-            cursor: help;
-            font-size: 1rem;
-        }
-
-        .info-icon:hover {
-            color: #60a5fa;
-        }
-
-        .title-icon {
-            cursor: pointer;
-            margin-left: 0.5rem;
-            color: #3b82f6;
-            font-size: 1.25rem;
-            vertical-align: middle;
-        }
-
-        .title-icon:hover {
-            color: #60a5fa;
-        }
-
-        .search-box {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            color: #e2e8f0;
-            font-size: 0.875rem;
-            margin-bottom: 1.5rem;
-            transition: background 0.3s, border-color 0.3s, color 0.3s;
-        }
-
-        .search-box:focus {
-            outline: none;
-            border-color: #3b82f6;
-        }
-
-        body.light-mode .search-box {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            color: #1e293b;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; }
+        body.light-mode { background: #f8fafc; color: #1e293b; }
+        .header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-bottom: 1px solid #334155; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); }
+        body.light-mode .header { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-bottom: 1px solid #e2e8f0; }
+        .logo { display: flex; align-items: center; gap: 0.75rem; }
+        .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
+        .logo h1 { font-size: 1.25rem; font-weight: 600; }
+        body.light-mode .logo h1 { color: #1e293b; }
+        .archive-info { display: flex; gap: 2rem; font-size: 0.875rem; }
+        .archive-info-item { display: flex; flex-direction: column; gap: 0.25rem; }
+        .archive-info-label { color: #64748b; font-size: 0.75rem; text-transform: uppercase; }
+        .archive-info-value { color: #e2e8f0; font-weight: 500; }
+        body.light-mode .archive-info-value { color: #1e293b; }
+        .theme-toggle { background: #334155; border: none; color: #e2e8f0; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 1.25rem; transition: all 0.3s; margin-left: 1rem; }
+        .theme-toggle:hover { background: #475569; transform: scale(1.1); }
+        body.light-mode .theme-toggle { background: #e2e8f0; color: #1e293b; }
+        body.light-mode .theme-toggle:hover { background: #cbd5e1; }
+        .container { display: grid; grid-template-columns: 280px 1fr; height: calc(100vh - 73px); transition: grid-template-columns 0.3s ease; }
+        .container.sidebar-collapsed { grid-template-columns: 60px 1fr; }
+        .sidebar { background: #1e293b; border-right: 1px solid #334155; padding: 1.5rem; overflow-y: auto; overflow-x: hidden; transition: padding 0.3s ease, background 0.3s, border-color 0.3s; }
+        body.light-mode .sidebar { background: #ffffff; border-right: 1px solid #e2e8f0; }
+        .sidebar.collapsed { padding: 1rem 0.5rem; }
+        .sidebar-toggle { position: absolute; top: 1rem; right: -12px; width: 24px; height: 24px; background: #3b82f6; border: 2px solid #334155; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.75rem; z-index: 10; transition: all 0.3s ease; }
+        body.light-mode .sidebar-toggle { border-color: #e2e8f0; }
+        .sidebar-toggle:hover { background: #2563eb; transform: scale(1.1); }
+        .nav-section { margin-bottom: 2rem; }
+        .nav-section-title { font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 600; margin-bottom: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.3s; }
+        body.light-mode .nav-section-title { color: #475569; }
+        .sidebar.collapsed .nav-section-title { opacity: 0; height: 0; margin: 0; }
+        .nav-item { padding: 0.75rem; margin-bottom: 0.5rem; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.75rem; color: #cbd5e1; white-space: nowrap; }
+        .sidebar.collapsed .nav-item { justify-content: center; padding: 0.75rem 0.5rem; }
+        .nav-item-text { transition: opacity 0.2s ease; }
+        .sidebar.collapsed .nav-item-text { opacity: 0; width: 0; overflow: hidden; }
+        .nav-item:hover { background: #334155; color: #fff; }
+        body.light-mode .nav-item { color: #475569; }
+        body.light-mode .nav-item:hover { background: #f1f5f9; color: #1e293b; }
+        .nav-item.active { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: white; font-weight: 500; }
+        .main-content { padding: 2rem; overflow-y: auto; background: #0f172a; transition: background 0.3s; }
+        body.light-mode .main-content { background: #f8fafc; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .card { background: linear-gradient(135deg, #1e293b 0%, #1a2332 100%); border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); transition: background 0.3s, border-color 0.3s; }
+        body.light-mode .card { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); }
+        .card-title { font-size: 0.875rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; margin-bottom: 1rem; transition: color 0.3s; }
+        body.light-mode .card-title { color: #475569; }
+        .card-value { font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; transition: color 0.3s; }
+        body.light-mode .card-value { color: #1e293b; }
+        .card-subtitle { font-size: 0.875rem; color: #64748b; transition: color 0.3s; }
+        .section-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: #f1f5f9; transition: color 0.3s; }
+        body.light-mode .section-title { color: #1e293b; }
+        .data-table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 12px; overflow: hidden; transition: background 0.3s, border-color 0.3s; }
+        body.light-mode .data-table { background: #ffffff; border: 1px solid #e2e8f0; }
+        .data-table th { background: #334155; padding: 1rem; text-align: left; font-size: 0.875rem; color: #94a3b8; font-weight: 600; transition: background 0.3s, color 0.3s; }
+        body.light-mode .data-table th { background: #f1f5f9; color: #475569; }
+        .data-table td { padding: 1rem; border-top: 1px solid #334155; font-size: 0.875rem; transition: border-color 0.3s, color 0.3s; color: #e2e8f0; }
+        body.light-mode .data-table td { border-top: 1px solid #e2e8f0; color: #1e293b; }
+        .data-table tr:hover { background: rgba(51, 65, 85, 0.3); }
+        body.light-mode .data-table tr:hover { background: rgba(241, 245, 249, 0.5); }
+        .status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .status-error { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .status-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .status-info { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .status-active { background: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .status-down { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .usage-bar { height: 20px; background: #334155; border-radius: 4px; overflow: hidden; position: relative; }
+        body.light-mode .usage-bar { background: #e2e8f0; }
+        .usage-bar-fill { height: 100%; transition: width 0.3s ease; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; color: white; }
+        .usage-green { background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%); }
+        .usage-yellow { background: linear-gradient(90deg, #eab308 0%, #f59e0b 100%); }
+        .usage-red { background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%); }
+        .usage-text { position: absolute; right: 0.5rem; color: #e2e8f0; font-size: 0.75rem; font-weight: 600; }
+        body.light-mode .usage-text { color: #1e293b; }
+        .log-entry { background: #1e293b; border-left: 3px solid #334155; padding: 1rem; margin-bottom: 0.5rem; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.85rem; }
+        body.light-mode .log-entry { background: #ffffff; border-left: 3px solid #e2e8f0; }
+        .log-entry.error { border-left-color: #ef4444; }
+        .log-entry.warning { border-left-color: #f59e0b; }
+        .log-timestamp { color: #64748b; margin-right: 1rem; }
+        .log-process { color: #8b5cf6; margin-right: 1rem; }
+        .log-message { color: #e2e8f0; }
+        body.light-mode .log-message { color: #1e293b; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: #1e293b; border: 1px solid #334155; border-radius: 12px; width: 90%; max-width: 900px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); }
+        body.light-mode .modal-content { background: #ffffff; border: 1px solid #e2e8f0; }
+        .modal-header { padding: 1.5rem; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+        body.light-mode .modal-header { border-bottom: 1px solid #e2e8f0; }
+        .modal-title { font-size: 1.25rem; font-weight: 600; color: #f1f5f9; }
+        body.light-mode .modal-title { color: #1e293b; }
+        .modal-close { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; padding: 0.5rem; line-height: 1; transition: color 0.2s; }
+        .modal-close:hover { color: #f1f5f9; }
+        body.light-mode .modal-close:hover { color: #1e293b; }
+        .modal-body { padding: 1.5rem; overflow-y: auto; flex: 1; }
+        .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid #334155; display: flex; gap: 1rem; justify-content: flex-end; }
+        body.light-mode .modal-footer { border-top: 1px solid #e2e8f0; }
+        .btn { padding: 0.5rem 1rem; border-radius: 6px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; }
+        .btn-secondary { background: #334155; color: #e2e8f0; }
+        .btn-secondary:hover { background: #475569; }
+        body.light-mode .btn-secondary { background: #e2e8f0; color: #1e293b; }
+        body.light-mode .btn-secondary:hover { background: #cbd5e1; }
+        .raw-content { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 1rem; font-family: 'Courier New', monospace; font-size: 0.875rem; line-height: 1.6; color: #e2e8f0; white-space: pre-wrap; word-break: break-all; max-height: 60vh; overflow-y: auto; }
+        body.light-mode .raw-content { background: #f8fafc; border: 1px solid #e2e8f0; color: #1e293b; }
+        .title-icon { cursor: pointer; margin-left: 0.5rem; color: #3b82f6; font-size: 1.25rem; vertical-align: middle; }
+        .title-icon:hover { color: #60a5fa; }
+        .search-box { width: 100%; padding: 0.75rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0; font-size: 0.875rem; margin-bottom: 1.5rem; transition: background 0.3s, border-color 0.3s, color 0.3s; }
+        .search-box:focus { outline: none; border-color: #3b82f6; }
+        body.light-mode .search-box { background: #ffffff; border: 1px solid #e2e8f0; color: #1e293b; }
+        .flags-toggle { color: #3b82f6; cursor: pointer; text-decoration: underline; font-size: 0.85rem; }
+        .flags-toggle:hover { color: #60a5fa; }
+        .flags-expanded { display: none; margin-top: 0.5rem; padding: 0.5rem; background: rgba(59, 130, 246, 0.1); border-radius: 4px; font-size: 0.8rem; color: #93c5fd; }
+        body.light-mode .flags-expanded { background: rgba(59, 130, 246, 0.05); color: #3b82f6; }
+        .flags-expanded.show { display: block; }
+        .interface-name { display: flex; align-items: center; gap: 0.5rem; }
+        .logo-subtitle,               
+#folder-path {
+    font-size: 0.875rem;
+    margin-top: 4px;
+}
     </style>
 </head>
 <body>
     <div class="header">
         <div class="logo">
             <div class="logo-icon">SA</div>
-            <h1>Support Archive Analyzer</h1>
+            <div>
+                <h1>Support Archive Analyzer</h1>
+                <div class="logo-subtitle" id="folder-path">Loading...</div>
+            </div>
         </div>
         <div style="display: flex; align-items: center;">
-            <div class="archive-info" id="header-info">
-                <div class="loading">Loading...</div>
-            </div>
-            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
-                <span id="theme-icon">☀️</span>
-            </button>
+            <div class="archive-info" id="header-info"><div class="loading">Loading...</div></div>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode"><span id="theme-icon">☀️</span></button>
         </div>
     </div>
-
     <div class="container" id="container">
         <aside class="sidebar" id="sidebar" style="position: relative;">
             <div class="sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar">◀</div>
             <nav>
-                <div class="nav-section">
-                    <div class="nav-section-title">Overview</div>
-                    <div class="nav-item active" data-view="dashboard">
-                        <span>📊</span>
-                        <span class="nav-item-text">Dashboard</span>
-                    </div>
-                    <div class="nav-item" data-view="issues">
-                        <span>⚠️</span>
-                        <span class="nav-item-text">Issues</span>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <div class="nav-section-title">System</div>
-                    <div class="nav-item" data-view="system">
-                        <span>💻</span>
-                        <span class="nav-item-text">System Info</span>
-                    </div>
-                    <div class="nav-item" data-view="network">
-                        <span>🌐</span>
-                        <span class="nav-item-text">Network</span>
-                    </div>
-                    <div class="nav-item" data-view="storage">
-                        <span>💾</span>
-                        <span class="nav-item-text">Storage</span>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <div class="nav-section-title">N2OS</div>
-                    <div class="nav-item" data-view="n2os-config">
-                        <span>⚙️</span>
-                        <span class="nav-item-text">N2OS Config</span>
-                    </div>
-                    <div class="nav-item" data-view="rc-conf">
-                        <span>🔧</span>
-                        <span class="nav-item-text">RC Config</span>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <div class="nav-section-title">Logs</div>
-                    <div class="nav-item" data-view="logs-syslog">
-                        <span>📝</span>
-                        <span class="nav-item-text">System Logs</span>
-                    </div>
-                    <div class="nav-item" data-view="logs-nginx">
-                        <span>🌐</span>
-                        <span class="nav-item-text">Nginx Logs</span>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <div class="nav-section-title">Processes</div>
-                    <div class="nav-item" data-view="processes">
-                        <span>🔧</span>
-                        <span class="nav-item-text">Process List</span>
-                    </div>
-                </div>
+                <div class="nav-section"><div class="nav-section-title">Overview</div><div class="nav-item active" data-view="dashboard"><span>📊</span><span class="nav-item-text">Dashboard</span></div><div class="nav-item" data-view="issues"><span>⚠️</span><span class="nav-item-text">Issues</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">System</div><div class="nav-item" data-view="system"><span>💻</span><span class="nav-item-text">System Info</span></div><div class="nav-item" data-view="network"><span>🌐</span><span class="nav-item-text">Network</span></div><div class="nav-item" data-view="storage"><span>💾</span><span class="nav-item-text">Storage</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">N2OS</div><div class="nav-item" data-view="n2os-config"><span>⚙️</span><span class="nav-item-text">N2OS Config</span></div><div class="nav-item" data-view="rc-conf"><span>🔧</span><span class="nav-item-text">RC Config</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">Logs</div><div class="nav-item" data-view="logs-syslog"><span>📝</span><span class="nav-item-text">System Logs</span></div><div class="nav-item" data-view="logs-nginx"><span>🌐</span><span class="nav-item-text">Nginx Logs</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">Processes</div><div class="nav-item" data-view="processes"><span>🔧</span><span class="nav-item-text">Process List</span></div></div>
             </nav>
         </aside>
-
-        <main class="main-content" id="main-content">
-            <div class="loading">Loading data...</div>
-        </main>
+        <main class="main-content" id="main-content"><div class="loading">Loading data...</div></main>
     </div>
-
+    <div id="raw-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title" id="modal-title">Raw Configuration File</div><button class="modal-close" onclick="closeModal()">×</button></div><div class="modal-body"><div class="raw-content" id="modal-content"></div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="copyModalContent()">📋 Copy</button><button class="btn btn-secondary" onclick="downloadModalContent()">💾 Download</button></div></div></div>
     <script>
-        // Global state
-        let appData = {};
+      let appData = {};
+let currentModalData = { content: '', filename: '' };
 
-        // Initialize
-        async function init() {
-            await loadData();
-            showView('dashboard');
-            setupNavigation();
-            setupSidebarToggle();
-            setupModalHandlers();
+async function init() {
+    await loadData();
+    showView('dashboard');
+    setupNavigation();
+    setupSidebarToggle();
+    setupModalHandlers();
+}
+
+async function loadData() {
+    try {
+        const [metadata, overview, system, processes, network, storage, n2osConfig] = await Promise.all([
+            fetch('/api/metadata').then(r => r.json()),
+            fetch('/api/overview').then(r => r.json()),
+            fetch('/api/system').then(r => r.json()),
+            fetch('/api/processes').then(r => r.json()),
+            fetch('/api/network').then(r => r.json()),
+            fetch('/api/storage').then(r => r.json()),
+            fetch('/api/n2os-config').then(r => r.json()),
+        ]);
+        appData = { metadata, overview, system, processes, network, storage, n2osConfig };
+        updateHeader();
+    } catch (err) {
+        console.error('Failed to load data:', err);
+    }
+}
+
+function updateHeader() {
+    const { metadata, system } = appData;
+    
+    // Update folder path
+    const folderPath = metadata.ExtractedPath || 'N/A';
+    document.getElementById('folder-path').textContent = `${folderPath}`;
+    
+    document.getElementById('header-info').innerHTML = `
+        <div class="archive-info-item">
+            <span class="archive-info-label">Product</span>
+            <span class="archive-info-value">${system.Product || 'N/A'}</span>
+        </div>
+        <div class="archive-info-item">
+            <span class="archive-info-label">Version</span>
+            <span class="archive-info-value">${metadata.Version || 'N/A'}</span>
+        </div>
+        <div class="archive-info-item">
+            <span class="archive-info-label">Hostname</span>
+            <span class="archive-info-value">${system.Hostname || 'N/A'}</span>
+        </div>
+        <div class="archive-info-item">
+            <span class="archive-info-label">Platform</span>
+            <span class="archive-info-value">${system.Platform || 'N/A'}</span>
+        </div>
+    `;
+}
+
+function setupNavigation() {
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            showView(item.dataset.view);
+        });
+    });
+}
+
+function setupSidebarToggle() {
+    const toggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const container = document.getElementById('container');
+    let isCollapsed = false;
+    toggle.addEventListener('click', () => {
+        isCollapsed = !isCollapsed;
+        if (isCollapsed) {
+            sidebar.classList.add('collapsed');
+            container.classList.add('sidebar-collapsed');
+            toggle.textContent = '▶';
+            toggle.title = 'Expand sidebar';
+        } else {
+            sidebar.classList.remove('collapsed');
+            container.classList.remove('sidebar-collapsed');
+            toggle.textContent = '◀';
+            toggle.title = 'Collapse sidebar';
         }
+    });
+}
 
-        // Load all data
-        async function loadData() {
-            try {
-                const [metadata, overview, system, processes, network, storage, n2osConfig] = await Promise.all([
-                    fetch('/api/metadata').then(r => r.json()),
-                    fetch('/api/overview').then(r => r.json()),
-                    fetch('/api/system').then(r => r.json()),
-                    fetch('/api/processes').then(r => r.json()),
-                    fetch('/api/network').then(r => r.json()),
-                    fetch('/api/storage').then(r => r.json()),
-                    fetch('/api/n2os-config').then(r => r.json()),
-                ]);
+async function showView(view) {
+    const content = document.getElementById('main-content');
+    switch(view) {
+        case 'dashboard': content.innerHTML = renderDashboard(); break;
+        case 'issues': const issues = await fetch('/api/issues').then(r => r.json()); content.innerHTML = renderIssues(issues); break;
+        case 'system': content.innerHTML = renderSystem(); break;
+        case 'network': content.innerHTML = renderNetwork(); break;
+        case 'storage': content.innerHTML = renderStorage(); break;
+        case 'logs-syslog': const syslog = await fetch('/api/logs?type=syslog').then(r => r.json()); content.innerHTML = renderLogs(syslog, 'System Logs'); break;
+        case 'logs-nginx': const nginx = await fetch('/api/logs?type=nginx').then(r => r.json()); content.innerHTML = renderNginxLogs(nginx); break;
+        case 'processes': content.innerHTML = renderProcesses(); break;
+        case 'n2os-config': content.innerHTML = renderN2OSConfig(); setupN2OSSearch(); break;
+        case 'rc-conf': content.innerHTML = renderRcConf(); setupRcConfSearch(); break;
+    }
+}
 
-                appData = { metadata, overview, system, processes, network, storage, n2osConfig };
-                updateHeader();
-            } catch (err) {
-                console.error('Failed to load data:', err);
-            }
+function renderDashboard() {
+    const { overview } = appData;
+    return `
+        <div class="dashboard-grid">
+            <div class="card"><div class="card-title">Total Logs</div><div class="card-value">${overview.total_logs || 0}</div><div class="card-subtitle">System + Nginx logs</div></div>
+            <div class="card"><div class="card-title">Processes</div><div class="card-value">${overview.total_processes || 0}</div><div class="card-subtitle">Running processes</div></div>
+            <div class="card"><div class="card-title">Errors</div><div class="card-value">${overview.error_count || 0}</div><div class="card-subtitle">Error-level entries</div></div>
+            <div class="card"><div class="card-title">Warnings</div><div class="card-value">${overview.warning_count || 0}</div><div class="card-subtitle">Warning-level entries</div></div>
+        </div>
+        <div class="section-title">Top Processes by CPU</div>
+        <table class="data-table">
+            <thead><tr><th>User</th><th>PID</th><th>CPU %</th><th>Memory %</th><th>Command</th></tr></thead>
+            <tbody>${(overview.top_processes || []).map(p => `<tr><td>${p.User}</td><td>${p.PID}</td><td>${p.CPU}</td><td>${p.Memory}</td><td style="font-family: monospace; font-size: 0.8rem;">${p.Command.substring(0, 80)}</td></tr>`).join('')}</tbody>
+        </table>
+    `;
+}
+
+function renderIssues(issues) {
+    if (!issues || issues.length === 0) return '<div class="section-title">No critical issues detected</div>';
+    return `<div class="section-title">Detected Issues (${issues.length})</div>` + issues.map(issue => {
+        if (issue.source === 'zpool') {
+            return `<div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid ${issue.severity === 'CRITICAL' ? '#ef4444' : '#f59e0b'};"><div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">${issue.title}</div><span class="status-badge status-error">${issue.severity}</span>${issue.errors && issue.errors !== 'No known data errors' ? `<div style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3); margin-top: 1rem;"><div style="color: #fca5a5; font-size: 0.875rem; font-weight: 600;">⚠️ Errors:</div><div style="color: #e2e8f0; font-size: 0.875rem; white-space: pre-wrap; font-family: monospace;">${issue.errors}</div></div>` : ''}</div>`;
         }
+        return `<div class="card" style="margin-bottom: 1rem; border-left: 4px solid ${issue.severity === 'CRITICAL' || issue.severity === 'FATAL' ? '#ef4444' : '#f59e0b'};"><span class="status-badge status-error">${issue.severity}</span><div style="color: #e2e8f0; margin: 0.5rem 0;">${issue.message}</div></div>`;
+    }).join('');
+}
 
-        // Update header info
-        function updateHeader() {
-            const { metadata, system } = appData;
-            document.getElementById('header-info').innerHTML = `
-                <div class="archive-info-item">
-                    <span class="archive-info-label">Product</span>
-                    <span class="archive-info-value">${system.Product || 'N/A'}</span>
-                </div>
-                <div class="archive-info-item">
-                    <span class="archive-info-label">Version</span>
-                    <span class="archive-info-value">${metadata.Version || 'N/A'}</span>
-                </div>
-                <div class="archive-info-item">
-                    <span class="archive-info-label">Hostname</span>
-                    <span class="archive-info-value">${system.Hostname || 'N/A'}</span>
-                </div>
-                <div class="archive-info-item">
-                    <span class="archive-info-label">Platform</span>
-                    <span class="archive-info-value">${system.Platform || 'N/A'}</span>
-                </div>
-            `;
-        }
+function renderSystem() {
+    const { system } = appData;
+    return `<div class="section-title">System Information</div><div class="card"><table style="width: 100%;"><tr><td style="padding: 0.5rem; color: #94a3b8;">Product</td><td style="padding: 0.5rem;">${system.Product || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Version</td><td style="padding: 0.5rem;">${system.Version || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Hostname</td><td style="padding: 0.5rem;">${system.Hostname || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Platform</td><td style="padding: 0.5rem;">${system.Platform || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Uptime</td><td style="padding: 0.5rem;">${system.Uptime || 'N/A'}</td></tr></table></div>`;
+}
 
-        // Navigation
-        function setupNavigation() {
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                    item.classList.add('active');
-                    showView(item.dataset.view);
-                });
-            });
-        }
-
-        // Sidebar toggle
-        function setupSidebarToggle() {
-            const toggle = document.getElementById('sidebar-toggle');
-            const sidebar = document.getElementById('sidebar');
-            const container = document.getElementById('container');
-            let isCollapsed = false;
-
-            toggle.addEventListener('click', () => {
-                isCollapsed = !isCollapsed;
-                
-                if (isCollapsed) {
-                    sidebar.classList.add('collapsed');
-                    container.classList.add('sidebar-collapsed');
-                    toggle.textContent = '▶';
-                    toggle.title = 'Expand sidebar';
-                } else {
-                    sidebar.classList.remove('collapsed');
-                    container.classList.remove('sidebar-collapsed');
-                    toggle.textContent = '◀';
-                    toggle.title = 'Collapse sidebar';
+function renderNetwork() {
+    const { network } = appData;
+    return `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;"><div class="section-title" style="margin: 0;">Network Configuration${network.RawIfconfigData ? '<span class="title-icon" onclick="showRawIfconfig()" title="View raw ifconfig.txt">📄</span>' : ''}</div></div>
+        <div class="card" style="margin-bottom: 2rem;"><div class="card-title">General</div><table style="width: 100%;"><tr><td style="padding: 0.5rem; color: #94a3b8;">Hostname</td><td style="padding: 0.5rem;">${network.Hostname || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Default Gateway</td><td style="padding: 0.5rem;">${network.DefaultGW || 'N/A'}</td></tr></table></div>
+        <div class="section-title">Network Interfaces</div>
+        <table class="data-table">
+            <thead><tr><th>Interface</th><th>MAC Address</th><th>IP Address</th><th>Netmask</th><th>Media</th><th>MTU</th><th>Flags</th></tr></thead>
+            <tbody>${(network.Interfaces || []).map((iface, idx) => {
+                let statusColor = '#94a3b8'; // default gray for dark mode
+                if (iface.Status === 'active') {
+                    statusColor = '#86efac'; // green for dark mode
+                } else if (iface.Status === 'no carrier') {
+                    statusColor = '#fca5a5'; // red for dark mode
                 }
-            });
-        }
+                const interfaceName = iface.PhysicalName ? `${iface.Name} (${iface.PhysicalName})` : iface.Name;
+                const netmaskDisplay = iface.NetmaskHex && iface.NetmaskDecimal ? `${iface.NetmaskHex}<br><span style="font-size: 0.8rem; color: #64748b;">(${iface.NetmaskDecimal})</span>` : (iface.Netmask || '-');
+                return `<tr><td><span style="font-weight: 500; color: ${statusColor};" class="interface-name-colored">${interfaceName}</span></td><td style="font-family: monospace; font-size: 0.85rem;">${iface.MACAddress || '-'}</td><td>${iface.IPAddress || '-'}</td><td>${netmaskDisplay}</td><td style="font-size: 0.85rem;">${iface.Media || '-'}</td><td>${iface.MTU || '-'}</td><td>${iface.Flags && iface.Flags.length > 0 ? `<span class="flags-toggle" onclick="toggleFlags(${idx})">(${iface.FlagsCount} flags)</span><div class="flags-expanded" id="flags-${idx}">${iface.Flags.join(', ')}</div>` : '-'}</td></tr>`;
+            }).join('')}</tbody>
+        </table>
+    `;
+}
 
-        // Show different views
-        async function showView(view) {
-            const content = document.getElementById('main-content');
+function toggleFlags(idx) {
+    const flagsDiv = document.getElementById(`flags-${idx}`);
+    if (flagsDiv) flagsDiv.classList.toggle('show');
+}
 
-            switch(view) {
-                case 'dashboard':
-                    content.innerHTML = renderDashboard();
-                    break;
-                case 'issues':
-                    const issues = await fetch('/api/issues').then(r => r.json());
-                    content.innerHTML = renderIssues(issues);
-                    break;
-                case 'system':
-                    content.innerHTML = renderSystem();
-                    break;
-                case 'network':
-                    content.innerHTML = renderNetwork();
-                    break;
-                case 'storage':
-                    content.innerHTML = renderStorage();
-                    break;
-                case 'logs-syslog':
-                    const syslog = await fetch('/api/logs?type=syslog').then(r => r.json());
-                    content.innerHTML = renderLogs(syslog, 'System Logs');
-                    break;
-                case 'logs-nginx':
-                    const nginx = await fetch('/api/logs?type=nginx').then(r => r.json());
-                    content.innerHTML = renderNginxLogs(nginx);
-                    break;
-                case 'processes':
-                    content.innerHTML = renderProcesses();
-                    break;
-                case 'n2os-config':
-                    content.innerHTML = renderN2OSConfig();
-                    setupN2OSSearch();
-                    break;
-                case 'rc-conf':
-                    content.innerHTML = renderRcConf();
-                    setupRcConfSearch();
-                    break;
-            }
-        }
+function renderStorage() {
+    const { storage } = appData;
+    const isVSeries = appData.system.Platform && appData.system.Platform.includes('V-Series');
+    return `${storage.ZfsList && storage.ZfsList.length > 0 ? `<div class="section-title">ZFS Datasets</div><table class="data-table" style="margin-bottom: 2rem;"><thead><tr><th>Dataset</th><th>Used</th><th>Available</th><th>Referenced</th><th style="min-width: 180px;">Usage</th><th>Mount Point</th></tr></thead><tbody>${storage.ZfsList.map(ds => { const percent = ds.UsedPercent.toFixed(1); let colorClass = 'usage-green'; if (ds.UsedPercent > 85) colorClass = 'usage-red'; else if (ds.UsedPercent > 70) colorClass = 'usage-yellow'; return `<tr><td style="font-weight: 500;">${ds.Name}</td><td>${ds.Used}</td><td>${ds.Available}</td><td>${ds.Refer}</td><td><div class="usage-bar"><div class="usage-bar-fill ${colorClass}" style="width: ${percent}%">${percent > 10 ? percent + '%' : ''}</div><span class="usage-text">${percent}%</span></div></td><td>${ds.MountPoint}</td></tr>`; }).join('')}</tbody></table>` : ''}<div class="section-title">ZFS Pools</div>${(storage.ZpoolStatus || []).map(pool => { const isHealthy = pool.State === 'ONLINE'; const stateColor = isHealthy ? '#22c55e' : '#ef4444'; const hasErrors = pool.Errors && pool.Errors !== 'No known data errors'; return `<div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid ${stateColor};"><div class="card-title">Pool: ${pool.Pool}</div><table style="width: 100%; margin-bottom: 1rem;"><tr><td style="padding: 0.5rem; color: #94a3b8;">State</td><td style="padding: 0.5rem;"><span class="status-badge ${isHealthy ? 'status-info' : 'status-error'}" style="background: ${isHealthy ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)'}; color: ${isHealthy ? '#86efac' : '#fca5a5'};">${pool.State}</span></td></tr></table>${hasErrors ? `<div style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3);"><div style="color: #fca5a5; font-size: 0.875rem; font-weight: 600;">⚠️ Error Details:</div><div style="color: #e2e8f0; font-size: 0.85rem; white-space: pre-wrap; font-family: monospace; max-height: 300px; overflow-y: auto;">${pool.Errors}</div></div>` : ''}</div>`; }).join('')}${!isVSeries && (storage.DiskInfo || []).length > 0 ? `<div class="section-title">Disk Health (SMART)</div><table class="data-table"><thead><tr><th>Device</th><th>Model</th><th>Capacity</th><th>Health</th><th>Temperature</th><th>Power On Hours</th></tr></thead><tbody>${storage.DiskInfo.map(disk => `<tr><td>${disk.Device}</td><td>${disk.Model || 'N/A'}</td><td>${disk.Capacity || 'N/A'}</td><td><span class="status-badge ${disk.Health === 'PASSED' ? 'status-info' : 'status-error'}">${disk.Health || 'Unknown'}</span></td><td>${disk.Temperature ? disk.Temperature + '°C' : 'N/A'}</td><td>${disk.PowerOnHours || 'N/A'}</td></tr>`).join('')}</tbody></table>` : ''}`;
+}
 
-        // Render functions
-        function renderDashboard() {
-            const { overview } = appData;
-            return `
-                <div class="dashboard-grid">
-                    <div class="card">
-                        <div class="card-title">Total Logs</div>
-                        <div class="card-value">${overview.total_logs || 0}</div>
-                        <div class="card-subtitle">System + Nginx logs</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Processes</div>
-                        <div class="card-value">${overview.total_processes || 0}</div>
-                        <div class="card-subtitle">Running processes</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Errors</div>
-                        <div class="card-value">${overview.error_count || 0}</div>
-                        <div class="card-subtitle">Error-level entries</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Warnings</div>
-                        <div class="card-value">${overview.warning_count || 0}</div>
-                        <div class="card-subtitle">Warning-level entries</div>
-                    </div>
-                </div>
+function renderLogs(logs, title) {
+    return `<div class="section-title">${title} (${logs.length} entries)</div>${logs.slice(0, 100).map(log => `<div class="log-entry ${log.Level ? log.Level.toLowerCase() : ''}"><span class="log-timestamp">${new Date(log.Timestamp).toLocaleString()}</span><span class="log-process">${log.Process}[${log.PID || '?'}]</span><span class="log-message">${log.Message}</span></div>`).join('')}${logs.length > 100 ? '<p style="text-align: center; padding: 1rem; color: #64748b;">Showing first 100 entries</p>' : ''}`;
+}
 
-                <div class="section-title">Top Processes by CPU</div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>PID</th>
-                            <th>CPU %</th>
-                            <th>Memory %</th>
-                            <th>Command</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${(overview.top_processes || []).map(p => `
-                            <tr>
-                                <td>${p.User}</td>
-                                <td>${p.PID}</td>
-                                <td>${p.CPU}</td>
-                                <td>${p.Memory}</td>
-                                <td style="font-family: monospace; font-size: 0.8rem;">${p.Command.substring(0, 80)}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
+function renderNginxLogs(logs) {
+    return `<div class="section-title">Nginx Error Logs (${logs.length} entries)</div>${logs.slice(0, 100).map(log => `<div class="log-entry ${log.Level ? log.Level.toLowerCase() : ''}"><span class="log-timestamp">${new Date(log.Timestamp).toLocaleString()}</span><span class="status-badge status-${log.Level === 'CRIT' ? 'error' : 'warning'}">${log.Level}</span><span class="log-message">${log.Message}</span></div>`).join('')}${logs.length > 100 ? '<p style="text-align: center; padding: 1rem; color: #64748b;">Showing first 100 entries</p>' : ''}`;
+}
 
-        function renderIssues(issues) {
-            if (!issues || issues.length === 0) {
-                return '<div class="section-title">No critical issues detected</div>';
-            }
+function renderProcesses() {
+    const { processes } = appData;
+    return `<div class="section-title">Process List (${processes.length} processes)</div><table class="data-table"><thead><tr><th>User</th><th>PID</th><th>CPU %</th><th>Memory %</th><th>VSZ</th><th>RSS</th><th>State</th><th>Started</th><th>Command</th></tr></thead><tbody>${processes.map(p => `<tr><td>${p.User}</td><td>${p.PID}</td><td>${p.CPU}</td><td>${p.Memory}</td><td>${p.VSZ}</td><td>${p.RSS}</td><td>${p.Stat}</td><td>${p.Started}</td><td style="font-family: monospace; font-size: 0.8rem; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.Command}</td></tr>`).join('')}</tbody></table>`;
+}
 
-            return `
-                <div class="section-title">Detected Issues (${issues.length})</div>
-                ${issues.map(issue => {
-                    if (issue.source === 'zpool') {
-                        // ZFS Pool Issue
-                        return `
-                            <div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid ${issue.severity === 'CRITICAL' ? '#ef4444' : '#f59e0b'};">
-                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                                    <div>
-                                        <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">
-                                            ${issue.title}
-                                        </div>
-                                        <span class="status-badge status-error">${issue.severity}</span>
-                                        <span class="status-badge status-info" style="margin-left: 0.5rem;">${issue.source}</span>
-                                        ${issue.data_corruption ? '<span class="status-badge status-error" style="margin-left: 0.5rem;">DATA CORRUPTION</span>' : ''}
-                                    </div>
-                                </div>
-                                <div style="background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                                    <div style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 0.5rem;">Status:</div>
-                                    <div style="color: #e2e8f0;">${issue.description || 'N/A'}</div>
-                                </div>
-                                ${issue.errors && issue.errors !== 'No known data errors' ? `
-                                    <div style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3);">
-                                        <div style="color: #fca5a5; font-size: 0.875rem; margin-bottom: 0.5rem; font-weight: 600;">⚠️ Errors:</div>
-                                        <div style="color: #e2e8f0; font-size: 0.875rem; white-space: pre-wrap; font-family: monospace;">${issue.errors}</div>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        `;
-                    } else {
-                        // Log-based issue
-                        return `
-                            <div class="card" style="margin-bottom: 1rem; border-left: 4px solid ${issue.severity === 'CRITICAL' || issue.severity === 'FATAL' ? '#ef4444' : '#f59e0b'};">
-                                <div style="display: flex; justify-content: space-between; align-items: start;">
-                                    <div style="flex: 1;">
-                                        <div style="margin-bottom: 0.5rem;">
-                                            <span class="status-badge status-error">${issue.severity}</span>
-                                            <span class="status-badge status-info" style="margin-left: 0.5rem;">${issue.source}</span>
-                                            ${issue.process ? `<span style="color: #8b5cf6; margin-left: 0.5rem; font-size: 0.875rem;">${issue.process}</span>` : ''}
-                                        </div>
-                                        <div style="color: #e2e8f0; margin-bottom: 0.5rem;">${issue.message}</div>
-                                        ${issue.timestamp ? `<div style="color: #64748b; font-size: 0.8rem;">${new Date(issue.timestamp).toLocaleString()}</div>` : ''}
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }
-                }).join('')}
-            `;
-        }
+function renderN2OSConfig() {
+    const { n2osConfig } = appData;
+    if (!n2osConfig || !n2osConfig.Settings || n2osConfig.Settings.length === 0) return '<div class="section-title">N2OS Configuration not found</div>';
+    return `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;"><div class="section-title" style="margin: 0;">N2OS Configuration (n2os.conf.user)<span class="title-icon" onclick="showRawN2OS()" title="View raw file">📄</span></div></div><input type="text" class="search-box" id="n2os-search" placeholder="Search settings..."><div style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden;">${n2osConfig.Settings.map((setting, idx) => `<div class="n2os-row" data-key="${setting.Key.toLowerCase()}" data-value="${setting.MaskedValue.toLowerCase()}" style="padding: 0.875rem 1rem; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; font-family: 'Courier New', monospace; font-size: 0.875rem; background: ${idx % 2 === 0 ? '#0f172a' : '#1e293b'};"><div style="flex: 1; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #8b5cf6; font-weight: 500;">${setting.Key}</span><span style="color: #64748b;">${setting.MaskedValue}</span></div><span class="info-icon" title="${setting.Description || 'No description available'}" onclick="openDocs('${setting.DocsURL}')" style="flex-shrink: 0; cursor: pointer;">ℹ️</span></div>`).join('')}</div>`;
+}
 
-        function renderSystem() {
-            const { system } = appData;
-            return `
-                <div class="section-title">System Information</div>
-                <div class="card">
-                    <table style="width: 100%;">
-                        <tr><td style="padding: 0.5rem; color: #94a3b8;">Product</td><td style="padding: 0.5rem;">${system.Product || 'N/A'}</td></tr>
-                        <tr><td style="padding: 0.5rem; color: #94a3b8;">Version</td><td style="padding: 0.5rem;">${system.Version || 'N/A'}</td></tr>
-                        <tr><td style="padding: 0.5rem; color: #94a3b8;">Hostname</td><td style="padding: 0.5rem;">${system.Hostname || 'N/A'}</td></tr>
-                        <tr><td style="padding: 0.5rem; color: #94a3b8;">Platform</td><td style="padding: 0.5rem;">${system.Platform || 'N/A'}</td></tr>
-                        <tr><td style="padding: 0.5rem; color: #94a3b8;">Uptime</td><td style="padding: 0.5rem;">${system.Uptime || 'N/A'}</td></tr>
-                    </table>
-                </div>
-            `;
-        }
+function setupN2OSSearch() {
+    const searchBox = document.getElementById('n2os-search');
+    if (!searchBox) return;
+    searchBox.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('.n2os-row').forEach(row => {
+            const matches = row.dataset.key.includes(query) || row.dataset.value.includes(query);
+            row.style.display = matches ? '' : 'none';
+        });
+    });
+}
 
-        function renderNetwork() {
-            const { network } = appData;
-            return `
-                <div class="section-title">Network Configuration</div>
-                <div class="card" style="margin-bottom: 2rem;">
-                    <div class="card-title">General</div>
-                    <table style="width: 100%;">
-                        <tr><td style="padding: 0.5rem; color: #94a3b8;">Hostname</td><td style="padding: 0.5rem;">${network.Hostname || 'N/A'}</td></tr>
-                        <tr><td style="padding: 0.5rem; color: #94a3b8;">Default Gateway</td><td style="padding: 0.5rem;">${network.DefaultGW || 'N/A'}</td></tr>
-                    </table>
-                </div>
+function renderRcConf() {
+    const { network } = appData;
+    if (!network || !network.RcConf || Object.keys(network.RcConf).length === 0) return '<div class="section-title">RC Configuration not found</div>';
+    const settings = Object.entries(network.RcConf).map(([key, value]) => ({ Key: key, Value: value }));
+    return `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;"><div class="section-title" style="margin: 0;">RC Configuration (rc.conf)</div></div><input type="text" class="search-box" id="rc-search" placeholder="Search settings..."><div style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden;">${settings.map((setting, idx) => `<div class="rc-row" data-key="${setting.Key.toLowerCase()}" data-value="${setting.Value.toLowerCase()}" style="padding: 0.875rem 1rem; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; font-family: 'Courier New', monospace; font-size: 0.875rem; background: ${idx % 2 === 0 ? '#0f172a' : '#1e293b'};"><div style="flex: 1; display: flex; align-items: center; gap: 0.5rem;"><span style="color: #8b5cf6; font-weight: 500;">${setting.Key}</span><span style="color: #64748b;">${setting.Value}</span></div></div>`).join('')}</div>`;
+}
 
-                <div class="section-title">Interfaces</div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Interface</th>
-                            <th>IP Address</th>
-                            <th>Netmask</th>
-                            <th>Configuration</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${(network.Interfaces || []).map(iface => `
-                            <tr>
-                                <td>${iface.Name}</td>
-                                <td>${iface.IPAddress || '-'}</td>
-                                <td>${iface.Netmask || '-'}</td>
-                                <td style="font-size: 0.8rem;">${iface.Config}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
+function setupRcConfSearch() {
+    const searchBox = document.getElementById('rc-search');
+    if (!searchBox) return;
+    searchBox.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('.rc-row').forEach(row => {
+            const matches = row.dataset.key.includes(query) || row.dataset.value.includes(query);
+            row.style.display = matches ? 'flex' : 'none';
+        });
+    });
+}
 
-        function renderStorage() {
-            const { storage } = appData;
-            const isVSeries = appData.system.Platform && appData.system.Platform.includes('V-Series');
-            
-            return `
-                ${(storage.ZfsList && storage.ZfsList.length > 0) ? `
-                    <div class="section-title">ZFS Datasets</div>
-                    <table class="data-table" style="margin-bottom: 2rem;">
-                        <thead>
-                            <tr>
-                                <th>Dataset</th>
-                                <th>Used</th>
-                                <th>Available</th>
-                                <th>Referenced</th>
-                                <th style="min-width: 180px;">Usage</th>
-                                <th>Mount Point</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${storage.ZfsList.map(ds => {
-                                const percent = ds.UsedPercent.toFixed(1);
-                                let colorClass = 'usage-green';
-                                if (ds.UsedPercent > 85) colorClass = 'usage-red';
-                                else if (ds.UsedPercent > 70) colorClass = 'usage-yellow';
-                                
-                                return `
-                                    <tr>
-                                        <td style="font-weight: 500;">${ds.Name}</td>
-                                        <td>${ds.Used}</td>
-                                        <td>${ds.Available}</td>
-                                        <td>${ds.Refer}</td>
-                                        <td>
-                                            <div class="usage-bar">
-                                                <div class="usage-bar-fill ${colorClass}" style="width: ${percent}%">
-                                                    ${percent > 10 ? percent + '%' : ''}
-                                                </div>
-                                                <span class="usage-text">${percent}%</span>
-                                            </div>
-                                        </td>
-                                        <td>${ds.MountPoint}</td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                ` : ''}
+function setupModalHandlers() {
+    document.addEventListener('click', (e) => {
+        const modal = document.getElementById('raw-modal');
+        if (e.target === modal) closeModal();
+    });
+}
 
-                <div class="section-title">ZFS Pools</div>
-                ${(storage.ZpoolStatus || []).map(pool => {
-                    const isHealthy = pool.State === 'ONLINE';
-                    const stateColor = isHealthy ? '#22c55e' : '#ef4444';
-                    const hasErrors = pool.Errors && pool.Errors !== 'No known data errors';
-                    
-                    return `
-                        <div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid ${stateColor};">
-                            <div class="card-title">Pool: ${pool.Pool}</div>
-                            <table style="width: 100%; margin-bottom: 1rem;">
-                                <tr>
-                                    <td style="padding: 0.5rem; color: #94a3b8;">State</td>
-                                    <td style="padding: 0.5rem;">
-                                        <span class="status-badge ${isHealthy ? 'status-info' : 'status-error'}" style="background: ${isHealthy ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)'}; color: ${isHealthy ? '#86efac' : '#fca5a5'}; border-color: ${isHealthy ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'};">
-                                            ${pool.State}
-                                        </span>
-                                    </td>
-                                </tr>
-                                ${pool.Status ? `
-                                    <tr>
-                                        <td style="padding: 0.5rem; color: #94a3b8; vertical-align: top;">Status</td>
-                                        <td style="padding: 0.5rem; white-space: pre-wrap;">${pool.Status}</td>
-                                    </tr>
-                                ` : ''}
-                                <tr>
-                                    <td style="padding: 0.5rem; color: #94a3b8;">Scan</td>
-                                    <td style="padding: 0.5rem;">${pool.Scan || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 0.5rem; color: #94a3b8; vertical-align: top;">Errors</td>
-                                    <td style="padding: 0.5rem;">
-                                        <span class="status-badge ${hasErrors ? 'status-error' : 'status-info'}">
-                                            ${hasErrors ? 'Errors Detected' : pool.Errors || 'None'}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </table>
-                            ${pool.Config && pool.Config.length > 0 ? `
-                                <div style="margin-bottom: 1rem;">
-                                    <div style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 0.5rem; font-weight: 600;">Configuration:</div>
-                                    <table class="data-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Device</th>
-                                                <th>State</th>
-                                                <th>Read</th>
-                                                <th>Write</th>
-                                                <th>Checksum</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${pool.Config.map(dev => `
-                                                <tr>
-                                                    <td>${dev.Name}</td>
-                                                    <td><span class="status-badge ${dev.State === 'ONLINE' ? 'status-info' : 'status-error'}">${dev.State}</span></td>
-                                                    <td>${dev.Read}</td>
-                                                    <td>${dev.Write}</td>
-                                                    <td>${dev.Cksum}</td>
-                                                </tr>
-                                            `).join('')}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ` : ''}
-                            ${hasErrors ? `
-                                <div style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3);">
-                                    <div style="color: #fca5a5; font-size: 0.875rem; margin-bottom: 0.5rem; font-weight: 600;">⚠️ Error Details:</div>
-                                    <div style="color: #e2e8f0; font-size: 0.85rem; white-space: pre-wrap; font-family: 'Courier New', monospace; max-height: 300px; overflow-y: auto;">${pool.Errors}</div>
-                                </div>
-                            ` : ''}
-                        </div>
-                    `;
-                }).join('')}
+function showRawN2OS() {
+    currentModalData = { content: appData.n2osConfig.RawContent, filename: 'n2os.conf.user' };
+    document.getElementById('modal-title').textContent = 'Raw Configuration File: n2os.conf.user';
+    document.getElementById('modal-content').textContent = currentModalData.content;
+    document.getElementById('raw-modal').classList.add('show');
+}
 
-                ${(storage.Fstab && storage.Fstab.length > 0) ? `
-                    <div class="section-title" style="margin-top: 2rem;">Filesystem Table (fstab)</div>
-                    <table class="data-table" style="margin-bottom: 2rem;">
-                        <thead>
-                            <tr>
-                                <th>Device</th>
-                                <th>Mount Point</th>
-                                <th>Type</th>
-                                <th>Options</th>
-                                <th>Dump</th>
-                                <th>Pass</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${storage.Fstab.map(entry => `
-                                <tr>
-                                    <td style="font-family: monospace; font-size: 0.85rem;">${entry.Device}</td>
-                                    <td>${entry.MountPoint}</td>
-                                    <td>${entry.FSType}</td>
-                                    <td style="font-size: 0.8rem;">${entry.Options}</td>
-                                    <td>${entry.Dump}</td>
-                                    <td>${entry.Pass}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                ` : ''}
+function showRawIfconfig() {
+    currentModalData = { content: appData.network.RawIfconfigData, filename: 'ifconfig.txt' };
+    document.getElementById('modal-title').textContent = 'Raw Network Interface Configuration: ifconfig.txt';
+    document.getElementById('modal-content').textContent = currentModalData.content;
+    document.getElementById('raw-modal').classList.add('show');
+}
 
-                ${!isVSeries && (storage.DiskInfo || []).length > 0 ? `
-                    <div class="section-title">Disk Health (SMART)</div>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Device</th>
-                                <th>Model</th>
-                                <th>Capacity</th>
-                                <th>Health</th>
-                                <th>Temperature</th>
-                                <th>Power On Hours</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${storage.DiskInfo.map(disk => `
-                                <tr>
-                                    <td>${disk.Device}</td>
-                                    <td>${disk.Model || 'N/A'}</td>
-                                    <td>${disk.Capacity || 'N/A'}</td>
-                                    <td><span class="status-badge ${disk.Health === 'PASSED' ? 'status-info' : 'status-error'}">${disk.Health || 'Unknown'}</span></td>
-                                    <td>${disk.Temperature ? disk.Temperature + '°C' : 'N/A'}</td>
-                                    <td>${disk.PowerOnHours || 'N/A'}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                ` : ''}
-            `;
-        }
+function closeModal() {
+    document.getElementById('raw-modal').classList.remove('show');
+}
 
-        function renderLogs(logs, title) {
-            return `
-                <div class="section-title">${title} (${logs.length} entries)</div>
-                ${logs.slice(0, 100).map(log => `
-                    <div class="log-entry ${log.Level ? log.Level.toLowerCase() : ''}">
-                        <span class="log-timestamp">${new Date(log.Timestamp).toLocaleString()}</span>
-                        <span class="log-process">${log.Process}[${log.PID || '?'}]</span>
-                        <span class="log-message">${log.Message}</span>
-                    </div>
-                `).join('')}
-                ${logs.length > 100 ? '<p style="text-align: center; padding: 1rem; color: #64748b;">Showing first 100 entries</p>' : ''}
-            `;
-        }
+function copyModalContent() {
+    navigator.clipboard.writeText(currentModalData.content).then(() => {
+        alert('Content copied to clipboard!');
+    }).catch(err => console.error('Failed to copy:', err));
+}
 
-        function renderNginxLogs(logs) {
-            return `
-                <div class="section-title">Nginx Error Logs (${logs.length} entries)</div>
-                ${logs.slice(0, 100).map(log => `
-                    <div class="log-entry ${log.Level ? log.Level.toLowerCase() : ''}">
-                        <span class="log-timestamp">${new Date(log.Timestamp).toLocaleString()}</span>
-                        <span class="status-badge status-${log.Level === 'CRIT' ? 'error' : 'warning'}">${log.Level}</span>
-                        <span class="log-message">${log.Message}</span>
-                    </div>
-                `).join('')}
-                ${logs.length > 100 ? '<p style="text-align: center; padding: 1rem; color: #64748b;">Showing first 100 entries</p>' : ''}
-            `;
-        }
+function downloadModalContent() {
+    const blob = new Blob([currentModalData.content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = currentModalData.filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
 
-        function renderProcesses() {
-            const { processes } = appData;
-            return `
-                <div class="section-title">Process List (${processes.length} processes)</div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>PID</th>
-                            <th>CPU %</th>
-                            <th>Memory %</th>
-                            <th>VSZ</th>
-                            <th>RSS</th>
-                            <th>State</th>
-                            <th>Started</th>
-                            <th>Command</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${processes.map(p => `
-                            <tr>
-                                <td>${p.User}</td>
-                                <td>${p.PID}</td>
-                                <td>${p.CPU}</td>
-                                <td>${p.Memory}</td>
-                                <td>${p.VSZ}</td>
-                                <td>${p.RSS}</td>
-                                <td>${p.Stat}</td>
-                                <td>${p.Started}</td>
-                                <td style="font-family: monospace; font-size: 0.8rem; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.Command}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
+function openDocs(url) {
+    if (url) window.open(url, '_blank');
+}
 
-        function renderN2OSConfig() {
-            const { n2osConfig } = appData;
-            
-            if (!n2osConfig || !n2osConfig.Settings || n2osConfig.Settings.length === 0) {
-                return '<div class="section-title">N2OS Configuration not found</div>';
-            }
+function toggleTheme() {
+    const body = document.body;
+    const icon = document.getElementById('theme-icon');
+    const isLight = body.classList.toggle('light-mode');
+    icon.textContent = isLight ? '🌙' : '☀️';
+}
 
-            return `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <div class="section-title" style="margin: 0;">
-                        N2OS Configuration (n2os.conf.user)
-                        <span class="title-icon" onclick="showRawConfig()" title="View raw file">📄</span>
-                    </div>
-                </div>
-
-                <input type="text" class="search-box" id="n2os-search" placeholder="Search settings...">
-
-                <div style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden;">
-                    ${n2osConfig.Settings.map((setting, idx) => `
-                        <div class="n2os-row" data-key="${setting.Key.toLowerCase()}" data-value="${setting.MaskedValue.toLowerCase()}" 
-                             style="padding: 0.875rem 1rem; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; font-family: 'Courier New', monospace; font-size: 0.875rem; background: ${idx % 2 === 0 ? '#0f172a' : '#1e293b'};">
-                            <div style="flex: 1; display: flex; align-items: center; gap: 0.5rem;">
-                                <span style="color: #8b5cf6; font-weight: 500;">${setting.Key}</span>
-                                <span style="color: #64748b;">${setting.MaskedValue}</span>
-                            </div>
-                            <span class="info-icon" title="${setting.Description || 'No description available'}" 
-                                  onclick="openDocs('${setting.DocsURL}')" style="flex-shrink: 0;">ℹ️</span>
-                        </div>
-                    `).join('')}
-                </div>
-
-                <div id="raw-modal" class="modal">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <div class="modal-title">Raw Configuration File: n2os.conf.user</div>
-                            <button class="modal-close" onclick="closeRawConfig()">×</button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="raw-content">${n2osConfig.RawContent || 'No content'}</div>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-secondary" onclick="copyRawConfig()">📋 Copy to Clipboard</button>
-                            <button class="btn btn-secondary" onclick="downloadRawConfig()">💾 Download</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function setupN2OSSearch() {
-            const searchBox = document.getElementById('n2os-search');
-            if (!searchBox) return;
-
-            searchBox.addEventListener('input', (e) => {
-                const query = e.target.value.toLowerCase();
-                const rows = document.querySelectorAll('.n2os-row');
-
-                rows.forEach(row => {
-                    const key = row.dataset.key;
-                    const value = row.dataset.value;
-                    const matches = key.includes(query) || value.includes(query);
-                    row.style.display = matches ? '' : 'none';
-                });
-            });
-        }
-
-        function setupModalHandlers() {
-            // Click outside modal to close
-            document.addEventListener('click', (e) => {
-                const modal = document.getElementById('raw-modal');
-                if (e.target === modal) {
-                    closeRawConfig();
-                }
-            });
-        }
-
-        function showRawConfig() {
-            const modal = document.getElementById('raw-modal');
-            if (modal) {
-                modal.classList.add('show');
-            }
-        }
-
-        function closeRawConfig() {
-            const modal = document.getElementById('raw-modal');
-            if (modal) {
-                modal.classList.remove('show');
-            }
-        }
-
-        function copyRawConfig() {
-            const content = appData.n2osConfig.RawContent;
-            navigator.clipboard.writeText(content).then(() => {
-                alert('Configuration copied to clipboard!');
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-            });
-        }
-
-        function downloadRawConfig() {
-            const content = appData.n2osConfig.RawContent;
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'n2os.conf.user';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function openDocs(url) {
-            if (url) {
-                window.open(url, '_blank');
-            }
-        }
-
-        function renderRcConf() {
-            const { network } = appData;
-            
-            if (!network || !network.RcConf || Object.keys(network.RcConf).length === 0) {
-                return '<div class="section-title">RC Configuration not found</div>';
-            }
-
-            // Convert RcConf object to array
-            const settings = Object.entries(network.RcConf).map(([key, value]) => ({
-                Key: key,
-                Value: value
-            }));
-
-            return `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <div class="section-title" style="margin: 0;">
-                        RC Configuration (rc.conf)
-                    </div>
-                </div>
-
-                <input type="text" class="search-box" id="rc-search" placeholder="Search settings...">
-
-                <div style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden;">
-                    ${settings.map((setting, idx) => `
-                        <div class="rc-row" data-key="${setting.Key.toLowerCase()}" data-value="${setting.Value.toLowerCase()}" 
-                             style="padding: 0.875rem 1rem; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; font-family: 'Courier New', monospace; font-size: 0.875rem; background: ${idx % 2 === 0 ? '#0f172a' : '#1e293b'}; transition: background 0.3s;">
-                            <div style="flex: 1; display: flex; align-items: center; gap: 0.5rem;">
-                                <span style="color: #8b5cf6; font-weight: 500;">${setting.Key}</span>
-                                <span style="color: #64748b;">${setting.Value}</span>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function setupRcConfSearch() {
-            const searchBox = document.getElementById('rc-search');
-            if (!searchBox) return;
-
-            searchBox.addEventListener('input', (e) => {
-                const query = e.target.value.toLowerCase();
-                const rows = document.querySelectorAll('.rc-row');
-
-                rows.forEach(row => {
-                    const key = row.dataset.key;
-                    const value = row.dataset.value;
-                    const matches = key.includes(query) || value.includes(query);
-                    row.style.display = matches ? 'flex' : 'none';
-                });
-            });
-        }
-
-        function toggleTheme() {
-            const body = document.body;
-            const icon = document.getElementById('theme-icon');
-            const isLight = body.classList.toggle('light-mode');
-            
-            // Update icon
-            icon.textContent = isLight ? '🌙' : '☀️';
-        }
-
-        // Start the app
-        init();
+init(); 
     </script>
 </body>
 </html>
