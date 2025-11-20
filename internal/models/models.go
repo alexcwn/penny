@@ -25,13 +25,44 @@ type ArchiveMetadata struct {
 
 // SystemInfo contains system-level information
 type SystemInfo struct {
-	Product        string
-	Version        string
-	Platform       string
-	Uptime         string
-	Hostname       string
-	FreeBSDRelease string
-	KernelVersion  string
+	Product           string
+	Version           string
+	Platform          string
+	Uptime            string
+	Hostname          string
+	FreeBSDRelease    string
+	KernelVersion     string
+	CreationTimestamp time.Time // Add this line
+}
+
+// AuthEventType represents the type of authentication event
+type AuthEventType string
+
+const (
+	AuthEventSudo        AuthEventType = "sudo"
+	AuthEventSSHSuccess  AuthEventType = "ssh_success"
+	AuthEventSSHFailed   AuthEventType = "ssh_failed"
+	AuthEventLogin       AuthEventType = "login"
+	AuthEventAuthFailure AuthEventType = "auth_failure"
+	AuthEventSecurity    AuthEventType = "security"
+	AuthEventOther       AuthEventType = "other"
+)
+
+// AuthLogEntry represents a parsed auth.log entry
+type AuthLogEntry struct {
+	Timestamp time.Time
+	Hostname  string
+	Process   string
+	PID       string
+	User      string
+	EventType AuthEventType
+	SudoUser  string // Target user for sudo commands
+	Command   string // Command executed via sudo
+	SourceIP  string // Source IP for SSH events
+	SessionID string // Session ID for login events
+	Message   string // Raw message
+	Level     string // INFO, WARNING, ERROR
+	RawLine   string // Original log line
 }
 
 // Logs contains all parsed log data
@@ -39,7 +70,7 @@ type Logs struct {
 	Messages        []LogEntry
 	NginxErrors     []NginxLogEntry
 	WebserverDaemon []LogEntry
-	AuthLog         []LogEntry
+	AuthLog         []AuthLogEntry
 }
 
 // LogEntry represents a parsed syslog entry

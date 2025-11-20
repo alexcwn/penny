@@ -2,10 +2,11 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"penny/internal/models"
 	"sort"
 	"strings"
-	"penny/internal/models"
 )
 
 var archiveData *models.ArchiveData
@@ -44,6 +45,9 @@ func handleLogs(w http.ResponseWriter, r *http.Request) {
 
 	logType := r.URL.Query().Get("type")
 	level := r.URL.Query().Get("level")
+	eventType := r.URL.Query().Get("event_type")
+	authUser := r.URL.Query().Get("auth_user")
+	sourceIP := r.URL.Query().Get("source_ip")
 
 	var result interface{}
 
@@ -52,6 +56,21 @@ func handleLogs(w http.ResponseWriter, r *http.Request) {
 		logs := archiveData.Logs.NginxErrors
 		if level != "" {
 			logs = filterNginxByLevel(logs, level)
+		}
+		result = logs
+	case "auth":
+		logs := archiveData.Logs.AuthLog
+		if eventType != "" {
+			logs = filterAuthByEventType(logs, eventType)
+		}
+		if authUser != "" {
+			logs = filterAuthByUser(logs, authUser)
+		}
+		if sourceIP != "" {
+			logs = filterAuthBySourceIP(logs, sourceIP)
+		}
+		if level != "" {
+			logs = filterAuthByLevel(logs, level)
 		}
 		result = logs
 	case "messages", "syslog", "":
@@ -132,7 +151,7 @@ func handleOverview(w http.ResponseWriter, r *http.Request) {
 	overview := map[string]interface{}{
 		"metadata":        archiveData.Metadata,
 		"system_info":     archiveData.SystemInfo,
-		"total_logs":      len(archiveData.Logs.Messages) + len(archiveData.Logs.NginxErrors),
+		"total_logs":      len(archiveData.Logs.Messages) + len(archiveData.Logs.NginxErrors) + len(archiveData.Logs.AuthLog),
 		"total_processes": len(archiveData.Processes),
 		"error_count":     countErrors(),
 		"warning_count":   countWarnings(),
@@ -207,6 +226,9 @@ func handleIssues(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Check auth logs for security issues
+	issues = append(issues, detectAuthSecurityIssues()...)
+
 	// Sort by severity and timestamp
 	sort.Slice(issues, func(i, j int) bool {
 		// Prioritize CRITICAL over others
@@ -254,6 +276,47 @@ func filterNginxByLevel(logs []models.NginxLogEntry, level string) []models.Ngin
 	return filtered
 }
 
+func filterAuthByEventType(logs []models.AuthLogEntry, eventType string) []models.AuthLogEntry {
+	var filtered []models.AuthLogEntry
+	for _, log := range logs {
+		if string(log.EventType) == eventType {
+			filtered = append(filtered, log)
+		}
+	}
+	return filtered
+}
+
+func filterAuthByUser(logs []models.AuthLogEntry, user string) []models.AuthLogEntry {
+	var filtered []models.AuthLogEntry
+	for _, log := range logs {
+		if strings.Contains(strings.ToLower(log.User), strings.ToLower(user)) ||
+			strings.Contains(strings.ToLower(log.SudoUser), strings.ToLower(user)) {
+			filtered = append(filtered, log)
+		}
+	}
+	return filtered
+}
+
+func filterAuthBySourceIP(logs []models.AuthLogEntry, sourceIP string) []models.AuthLogEntry {
+	var filtered []models.AuthLogEntry
+	for _, log := range logs {
+		if strings.Contains(log.SourceIP, sourceIP) {
+			filtered = append(filtered, log)
+		}
+	}
+	return filtered
+}
+
+func filterAuthByLevel(logs []models.AuthLogEntry, level string) []models.AuthLogEntry {
+	var filtered []models.AuthLogEntry
+	for _, log := range logs {
+		if strings.EqualFold(log.Level, level) {
+			filtered = append(filtered, log)
+		}
+	}
+	return filtered
+}
+
 func countErrors() int {
 	count := 0
 	for _, log := range archiveData.Logs.Messages {
@@ -262,6 +325,11 @@ func countErrors() int {
 		}
 	}
 	for _, log := range archiveData.Logs.NginxErrors {
+		if log.Level == "ERROR" {
+			count++
+		}
+	}
+	for _, log := range archiveData.Logs.AuthLog {
 		if log.Level == "ERROR" {
 			count++
 		}
@@ -281,6 +349,11 @@ func countWarnings() int {
 			count++
 		}
 	}
+	for _, log := range archiveData.Logs.AuthLog {
+		if log.Level == "WARNING" {
+			count++
+		}
+	}
 	return count
 }
 
@@ -293,6 +366,11 @@ func countCritical() int {
 	}
 	for _, log := range archiveData.Logs.NginxErrors {
 		if log.Level == "CRIT" || log.Level == "EMERG" {
+			count++
+		}
+	}
+	for _, log := range archiveData.Logs.AuthLog {
+		if log.Level == "CRITICAL" || log.Level == "FATAL" {
 			count++
 		}
 	}
@@ -319,12 +397,76 @@ func getLogSummary() map[string]interface{} {
 	return map[string]interface{}{
 		"syslog_total": len(archiveData.Logs.Messages),
 		"nginx_total":  len(archiveData.Logs.NginxErrors),
+		"auth_total":   len(archiveData.Logs.AuthLog),
 		"by_level": map[string]int{
 			"error":    countErrors(),
 			"warning":  countWarnings(),
 			"critical": countCritical(),
 		},
 	}
+}
+
+// detectAuthSecurityIssues analyzes auth logs for potential security concerns
+func detectAuthSecurityIssues() []map[string]interface{} {
+	var issues []map[string]interface{}
+
+	failedAttempts := make(map[string]int) // IP -> count
+	failedUsers := make(map[string]int)    // User -> count
+
+	for _, log := range archiveData.Logs.AuthLog {
+		// Count failed SSH attempts by IP
+		if log.EventType == models.AuthEventSSHFailed && log.SourceIP != "" {
+			failedAttempts[log.SourceIP]++
+		}
+
+		// Count failed authentication attempts by user
+		if (log.EventType == models.AuthEventSSHFailed || log.EventType == models.AuthEventAuthFailure) && log.User != "" {
+			failedUsers[log.User]++
+		}
+
+		// Flag sudo usage by non-root users as potential security concern
+		if log.EventType == models.AuthEventSudo && log.SudoUser == "root" && log.User != "root" {
+			issues = append(issues, map[string]interface{}{
+				"severity":  "WARNING",
+				"source":    "auth",
+				"title":     "Non-root user executed sudo as root",
+				"message":   fmt.Sprintf("User %s executed sudo command as root: %s", log.User, log.Command),
+				"user":      log.User,
+				"command":   log.Command,
+				"timestamp": log.Timestamp,
+			})
+		}
+	}
+
+	// Flag IPs with multiple failed attempts
+	for ip, count := range failedAttempts {
+		if count > 5 { // Threshold for multiple failed attempts
+			issues = append(issues, map[string]interface{}{
+				"severity":  "WARNING",
+				"source":    "auth",
+				"title":     "Multiple failed SSH attempts from IP",
+				"message":   fmt.Sprintf("IP %s had %d failed SSH attempts", ip, count),
+				"source_ip": ip,
+				"attempts":  count,
+			})
+		}
+	}
+
+	// Flag users with multiple failed authentication attempts
+	for user, count := range failedUsers {
+		if count > 3 { // Threshold for user lockout concern
+			issues = append(issues, map[string]interface{}{
+				"severity": "WARNING",
+				"source":   "auth",
+				"title":    "Multiple failed authentication attempts for user",
+				"message":  fmt.Sprintf("User %s had %d failed authentication attempts", user, count),
+				"user":     user,
+				"attempts": count,
+			})
+		}
+	}
+
+	return issues
 }
 
 func respondJSON(w http.ResponseWriter, data interface{}) {
