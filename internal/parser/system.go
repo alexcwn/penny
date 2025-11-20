@@ -2,11 +2,14 @@ package parser
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"penny/internal/models"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // ParseSystemInfo parses system information files
@@ -35,6 +38,33 @@ func ParseSystemInfo(baseDir string, data *models.ArchiveData) error {
 	if hostname := parseHostnameFromRcConf(baseDir); hostname != "" {
 		data.SystemInfo.Hostname = hostname
 		data.Metadata.Hostname = hostname
+	}
+
+	// Parse machine ID
+	if machineID, err := readFile(filepath.Join(baseDir, "machineid.txt")); err == nil {
+		data.SystemInfo.MachineID = strings.TrimSpace(machineID)
+	}
+
+	// Parse asset metrics from meta.json
+	if err := parseMetaJSON(baseDir, data); err == nil {
+		// Successfully parsed meta.json
+	}
+
+	// Parse licenses from licenses.json
+	if err := parseLicensesJSON(baseDir, data); err == nil {
+		// Successfully parsed licenses.json
+	}
+
+	// Parse sysctl.txt for hardware metrics
+	if err := parseSysctl(baseDir, data); err == nil {
+		// Successfully parsed sysctl.txt
+	}
+
+	// Get creation time from n2os.conf.gz last modified time
+	n2osConfPath := filepath.Join(baseDir, "data", "cfg", "n2os.conf.gz")
+	if fileInfo, err := os.Stat(n2osConfPath); err == nil {
+		// Convert to UTC
+		data.SystemInfo.CreationTimestamp = fileInfo.ModTime().UTC()
 	}
 
 	return nil
@@ -77,7 +107,50 @@ func ParseNetworkConfig(baseDir string, data *models.ArchiveData) error {
 	data.NetworkConfig.Interfaces = interfaces
 	data.NetworkConfig.RawIfconfigData = rawIfconfig
 
+	// Parse resolv.conf for DNS servers
+	if dns := parseResolvConf(baseDir); dns != "" {
+		data.NetworkConfig.DNS = dns
+	}
+
 	return nil
+}
+
+// parseResolvConf parses resolv.conf for DNS nameservers
+func parseResolvConf(baseDir string) string {
+	resolvPath := filepath.Join(baseDir, "resolv.conf")
+
+	file, err := os.Open(resolvPath)
+	if err != nil {
+		return ""
+	}
+	defer file.Close()
+
+	var nameservers []string
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+
+		// Skip empty lines and comments
+		if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, ";") {
+			continue
+		}
+
+		// Look for nameserver entries
+		if strings.HasPrefix(line, "nameserver") {
+			fields := strings.Fields(line)
+			if len(fields) >= 2 {
+				nameservers = append(nameservers, fields[1])
+			}
+		}
+	}
+
+	if len(nameservers) == 0 {
+		return ""
+	}
+
+	// Join with " / " separator
+	return strings.Join(nameservers, " / ")
 }
 
 // mergeInterfaceData merges ifconfig data with rc.conf configuration
@@ -503,4 +576,207 @@ func readFile(path string) (string, error) {
 		return "", err
 	}
 	return string(content), nil
+}
+
+// parseMetaJSON parses the meta.json file containing asset metrics
+func parseMetaJSON(baseDir string, data *models.ArchiveData) error {
+	metaPath := filepath.Join(baseDir, "data", "cfg", "meta.json")
+
+	content, err := os.ReadFile(metaPath)
+	if err != nil {
+		return err
+	}
+
+	// Define a struct to unmarshal the JSON
+	var meta struct {
+		Nodes     string `json:"nodes"`
+		Links     string `json:"links"`
+		Variables string `json:"variables"`
+	}
+
+	if err := json.Unmarshal(content, &meta); err != nil {
+		return err
+	}
+
+	// Convert string values to integers
+	if nodes, err := strconv.Atoi(meta.Nodes); err == nil {
+		data.SystemInfo.TotalNodes = nodes
+	}
+	if links, err := strconv.Atoi(meta.Links); err == nil {
+		data.SystemInfo.TotalLinks = links
+	}
+	if variables, err := strconv.Atoi(meta.Variables); err == nil {
+		data.SystemInfo.TotalVariables = variables
+	}
+
+	return nil
+}
+
+// parseLicensesJSON parses the licenses.json file containing license information
+func parseLicensesJSON(baseDir string, data *models.ArchiveData) error {
+	licensesPath := filepath.Join(baseDir, "health_check", "licenses.json")
+
+	file, err := os.Open(licensesPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	var licenses []models.License
+	scanner := bufio.NewScanner(file)
+
+	// Read each line as a separate JSON object (NDJSON format)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+
+		// Define a struct to unmarshal the JSON
+		var rawLicense struct {
+			Licensee  string `json:"licensee"`
+			Type      string `json:"type"`
+			Status    string `json:"status"`
+			Bundle    string `json:"bundle_name"`
+			Purpose   string `json:"purpose"`
+			IsDisabled bool  `json:"is_disabled"`
+			Extra     struct {
+				ExpireDate          string `json:"expire_date"`
+				ActualLicensedNodes string `json:"actual_licensed_nodes"`
+				SupportedNodes      string `json:"supported_nodes"`
+			} `json:"extra"`
+		}
+
+		if err := json.Unmarshal([]byte(line), &rawLicense); err != nil {
+			continue // Skip malformed lines
+		}
+
+		license := models.License{
+			Licensee:            rawLicense.Licensee,
+			Type:                rawLicense.Type,
+			Status:              rawLicense.Status,
+			BundleName:          rawLicense.Bundle,
+			Purpose:             rawLicense.Purpose,
+			IsDisabled:          rawLicense.IsDisabled,
+			ActualLicensedNodes: rawLicense.Extra.ActualLicensedNodes,
+			SupportedNodes:      rawLicense.Extra.SupportedNodes,
+		}
+
+		// Parse expiredate from Unix milliseconds
+		if rawLicense.Extra.ExpireDate != "" {
+			if millis, err := strconv.ParseInt(rawLicense.Extra.ExpireDate, 10, 64); err == nil && millis > 0 {
+				seconds := millis / 1000
+				nanos := (millis % 1000) * 1000000
+				license.ExpireDate = time.Unix(seconds, nanos).UTC()
+			}
+		}
+
+		licenses = append(licenses, license)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+
+	data.SystemInfo.Licenses = licenses
+	return nil
+}
+
+// parseSysctl parses sysctl.txt for key hardware and system metrics
+func parseSysctl(baseDir string, data *models.ArchiveData) error {
+	sysctlPath := filepath.Join(baseDir, "sysctl.txt")
+
+	file, err := os.Open(sysctlPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	inMsgbuf := false
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		// Skip empty lines
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+
+		// Handle multi-line kern.msgbuf (contains boot messages)
+		if strings.HasPrefix(line, "kern.msgbuf:") {
+			inMsgbuf = true
+			continue
+		}
+
+		// If we're in msgbuf, look for CPU info
+		if inMsgbuf {
+			// Extract CPU model from boot message
+			if strings.HasPrefix(line, "CPU: ") {
+				cpuLine := strings.TrimPrefix(line, "CPU: ")
+				// Extract just the model name (before the speed)
+				if idx := strings.Index(cpuLine, " ("); idx != -1 {
+					data.SystemInfo.CPUModel = cpuLine[:idx]
+				} else {
+					data.SystemInfo.CPUModel = cpuLine
+				}
+			}
+
+			// Extract memory info from boot message
+			if strings.HasPrefix(line, "real memory  = ") {
+				memLine := strings.TrimPrefix(line, "real memory  = ")
+				// Format: "17179869184 (16384 MB)"
+				if idx := strings.Index(memLine, "("); idx != -1 {
+					readable := strings.TrimSpace(memLine[idx+1:])
+					readable = strings.TrimSuffix(readable, ")")
+					data.SystemInfo.PhysicalMemory = readable
+				}
+			}
+
+			if strings.HasPrefix(line, "avail memory = ") {
+				memLine := strings.TrimPrefix(line, "avail memory = ")
+				if idx := strings.Index(memLine, "("); idx != -1 {
+					readable := strings.TrimSpace(memLine[idx+1:])
+					readable = strings.TrimSuffix(readable, ")")
+					data.SystemInfo.AvailableMemory = readable
+				}
+			}
+
+			// Stop parsing msgbuf after we get the key info
+			if strings.HasPrefix(line, "Security policy loaded:") {
+				inMsgbuf = false
+			}
+			continue
+		}
+
+		// Parse key-value pairs
+		parts := strings.SplitN(line, ": ", 2)
+		if len(parts) != 2 {
+			continue
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+
+		switch key {
+		case "kern.smp.cpus":
+			if cores, err := strconv.Atoi(value); err == nil {
+				data.SystemInfo.CPUCores = cores
+			}
+
+		case "kern.boottime":
+			// Format: { sec = 1759803800, usec = 4163 } Tue Oct  7 11:23:20 2025
+			if idx := strings.Index(value, "sec = "); idx != -1 {
+				secStr := value[idx+6:]
+				if commaIdx := strings.Index(secStr, ","); commaIdx != -1 {
+					secStr = secStr[:commaIdx]
+					if sec, err := strconv.ParseInt(secStr, 10, 64); err == nil {
+						data.SystemInfo.BootTime = time.Unix(sec, 0).UTC()
+					}
+				}
+			}
+		}
+	}
+
+	return scanner.Err()
 }

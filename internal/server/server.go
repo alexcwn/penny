@@ -33,6 +33,9 @@ func Start(port int, data *models.ArchiveData) error {
 	http.HandleFunc("/api/overview", handleOverview)
 	http.HandleFunc("/api/issues", handleIssues)
 	http.HandleFunc("/api/n2os-config", handleN2OSConfig)
+	http.HandleFunc("/api/n2op-logs", handleN2OpLogs)
+	http.HandleFunc("/api/health-events", handleHealthEvents)
+	http.HandleFunc("/api/database", handleDatabase)
 
 	// Serve static files (dashboard UI)
 	http.Handle("/", http.FileServer(http.FS(staticFS)))

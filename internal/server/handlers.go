@@ -141,6 +141,101 @@ func handleN2OSConfig(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, archiveData.N2OSConfig)
 }
 
+// handleN2OpLogs returns N2OS operation logs with optional filtering and pagination
+func handleN2OpLogs(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	eventType := r.URL.Query().Get("event_type")
+	logs := archiveData.N2OpLogs
+
+	// Filter by event type if specified
+	if eventType != "" {
+		var filtered []models.N2OpLogEntry
+		for _, log := range logs {
+			if string(log.EventType) == eventType {
+				filtered = append(filtered, log)
+			}
+		}
+		logs = filtered
+	}
+
+	respondJSON(w, logs)
+}
+
+// handleHealthEvents returns health events with optional filtering
+func handleHealthEvents(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	category := r.URL.Query().Get("category")
+	eventType := r.URL.Query().Get("event_type")
+	severity := r.URL.Query().Get("severity")
+	appliance := r.URL.Query().Get("appliance")
+
+	events := archiveData.HealthEvents
+
+	// Filter by category if specified
+	if category != "" {
+		var filtered []models.HealthEvent
+		for _, event := range events {
+			if string(event.Category) == category {
+				filtered = append(filtered, event)
+			}
+		}
+		events = filtered
+	}
+
+	// Filter by event type if specified
+	if eventType != "" {
+		var filtered []models.HealthEvent
+		for _, event := range events {
+			if string(event.EventType) == eventType {
+				filtered = append(filtered, event)
+			}
+		}
+		events = filtered
+	}
+
+	// Filter by severity if specified
+	if severity != "" {
+		var filtered []models.HealthEvent
+		for _, event := range events {
+			if string(event.Severity) == severity {
+				filtered = append(filtered, event)
+			}
+		}
+		events = filtered
+	}
+
+	// Filter by appliance hostname if specified
+	if appliance != "" {
+		var filtered []models.HealthEvent
+		for _, event := range events {
+			if strings.Contains(strings.ToLower(event.ApplianceHost), strings.ToLower(appliance)) {
+				filtered = append(filtered, event)
+			}
+		}
+		events = filtered
+	}
+
+	respondJSON(w, events)
+}
+
+// handleDatabase returns database diagnostics
+func handleDatabase(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	respondJSON(w, archiveData.Database)
+}
+
 // handleOverview returns a summary of key metrics
 func handleOverview(w http.ResponseWriter, r *http.Request) {
 	if archiveData == nil {
@@ -228,6 +323,31 @@ func handleIssues(w http.ResponseWriter, r *http.Request) {
 
 	// Check auth logs for security issues
 	issues = append(issues, detectAuthSecurityIssues()...)
+
+	// Check database for issues (oversized tables and vacuum needs)
+	for _, table := range archiveData.Database.Tables {
+		if table.IsOversized {
+			issues = append(issues, map[string]interface{}{
+				"severity":    "WARNING",
+				"source":      "database",
+				"title":       "Database table exceeds 1 GB",
+				"table_name":  table.TableName,
+				"size":        table.Size,
+				"description": fmt.Sprintf("Table '%s' is %s in size, which may impact performance", table.TableName, table.Size),
+			})
+		}
+		if table.NeedsVacuum {
+			issues = append(issues, map[string]interface{}{
+				"severity":    "WARNING",
+				"source":      "database",
+				"title":       "Database table needs vacuum",
+				"table_name":  table.TableName,
+				"dead_tuples": table.DeadTuples,
+				"threshold":   table.AutovacuumThreshold,
+				"description": fmt.Sprintf("Table '%s' has %d dead tuples (threshold: %d)", table.TableName, table.DeadTuples, table.AutovacuumThreshold),
+			})
+		}
+	}
 
 	// Sort by severity and timestamp
 	sort.Slice(issues, func(i, j int) bool {

@@ -27,10 +27,22 @@ func ParseLogs(dir string, data *models.ArchiveData) error {
 	}
 	data.Logs.AuthLog = authLogs
 
-	// Find and set the support archive creation timestamp
-	creationTime, err := FindLatestSupportArchiveTime(dir)
-	if err == nil && !creationTime.IsZero() {
-		data.SystemInfo.CreationTimestamp = creationTime
+	// Parse N2OS operation logs
+	if err := ParseN2OpLogs(dir, data); err != nil {
+		// Non-fatal error, just skip if files don't exist
+		// Could log this if needed
+	}
+
+	// Parse health check logs
+	if err := ParseHealthLogs(dir, data); err != nil {
+		// Non-fatal error, just skip if files don't exist
+		// Could log this if needed
+	}
+
+	// Parse database diagnostics
+	if err := ParseDatabaseDiagnostics(dir, data); err != nil {
+		// Non-fatal error, just skip if files don't exist
+		// Could log this if needed
 	}
 
 	return nil

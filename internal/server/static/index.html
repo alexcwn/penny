@@ -5,8 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Support Archive Analyzer</title>
     <style>
+        :root {
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+        body.light-mode {
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: var(--text-primary); }
         body.light-mode { background: #f8fafc; color: #1e293b; }
         .header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-bottom: 1px solid #334155; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); }
         body.light-mode .header { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-bottom: 1px solid #e2e8f0; }
@@ -17,9 +27,9 @@
         .archive-info { display: flex; gap: 2rem; font-size: 0.875rem; }
         .archive-info-item { display: flex; flex-direction: column; gap: 0.25rem; }
         .archive-info-label { color: #64748b; font-size: 0.75rem; text-transform: uppercase; }
-        .archive-info-value { color: #e2e8f0; font-weight: 500; }
+        .archive-info-value { color: var(--text-primary); font-weight: 500; }
         body.light-mode .archive-info-value { color: #1e293b; }
-        .theme-toggle { background: #334155; border: none; color: #e2e8f0; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 1.25rem; transition: all 0.3s; margin-left: 1rem; }
+        .theme-toggle { background: #334155; border: none; color: var(--text-primary); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 1.25rem; transition: all 0.3s; margin-left: 1rem; }
         .theme-toggle:hover { background: #475569; transform: scale(1.1); }
         body.light-mode .theme-toggle { background: #e2e8f0; color: #1e293b; }
         body.light-mode .theme-toggle:hover { background: #cbd5e1; }
@@ -48,7 +58,7 @@
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
         .card { background: linear-gradient(135deg, #1e293b 0%, #1a2332 100%); border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); transition: background 0.3s, border-color 0.3s; }
         body.light-mode .card { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); }
-        .card-title { font-size: 0.875rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; margin-bottom: 1rem; transition: color 0.3s; }
+        .card-title { font-size: 0.875rem; color: #94a3b8; font-weight: 600; margin-bottom: 1rem; transition: color 0.3s; }
         body.light-mode .card-title { color: #475569; }
         .card-value { font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; transition: color 0.3s; }
         body.light-mode .card-value { color: #1e293b; }
@@ -59,7 +69,7 @@
         body.light-mode .data-table { background: #ffffff; border: 1px solid #e2e8f0; }
         .data-table th { background: #334155; padding: 1rem; text-align: left; font-size: 0.875rem; color: #94a3b8; font-weight: 600; transition: background 0.3s, color 0.3s; }
         body.light-mode .data-table th { background: #f1f5f9; color: #475569; }
-        .data-table td { padding: 1rem; border-top: 1px solid #334155; font-size: 0.875rem; transition: border-color 0.3s, color 0.3s; color: #e2e8f0; }
+        .data-table td { padding: 1rem; border-top: 1px solid #334155; font-size: 0.875rem; transition: border-color 0.3s, color 0.3s; color: var(--text-primary); }
         body.light-mode .data-table td { border-top: 1px solid #e2e8f0; color: #1e293b; }
         .data-table tr:hover { background: rgba(51, 65, 85, 0.3); }
         body.light-mode .data-table tr:hover { background: rgba(241, 245, 249, 0.5); }
@@ -75,7 +85,7 @@
         .usage-green { background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%); }
         .usage-yellow { background: linear-gradient(90deg, #eab308 0%, #f59e0b 100%); }
         .usage-red { background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%); }
-        .usage-text { position: absolute; right: 0.5rem; color: #e2e8f0; font-size: 0.75rem; font-weight: 600; }
+        .usage-text { position: absolute; right: 0.5rem; color: var(--text-primary); font-size: 0.75rem; font-weight: 600; }
         body.light-mode .usage-text { color: #1e293b; }
         .log-entry { background: #1e293b; border-left: 3px solid #334155; padding: 1rem; margin-bottom: 0.5rem; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.85rem; }
         body.light-mode .log-entry { background: #ffffff; border-left: 3px solid #e2e8f0; }
@@ -84,7 +94,7 @@
         .log-entry.auth-log-entry { border-left-width: 4px; }
         .log-timestamp { color: #64748b; margin-right: 1rem; }
         .log-process { color: #8b5cf6; margin-right: 1rem; }
-        .log-message { color: #e2e8f0; }
+        .log-message { color: var(--text-primary); }
         body.light-mode .log-message { color: #1e293b; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); }
         .modal.show { display: flex; align-items: center; justify-content: center; }
@@ -101,15 +111,15 @@
         .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid #334155; display: flex; gap: 1rem; justify-content: flex-end; }
         body.light-mode .modal-footer { border-top: 1px solid #e2e8f0; }
         .btn { padding: 0.5rem 1rem; border-radius: 6px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; }
-        .btn-secondary { background: #334155; color: #e2e8f0; }
+        .btn-secondary { background: #334155; color: var(--text-primary); }
         .btn-secondary:hover { background: #475569; }
         body.light-mode .btn-secondary { background: #e2e8f0; color: #1e293b; }
         body.light-mode .btn-secondary:hover { background: #cbd5e1; }
-        .raw-content { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 1rem; font-family: 'Courier New', monospace; font-size: 0.875rem; line-height: 1.6; color: #e2e8f0; white-space: pre-wrap; word-break: break-all; max-height: 60vh; overflow-y: auto; }
+        .raw-content { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 1rem; font-family: 'Courier New', monospace; font-size: 0.875rem; line-height: 1.6; color: var(--text-primary); white-space: pre-wrap; word-break: break-all; max-height: 60vh; overflow-y: auto; }
         body.light-mode .raw-content { background: #f8fafc; border: 1px solid #e2e8f0; color: #1e293b; }
         .title-icon { cursor: pointer; margin-left: 0.5rem; color: #3b82f6; font-size: 1.25rem; vertical-align: middle; }
         .title-icon:hover { color: #60a5fa; }
-        .search-box { width: 100%; padding: 0.75rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0; font-size: 0.875rem; margin-bottom: 1.5rem; transition: background 0.3s, border-color 0.3s, color 0.3s; }
+        .search-box { width: 100%; padding: 0.75rem 1rem; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: var(--text-primary); font-size: 0.875rem; margin-bottom: 1.5rem; transition: background 0.3s, border-color 0.3s, color 0.3s; }
         .search-box:focus { outline: none; border-color: #3b82f6; }
         body.light-mode .search-box { background: #ffffff; border: 1px solid #e2e8f0; color: #1e293b; }
         .flags-toggle { color: #3b82f6; cursor: pointer; text-decoration: underline; font-size: 0.85rem; }
@@ -238,8 +248,8 @@
             <div class="sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar">◀</div>
             <nav>
                 <div class="nav-section"><div class="nav-section-title">Overview</div><div class="nav-item active" data-view="dashboard"><span>📊</span><span class="nav-item-text">Dashboard</span></div><div class="nav-item" data-view="issues"><span>⚠️</span><span class="nav-item-text">Issues</span></div></div>
-                <div class="nav-section"><div class="nav-section-title">System</div><div class="nav-item" data-view="system"><span>💻</span><span class="nav-item-text">System Info</span></div><div class="nav-item" data-view="network"><span>🌐</span><span class="nav-item-text">Network</span></div><div class="nav-item" data-view="storage"><span>💾</span><span class="nav-item-text">Storage</span></div></div>
-                <div class="nav-section"><div class="nav-section-title">N2OS</div><div class="nav-item" data-view="n2os-config"><span>⚙️</span><span class="nav-item-text">N2OS Config</span></div><div class="nav-item" data-view="rc-conf"><span>🔧</span><span class="nav-item-text">RC Config</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">System</div><div class="nav-item" data-view="system"><span>💻</span><span class="nav-item-text">System Info</span></div><div class="nav-item" data-view="network"><span>🌐</span><span class="nav-item-text">Network</span></div><div class="nav-item" data-view="storage"><span>💾</span><span class="nav-item-text">Storage</span></div><div class="nav-item" data-view="database"><span>🗄️</span><span class="nav-item-text">Database</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">N2OS</div><div class="nav-item" data-view="n2os-config"><span>⚙️</span><span class="nav-item-text">N2OS Config</span></div><div class="nav-item" data-view="rc-conf"><span>🔧</span><span class="nav-item-text">RC Config</span></div><div class="nav-item" data-view="n2op-logs"><span>📋</span><span class="nav-item-text">Operations</span></div><div class="nav-item" data-view="health-events"><span>💊</span><span class="nav-item-text">Health Events</span></div></div>
                 <div class="nav-section"><div class="nav-section-title">Logs</div><div class="nav-item" data-view="logs-syslog"><span>📝</span><span class="nav-item-text">System Logs</span></div><div class="nav-item" data-view="logs-nginx"><span>🌐</span><span class="nav-item-text">Nginx Logs</span></div><div class="nav-item" data-view="logs-auth"><span>🔐</span><span class="nav-item-text">Auth Logs</span></div></div>
                 <div class="nav-section"><div class="nav-section-title">Processes</div><div class="nav-item" data-view="processes"><span>🔧</span><span class="nav-item-text">Process List</span></div></div>
             </nav>
@@ -343,19 +353,22 @@
                 case 'system': content.innerHTML = renderSystem(); break;
                 case 'network': content.innerHTML = renderNetwork(); break;
                 case 'storage': content.innerHTML = renderStorage(); break;
+                case 'database': const database = await fetch('/api/database').then(r => r.json()); content.innerHTML = renderDatabase(database); break;
                 case 'logs-syslog': const syslog = await fetch('/api/logs?type=syslog').then(r => r.json()); content.innerHTML = renderLogs(syslog, 'System Logs'); break;
                 case 'logs-nginx': const nginx = await fetch('/api/logs?type=nginx').then(r => r.json()); content.innerHTML = renderNginxLogs(nginx); break;
                 case 'logs-auth': const auth = await fetch('/api/logs?type=auth').then(r => r.json()); content.innerHTML = renderAuthLogs(auth); break;
                 case 'processes': content.innerHTML = renderProcesses(); break;
                 case 'n2os-config': content.innerHTML = renderN2OSConfig(); setupN2OSSearch(); break;
                 case 'rc-conf': content.innerHTML = renderRcConf(); setupRcConfSearch(); break;
+                case 'n2op-logs': const n2oplogs = await fetch('/api/n2op-logs').then(r => r.json()); content.innerHTML = renderN2OpLogs(n2oplogs); setupN2OpLogsHandlers(); break;
+                case 'health-events': const healthevents = await fetch('/api/health-events').then(r => r.json()); content.innerHTML = renderHealthEvents(healthevents); setupHealthEventsHandlers(); break;
             }
         }
 
  function renderDashboard() {
     const { overview, system } = appData;
-    const creationTime = system.CreationTimestamp ? 
-        new Date(system.CreationTimestamp).toLocaleString() + ' (UTC)' : 
+    const creationTime = system.CreationTimestamp ?
+        new Date(system.CreationTimestamp).toUTCString() :
         'Not available';
     
     return `
@@ -378,9 +391,9 @@
             if (!issues || issues.length === 0) return '<div class="section-title">No critical issues detected</div>';
             return `<div class="section-title">Detected Issues (${issues.length})</div>` + issues.map(issue => {
                 if (issue.source === 'zpool') {
-                    return `<div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid ${issue.severity === 'CRITICAL' ? '#ef4444' : '#f59e0b'};"><div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">${issue.title}</div><span class="status-badge status-error">${issue.severity}</span>${issue.errors && issue.errors !== 'No known data errors' ? `<div style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3); margin-top: 1rem;"><div style="color: #fca5a5; font-size: 0.875rem; font-weight: 600;">⚠️ Errors:</div><div style="color: #e2e8f0; font-size: 0.875rem; white-space: pre-wrap; font-family: monospace;">${issue.errors}</div></div>` : ''}</div>`;
+                    return `<div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid ${issue.severity === 'CRITICAL' ? '#ef4444' : '#f59e0b'};"><div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">${issue.title}</div><span class="status-badge status-error">${issue.severity}</span>${issue.errors && issue.errors !== 'No known data errors' ? `<div style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3); margin-top: 1rem;"><div style="color: #fca5a5; font-size: 0.875rem; font-weight: 600;">⚠️ Errors:</div><div style="color: var(--text-primary); font-size: 0.875rem; white-space: pre-wrap; font-family: monospace;">${issue.errors}</div></div>` : ''}</div>`;
                 }
-                return `<div class="card" style="margin-bottom: 1rem; border-left: 4px solid ${issue.severity === 'CRITICAL' || issue.severity === 'FATAL' ? '#ef4444' : '#f59e0b'};"><span class="status-badge status-error">${issue.severity}</span><div style="color: #e2e8f0; margin: 0.5rem 0;">${issue.message}</div></div>`;
+                return `<div class="card" style="margin-bottom: 1rem; border-left: 4px solid ${issue.severity === 'CRITICAL' || issue.severity === 'FATAL' ? '#ef4444' : '#f59e0b'};"><span class="status-badge status-error">${issue.severity}</span><div style="color: var(--text-primary); margin: 0.5rem 0;">${issue.message}</div></div>`;
             }).join('');
         }
 
@@ -392,11 +405,101 @@
 
         function renderSystem() {
     const { system } = appData;
-    const creationTime = system.CreationTimestamp ? 
-        new Date(system.CreationTimestamp).toLocaleString() + ' (UTC)' : 
+    const creationTime = system.CreationTimestamp ?
+        new Date(system.CreationTimestamp).toUTCString() :
         'Not available';
-    
-    return `<div class="section-title">System Information</div><div class="card"><table style="width: 100%;"><tr><td style="padding: 0.5rem; color: #94a3b8;">Product</td><td style="padding: 0.5rem;">${system.Product || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Version</td><td style="padding: 0.5rem;">${system.Version || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Hostname</td><td style="padding: 0.5rem;">${system.Hostname || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Platform</td><td style="padding: 0.5rem;">${system.Platform || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Uptime</td><td style="padding: 0.5rem;">${system.Uptime || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Creation Time</td><td style="padding: 0.5rem;">${creationTime}</td></tr></table></div>`;
+
+    // Format numbers with commas
+    const formatNumber = (num) => num ? num.toLocaleString() : 'N/A';
+
+    // Calculate total network elements
+    const totalElements = system.TotalNodes + system.TotalLinks + system.TotalVariables;
+
+    // Format boot time
+    const bootTime = system.BootTime && system.BootTime !== '0001-01-01T00:00:00Z' ?
+        new Date(system.BootTime).toUTCString() : 'N/A';
+
+    // Render hardware info section
+    const renderHardware = () => {
+        if (!system.CPUModel && !system.CPUCores && !system.PhysicalMemory) {
+            return '';
+        }
+
+        // Merge CPU model and cores into single display
+        const cpuDisplay = system.CPUModel && system.CPUCores ?
+            `${system.CPUModel} (${system.CPUCores} cores)` :
+            system.CPUModel ? system.CPUModel :
+            system.CPUCores ? `${system.CPUCores} cores` : '';
+
+        // Merge memory into single display: Available / Physical
+        const memoryDisplay = system.AvailableMemory && system.PhysicalMemory ?
+            `${system.AvailableMemory} / ${system.PhysicalMemory}` :
+            system.PhysicalMemory ? system.PhysicalMemory :
+            system.AvailableMemory ? system.AvailableMemory : '';
+
+        return `
+            <div class="card" style="margin-top: 1.5rem;">
+                <div class="card-title">Hardware Information</div>
+                <table style="width: 100%;">
+                    ${cpuDisplay ? `<tr><td style="padding: 0.5rem; color: #94a3b8;">CPU</td><td style="padding: 0.5rem;">${cpuDisplay}</td></tr>` : ''}
+                    ${memoryDisplay ? `<tr><td style="padding: 0.5rem; color: #94a3b8;">Memory (Available / Physical)</td><td style="padding: 0.5rem;">${memoryDisplay}</td></tr>` : ''}
+                    ${bootTime !== 'N/A' ? `<tr><td style="padding: 0.5rem; color: #94a3b8;">Boot Time</td><td style="padding: 0.5rem;">${bootTime}</td></tr>` : ''}
+                </table>
+            </div>
+        `;
+    };
+
+    // Render licenses
+    const renderLicenses = () => {
+        if (!system.Licenses || system.Licenses.length === 0) {
+            return '';
+        }
+
+        const licenseRows = system.Licenses.map(license => {
+            const statusColor = license.Status === 'ok' ? '#22c55e' :
+                               license.Status === 'UNLICENSED' ? '#64748b' : '#f59e0b';
+            const expireDate = license.ExpireDate && license.ExpireDate !== '0001-01-01T00:00:00Z' ?
+                new Date(license.ExpireDate).toUTCString() : 'N/A';
+            const nodeUsage = license.ActualLicensedNodes && license.SupportedNodes ?
+                `${license.ActualLicensedNodes} / ${license.SupportedNodes}` : '';
+
+            return `
+                <tr style="border-bottom: 1px solid #334155;">
+                    <td style="padding: 0.5rem; color: var(--text-primary);">${license.Type}</td>
+                    <td style="padding: 0.5rem;"><span style="color: ${statusColor}; font-weight: 600;">${license.Status}</span></td>
+                    <td style="padding: 0.5rem; color: var(--text-primary);">${license.Licensee}</td>
+                    <td style="padding: 0.5rem; color: var(--text-secondary);">${expireDate}</td>
+                    <td style="padding: 0.5rem; color: var(--text-primary);">${nodeUsage}</td>
+                </tr>
+            `;
+        }).join('');
+
+        return `
+            <div class="card" style="margin-top: 1.5rem;">
+                <div class="card-title">Licenses</div>
+                <table style="width: 100%;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #334155;">
+                            <th style="padding: 0.5rem; text-align: left; color: #94a3b8; font-weight: 600; font-size: 0.875rem;">Type</th>
+                            <th style="padding: 0.5rem; text-align: left; color: #94a3b8; font-weight: 600; font-size: 0.875rem;">Status</th>
+                            <th style="padding: 0.5rem; text-align: left; color: #94a3b8; font-weight: 600; font-size: 0.875rem;">Licensee</th>
+                            <th style="padding: 0.5rem; text-align: left; color: #94a3b8; font-weight: 600; font-size: 0.875rem;">Expires</th>
+                            <th style="padding: 0.5rem; text-align: left; color: #94a3b8; font-weight: 600; font-size: 0.875rem;">Node Usage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${licenseRows}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    };
+
+    return `<div class="section-title">System Information</div><div class="card"><table style="width: 100%;"><tr><td style="padding: 0.5rem; color: #94a3b8;">Product</td><td style="padding: 0.5rem;">${system.Product || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Version</td><td style="padding: 0.5rem;">${system.Version || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Hostname</td><td style="padding: 0.5rem;">${system.Hostname || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Platform</td><td style="padding: 0.5rem;">${system.Platform || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Machine ID</td><td style="padding: 0.5rem;">${system.MachineID || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Uptime</td><td style="padding: 0.5rem;">${system.Uptime || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Creation Time</td><td style="padding: 0.5rem;">${creationTime}</td></tr></table></div>
+    ${renderHardware()}
+    ${system.TotalNodes > 0 ? `<div class="card" style="margin-top: 1.5rem;"><div class="card-title"> Network Element</div><table style="width: 100%;"><tr><td style="padding: 0.5rem; color: #94a3b8;">Nodes</td><td style="padding: 0.5rem; color: #94a3b8;">Links</td><td style="padding: 0.5rem; color: #94a3b8;">Variables</td><td style="padding: 0.5rem; color: #94a3b8;">Total</td></tr><tr><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(system.TotalNodes)} (${((system.TotalNodes / totalElements) * 100).toFixed(1)}%)</td><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(system.TotalLinks)} (${((system.TotalLinks / totalElements) * 100).toFixed(1)}%)</td><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(system.TotalVariables)} (${((system.TotalVariables / totalElements) * 100).toFixed(1)}%)</td><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(totalElements)}</td></tr></table></div>` : ''}
+    ${renderLicenses()}`;
+
 }
 
         function renderNetwork() {
@@ -421,6 +524,10 @@
                         <tr>
                             <td style="padding: 0.5rem; color: #94a3b8;">Default Gateway</td>
                             <td style="padding: 0.5rem;">${network.DefaultGW || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.5rem; color: #94a3b8;">DNS Servers</td>
+                            <td style="padding: 0.5rem;">${network.DNS || 'N/A'}</td>
                         </tr>
                     </table>
                 </div>
@@ -498,7 +605,158 @@
         function renderStorage() {
             const { storage } = appData;
             const isVSeries = appData.system.Platform && appData.system.Platform.includes('V-Series');
-            return `${storage.ZfsList && storage.ZfsList.length > 0 ? `<div class="section-title">ZFS Datasets</div><table class="data-table" style="margin-bottom: 2rem;"><thead><tr><th>Dataset</th><th>Used</th><th>Available</th><th>Referenced</th><th style="min-width: 180px;">Usage</th><th>Mount Point</th></tr></thead><tbody>${storage.ZfsList.map(ds => { const percent = ds.UsedPercent.toFixed(1); let colorClass = 'usage-green'; if (ds.UsedPercent > 85) colorClass = 'usage-red'; else if (ds.UsedPercent > 70) colorClass = 'usage-yellow'; return `<tr><td style="font-weight: 500;">${ds.Name}</td><td>${ds.Used}</td><td>${ds.Available}</td><td>${ds.Refer}</td><td><div class="usage-bar"><div class="usage-bar-fill ${colorClass}" style="width: ${percent}%">${percent > 10 ? percent + '%' : ''}</div><span class="usage-text">${percent}%</span></div></td><td>${ds.MountPoint}</td></tr>`; }).join('')}</tbody></table>` : ''}<div class="section-title">ZFS Pools</div>${(storage.ZpoolStatus || []).map(pool => { const isHealthy = pool.State === 'ONLINE'; const stateColor = isHealthy ? '#22c55e' : '#ef4444'; const hasErrors = pool.Errors && pool.Errors !== 'No known data errors'; return `<div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid ${stateColor};"><div class="card-title">Pool: ${pool.Pool}</div><table style="width: 100%; margin-bottom: 1rem;"><tr><td style="padding: 0.5rem; color: #94a3b8;">State</td><td style="padding: 0.5rem;"><span class="status-badge ${isHealthy ? 'status-info' : 'status-error'}" style="background: ${isHealthy ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)'}; color: ${isHealthy ? '#86efac' : '#fca5a5'};">${pool.State}</span></td></tr></table>${hasErrors ? `<div style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3);"><div style="color: #fca5a5; font-size: 0.875rem; font-weight: 600;">⚠️ Error Details:</div><div style="color: #e2e8f0; font-size: 0.85rem; white-space: pre-wrap; font-family: monospace; max-height: 300px; overflow-y: auto;">${pool.Errors}</div></div>` : ''}</div>`; }).join('')}${!isVSeries && (storage.DiskInfo || []).length > 0 ? `<div class="section-title">Disk Health (SMART)</div><table class="data-table"><thead><tr><th>Device</th><th>Model</th><th>Capacity</th><th>Health</th><th>Temperature</th><th>Power On Hours</th></tr></thead><tbody>${storage.DiskInfo.map(disk => `<tr><td>${disk.Device}</td><td>${disk.Model || 'N/A'}</td><td>${disk.Capacity || 'N/A'}</td><td><span class="status-badge ${disk.Health === 'PASSED' ? 'status-info' : 'status-error'}">${disk.Health || 'Unknown'}</span></td><td>${disk.Temperature ? disk.Temperature + '°C' : 'N/A'}</td><td>${disk.PowerOnHours || 'N/A'}</td></tr>`).join('')}</tbody></table>` : ''}`;
+            return `${storage.ZfsList && storage.ZfsList.length > 0 ? `<div class="section-title">ZFS Datasets</div><table class="data-table" style="margin-bottom: 2rem;"><thead><tr><th>Dataset</th><th>Used</th><th>Available</th><th>Referenced</th><th style="min-width: 180px;">Usage</th><th>Mount Point</th></tr></thead><tbody>${storage.ZfsList.map(ds => { const percent = ds.UsedPercent.toFixed(1); let colorClass = 'usage-green'; if (ds.UsedPercent > 85) colorClass = 'usage-red'; else if (ds.UsedPercent > 70) colorClass = 'usage-yellow'; return `<tr><td style="font-weight: 500;">${ds.Name}</td><td>${ds.Used}</td><td>${ds.Available}</td><td>${ds.Refer}</td><td><div class="usage-bar"><div class="usage-bar-fill ${colorClass}" style="width: ${percent}%">${percent > 10 ? percent + '%' : ''}</div><span class="usage-text">${percent}%</span></div></td><td>${ds.MountPoint}</td></tr>`; }).join('')}</tbody></table>` : ''}<div class="section-title">ZFS Pools</div>${(storage.ZpoolStatus || []).map(pool => { const isHealthy = pool.State === 'ONLINE'; const stateColor = isHealthy ? '#22c55e' : '#ef4444'; const hasErrors = pool.Errors && pool.Errors !== 'No known data errors'; return `<div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid ${stateColor};"><div class="card-title">Pool: ${pool.Pool}</div><table style="width: 100%; margin-bottom: 1rem;"><tr><td style="padding: 0.5rem; color: #94a3b8;">State</td><td style="padding: 0.5rem;"><span class="status-badge ${isHealthy ? 'status-info' : 'status-error'}" style="background: ${isHealthy ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)'}; color: ${isHealthy ? '#86efac' : '#fca5a5'};">${pool.State}</span></td></tr></table>${hasErrors ? `<div style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3);"><div style="color: #fca5a5; font-size: 0.875rem; font-weight: 600;">⚠️ Error Details:</div><div style="color: var(--text-primary); font-size: 0.85rem; white-space: pre-wrap; font-family: monospace; max-height: 300px; overflow-y: auto;">${pool.Errors}</div></div>` : ''}</div>`; }).join('')}${!isVSeries && (storage.DiskInfo || []).length > 0 ? `<div class="section-title">Disk Health (SMART)</div><table class="data-table"><thead><tr><th>Device</th><th>Model</th><th>Capacity</th><th>Health</th><th>Temperature</th><th>Power On Hours</th></tr></thead><tbody>${storage.DiskInfo.map(disk => `<tr><td>${disk.Device}</td><td>${disk.Model || 'N/A'}</td><td>${disk.Capacity || 'N/A'}</td><td><span class="status-badge ${disk.Health === 'PASSED' ? 'status-info' : 'status-error'}">${disk.Health || 'Unknown'}</span></td><td>${disk.Temperature ? disk.Temperature + '°C' : 'N/A'}</td><td>${disk.PowerOnHours || 'N/A'}</td></tr>`).join('')}</tbody></table>` : ''}`;
+        }
+
+        let dbSortColumn = 'size';
+        let dbSortDirection = 'desc';
+        let dbCurrentData = null;
+
+        function renderDatabase(database) {
+            if (!database || !database.Tables || database.Tables.length === 0) {
+                return '<div class="section-title">Database Diagnostics</div><div class="card"><p>No database diagnostic data available.</p></div>';
+            }
+
+            // Store data for sorting
+            dbCurrentData = database;
+
+            const sortedTables = sortDatabaseTables([...database.Tables], dbSortColumn, dbSortDirection);
+
+            return `
+                <div class="section-title">PostgreSQL Database Diagnostics</div>
+
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">Total Database Size</div>
+                            <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary);">${database.TotalSize}</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">Total Tables</div>
+                            <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary);">${database.Tables.length}</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">Issues Detected</div>
+                            <div style="font-size: 1.5rem; font-weight: 600; color: ${database.IssuesCount > 0 ? '#f59e0b' : '#22c55e'};">${database.IssuesCount}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title">Database Tables</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortDatabaseBy('name')" style="cursor: pointer; user-select: none;">
+                                Table Name ${dbSortColumn === 'name' ? (dbSortDirection === 'asc' ? '▲' : '▼') : ''}
+                            </th>
+                            <th onclick="sortDatabaseBy('size')" style="cursor: pointer; user-select: none;">
+                                Size ${dbSortColumn === 'size' ? (dbSortDirection === 'asc' ? '▲' : '▼') : ''}
+                            </th>
+                            <th onclick="sortDatabaseBy('live')" style="cursor: pointer; user-select: none;">
+                                Live Tuples ${dbSortColumn === 'live' ? (dbSortDirection === 'asc' ? '▲' : '▼') : ''}
+                            </th>
+                            <th onclick="sortDatabaseBy('dead')" style="cursor: pointer; user-select: none;">
+                                Dead Tuples ${dbSortColumn === 'dead' ? (dbSortDirection === 'asc' ? '▲' : '▼') : ''}
+                            </th>
+                            <th>Last Vacuum</th>
+                            <th>Last Autovacuum</th>
+                            <th onclick="sortDatabaseBy('status')" style="cursor: pointer; user-select: none;">
+                                Status ${dbSortColumn === 'status' ? (dbSortDirection === 'asc' ? '▲' : '▼') : ''}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="db-table-body">
+                        ${sortedTables.map(table => renderDatabaseTableRow(table)).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderDatabaseTableRow(table) {
+            const rowStyle = table.IsOversized || table.NeedsVacuum ? 'background: rgba(245, 158, 11, 0.1);' : '';
+            const sizeColor = table.IsOversized ? '#f59e0b' : '#e2e8f0';
+            const deadTuplesColor = table.NeedsVacuum ? '#f59e0b' : '#94a3b8';
+
+            let statusBadge = '';
+            if (table.IsOversized && table.NeedsVacuum) {
+                statusBadge = '<span style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">⚠️ OVERSIZED + VACUUM</span>';
+            } else if (table.IsOversized) {
+                statusBadge = '<span style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">⚠️ OVERSIZED</span>';
+            } else if (table.NeedsVacuum) {
+                statusBadge = '<span style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">⚠️ NEEDS VACUUM</span>';
+            } else {
+                statusBadge = '<span style="color: #22c55e;">✓ OK</span>';
+            }
+
+            return `
+                <tr style="${rowStyle}">
+                    <td style="font-weight: 500;">${table.TableName}</td>
+                    <td style="color: ${sizeColor}; font-weight: 500;">${table.Size}</td>
+                    <td style="color: #94a3b8;">${table.LiveTuples > 0 ? table.LiveTuples.toLocaleString() : '-'}</td>
+                    <td style="color: ${deadTuplesColor}; font-weight: ${table.NeedsVacuum ? '600' : 'normal'};">${table.DeadTuples > 0 ? table.DeadTuples.toLocaleString() : '-'}</td>
+                    <td style="color: #94a3b8; font-size: 0.875rem;">${table.LastVacuum || '-'}</td>
+                    <td style="color: #94a3b8; font-size: 0.875rem;">${table.LastAutovacuum || '-'}</td>
+                    <td>${statusBadge}</td>
+                </tr>
+            `;
+        }
+
+        function sortDatabaseBy(column) {
+            if (dbSortColumn === column) {
+                // Toggle direction if same column
+                dbSortDirection = dbSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                // New column, default to descending (except for name)
+                dbSortColumn = column;
+                dbSortDirection = column === 'name' ? 'asc' : 'desc';
+            }
+
+            if (dbCurrentData) {
+                const sortedTables = sortDatabaseTables([...dbCurrentData.Tables], dbSortColumn, dbSortDirection);
+                const tbody = document.getElementById('db-table-body');
+                if (tbody) {
+                    tbody.innerHTML = sortedTables.map(table => renderDatabaseTableRow(table)).join('');
+                }
+            }
+        }
+
+        function sortDatabaseTables(tables, column, direction) {
+            const sorted = tables.sort((a, b) => {
+                let aVal, bVal;
+
+                switch (column) {
+                    case 'name':
+                        aVal = a.TableName.toLowerCase();
+                        bVal = b.TableName.toLowerCase();
+                        return direction === 'asc'
+                            ? aVal.localeCompare(bVal)
+                            : bVal.localeCompare(aVal);
+                    case 'size':
+                        aVal = a.SizeBytes;
+                        bVal = b.SizeBytes;
+                        break;
+                    case 'live':
+                        aVal = a.LiveTuples;
+                        bVal = b.LiveTuples;
+                        break;
+                    case 'dead':
+                        aVal = a.DeadTuples;
+                        bVal = b.DeadTuples;
+                        break;
+                    case 'status':
+                        // Sort by issue severity: both issues > oversized > vacuum > ok
+                        aVal = (a.IsOversized && a.NeedsVacuum) ? 3 : (a.IsOversized ? 2 : (a.NeedsVacuum ? 1 : 0));
+                        bVal = (b.IsOversized && b.NeedsVacuum) ? 3 : (b.IsOversized ? 2 : (b.NeedsVacuum ? 1 : 0));
+                        break;
+                    default:
+                        aVal = a.SizeBytes;
+                        bVal = b.SizeBytes;
+                }
+
+                return direction === 'asc' ? aVal - bVal : bVal - aVal;
+            });
+
+            return sorted;
         }
 
         function renderLogs(logs, title) {
@@ -515,7 +773,7 @@ function renderAuthLogs(logs) {
             <div class="section-title" style="margin-bottom: 1rem;">Authentication Logs (${logs.length} entries)</div>
             <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
                 <input type="text" class="search-box" id="auth-search" placeholder="Search auth logs..." style="flex: 1; min-width: 200px;">
-                <select id="auth-event-type" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0;">
+                <select id="auth-event-type" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: var(--text-primary);">
                     <option value="">All Event Types</option>
                     <option value="sudo">Sudo Commands</option>
                     <option value="ssh_success">SSH Success</option>
@@ -525,7 +783,7 @@ function renderAuthLogs(logs) {
                     <option value="security">Security Events</option>
                     <option value="other">Other</option>
                 </select>
-                <select id="auth-level" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0;">
+                <select id="auth-level" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: var(--text-primary);">
                     <option value="">All Levels</option>
                     <option value="INFO">Info</option>
                     <option value="WARNING">Warning</option>
@@ -793,7 +1051,406 @@ function renderAuthLogs(logs) {
             icon.textContent = isLight ? '🌙' : '☀️';
         }
 
-        init(); 
+        // N2Op Logs rendering with pagination
+        let n2opCurrentPage = 1;
+        let n2opPageSize = 50;
+        let n2opAllLogs = [];
+        let n2opFilteredLogs = [];
+
+        function renderN2OpLogs(logs) {
+            n2opAllLogs = logs || [];
+            n2opFilteredLogs = [...n2opAllLogs];
+            n2opCurrentPage = 1;
+
+            const upgrades = logs.filter(l => l.EventType === 'upgrade_complete');
+            const upgradeTimeline = upgrades.length > 0 ? `
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-title">Upgrade History</div>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        ${upgrades.map(u => `
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: rgba(59, 130, 246, 0.1); border-radius: 6px; border-left: 3px solid #3b82f6;">
+                                <span style="color: #64748b; font-size: 0.85rem;">${new Date(u.Timestamp).toUTCString()}</span>
+                                <span style="color: var(--text-primary); font-weight: 500;">${u.FromVersion}</span>
+                                <span style="color: #64748b;">→</span>
+                                <span style="color: #86efac; font-weight: 500;">${u.ToVersion}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : '';
+
+            return `
+                <div class="section-title">N2OS Operations Log (${logs.length} entries)</div>
+                ${upgradeTimeline}
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <input type="text" class="search-box" id="n2op-search" placeholder="Search operations..." style="flex: 1; min-width: 200px; margin: 0;">
+                    <select id="n2op-event-type" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: var(--text-primary);">
+                        <option value="">All Event Types</option>
+                        <option value="upgrade_start">Upgrade Start</option>
+                        <option value="upgrade_complete">Upgrade Complete</option>
+                        <option value="system_start">System Start</option>
+                        <option value="system_stop">System Stop</option>
+                        <option value="service_start">Service Start</option>
+                        <option value="service_stop">Service Stop</option>
+                        <option value="heartbeat">Heartbeat</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <select id="n2op-page-size" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: var(--text-primary);">
+                        <option value="25">25 per page</option>
+                        <option value="50" selected>50 per page</option>
+                        <option value="100">100 per page</option>
+                        <option value="200">200 per page</option>
+                    </select>
+                </div>
+                <div id="n2op-logs-container"></div>
+                <div id="n2op-pagination" style="margin-top: 1.5rem; display: flex; justify-content: center; align-items: center; gap: 1rem;"></div>
+            `;
+        }
+
+        function renderN2OpLogsPage() {
+            const container = document.getElementById('n2op-logs-container');
+            const pagination = document.getElementById('n2op-pagination');
+
+            if (!container || !pagination) return;
+
+            const totalPages = Math.ceil(n2opFilteredLogs.length / n2opPageSize);
+            const startIdx = (n2opCurrentPage - 1) * n2opPageSize;
+            const endIdx = Math.min(startIdx + n2opPageSize, n2opFilteredLogs.length);
+            const pageEntries = n2opFilteredLogs.slice(startIdx, endIdx);
+
+            // Render log entries
+            container.innerHTML = pageEntries.map(log => renderN2OpLogEntry(log)).join('');
+
+            // Render pagination controls
+            const prevDisabled = n2opCurrentPage === 1;
+            const nextDisabled = n2opCurrentPage === totalPages || totalPages === 0;
+
+            pagination.innerHTML = `
+                <button class="btn btn-secondary" onclick="n2opChangePage(${n2opCurrentPage - 1})" ${prevDisabled ? 'disabled' : ''}>← Previous</button>
+                <span style="color: var(--text-primary);">Page ${n2opCurrentPage} of ${totalPages || 1} (${n2opFilteredLogs.length} entries)</span>
+                <button class="btn btn-secondary" onclick="n2opChangePage(${n2opCurrentPage + 1})" ${nextDisabled ? 'disabled' : ''}>Next →</button>
+            `;
+        }
+
+        function renderN2OpLogEntry(log) {
+            let icon = '📄';
+            let borderColor = '#334155';
+            let bgColor = 'rgba(51, 65, 85, 0.2)';
+
+            switch (log.EventType) {
+                case 'upgrade_start':
+                    icon = '🔄';
+                    borderColor = '#3b82f6';
+                    bgColor = 'rgba(59, 130, 246, 0.1)';
+                    break;
+                case 'upgrade_complete':
+                    icon = '✅';
+                    borderColor = '#22c55e';
+                    bgColor = 'rgba(34, 197, 94, 0.1)';
+                    break;
+                case 'system_start':
+                    icon = '🚀';
+                    borderColor = '#22c55e';
+                    bgColor = 'rgba(34, 197, 94, 0.1)';
+                    break;
+                case 'system_stop':
+                    icon = '🛑';
+                    borderColor = '#ef4444';
+                    bgColor = 'rgba(239, 68, 68, 0.1)';
+                    break;
+                case 'service_start':
+                    icon = '▶️';
+                    borderColor = '#86efac';
+                    break;
+                case 'service_stop':
+                    icon = '⏸️';
+                    borderColor = '#f59e0b';
+                    break;
+                case 'heartbeat':
+                    icon = '💓';
+                    borderColor = '#64748b';
+                    break;
+            }
+
+            let details = '';
+            if (log.EventType === 'upgrade_complete' && log.FromVersion && log.ToVersion) {
+                details = `<div style="margin-top: 0.5rem; padding: 0.5rem; background: ${bgColor}; border-radius: 4px;">
+                    <strong>Upgrade:</strong> ${log.FromVersion} → ${log.ToVersion}
+                </div>`;
+            } else if ((log.EventType === 'service_start' || log.EventType === 'service_stop') && log.Service) {
+                details = `<div style="margin-top: 0.5rem; color: #94a3b8;"><strong>Service:</strong> ${log.Service}</div>`;
+            } else if (log.EventType === 'heartbeat' && log.Version) {
+                details = `<div style="margin-top: 0.5rem; color: #64748b; font-size: 0.85rem;">Version: ${log.Version}</div>`;
+            }
+
+            return `
+                <div class="log-entry" style="border-left-color: ${borderColor}; background: ${bgColor};">
+                    <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                        <span style="font-size: 1.1rem;">${icon}</span>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;">
+                                <span class="log-timestamp">${new Date(log.Timestamp).toUTCString()}</span>
+                                <span class="status-badge status-info" style="font-size: 0.7rem;">${log.EventType}</span>
+                            </div>
+                            <div class="log-message">${log.Message}</div>
+                            ${details}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function n2opChangePage(page) {
+            const totalPages = Math.ceil(n2opFilteredLogs.length / n2opPageSize);
+            if (page < 1 || page > totalPages) return;
+            n2opCurrentPage = page;
+            renderN2OpLogsPage();
+        }
+
+        function setupN2OpLogsHandlers() {
+            const searchBox = document.getElementById('n2op-search');
+            const eventTypeSelect = document.getElementById('n2op-event-type');
+            const pageSizeSelect = document.getElementById('n2op-page-size');
+
+            function filterN2OpLogs() {
+                const query = searchBox.value.toLowerCase();
+                const eventType = eventTypeSelect.value;
+
+                n2opFilteredLogs = n2opAllLogs.filter(log => {
+                    const matchesType = !eventType || log.EventType === eventType;
+                    const matchesSearch = !query ||
+                        log.Message.toLowerCase().includes(query) ||
+                        (log.Service && log.Service.toLowerCase().includes(query)) ||
+                        (log.Version && log.Version.toLowerCase().includes(query)) ||
+                        (log.FromVersion && log.FromVersion.toLowerCase().includes(query)) ||
+                        (log.ToVersion && log.ToVersion.toLowerCase().includes(query));
+                    return matchesType && matchesSearch;
+                });
+
+                n2opCurrentPage = 1;
+                renderN2OpLogsPage();
+            }
+
+            searchBox.addEventListener('input', filterN2OpLogs);
+            eventTypeSelect.addEventListener('change', filterN2OpLogs);
+            pageSizeSelect.addEventListener('change', (e) => {
+                n2opPageSize = parseInt(e.target.value);
+                n2opCurrentPage = 1;
+                renderN2OpLogsPage();
+            });
+
+            // Initial render
+            renderN2OpLogsPage();
+        }
+
+        // Health Events rendering with pagination
+        let healthCurrentPage = 1;
+        let healthPageSize = 50;
+        let healthAllEvents = [];
+        let healthFilteredEvents = [];
+
+        function renderHealthEvents(events) {
+            healthAllEvents = events || [];
+            // Sort by timestamp descending (latest first)
+            healthAllEvents.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+            healthFilteredEvents = [...healthAllEvents];
+            healthCurrentPage = 1;
+
+            // Get statistics
+            const stats = getHealthEventStats(events);
+
+            return `
+                <div class="section-title">Health Events (${events.length} total)</div>
+
+                <!-- Statistics Cards -->
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-title">By Category</div>
+                        ${Object.entries(stats.byCategory).map(([cat, count]) =>
+                            `<div style="display: flex; justify-content: space-between; margin: 0.5rem 0;">
+                                <span>${cat}</span><span style="font-weight: 600;">${count}</span>
+                            </div>`
+                        ).join('')}
+                    </div>
+                    <div class="card">
+                        <div class="card-title">By Severity</div>
+                        ${Object.entries(stats.bySeverity).map(([sev, count]) =>
+                            `<div style="display: flex; justify-content: space-between; margin: 0.5rem 0;">
+                                <span class="status-badge status-${sev}">${sev}</span><span style="font-weight: 600;">${count}</span>
+                            </div>`
+                        ).join('')}
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Appliances</div>
+                        <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">${stats.uniqueAppliances}</div>
+                        <div style="font-size: 0.875rem; color: #64748b;">Unique appliances</div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <input type="text" class="search-box" id="health-search" placeholder="Search events..." style="flex: 1; min-width: 200px; margin: 0;">
+                    <select id="health-category" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: var(--text-primary);">
+                        <option value="">All Categories</option>
+                        <option value="network">Network</option>
+                        <option value="appliance">Appliance</option>
+                        <option value="system">System</option>
+                        <option value="replication">Replication</option>
+                        <option value="upgrade">Upgrade</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <select id="health-severity" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: var(--text-primary);">
+                        <option value="">All Severities</option>
+                        <option value="info">Info</option>
+                        <option value="warning">Warning</option>
+                        <option value="error">Error</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                    <select id="health-appliance" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: var(--text-primary);">
+                        <option value="">All Appliances</option>
+                        ${[...new Set(events.map(e => e.ApplianceHost).filter(Boolean))].sort().map(host =>
+                            `<option value="${host}">${host}</option>`
+                        ).join('')}
+                    </select>
+                    <select id="health-page-size" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: var(--text-primary);">
+                        <option value="25">25 per page</option>
+                        <option value="50" selected>50 per page</option>
+                        <option value="100">100 per page</option>
+                        <option value="200">200 per page</option>
+                    </select>
+                </div>
+
+                <div id="health-events-container"></div>
+                <div id="health-pagination" style="margin-top: 1.5rem; display: flex; justify-content: center; align-items: center; gap: 1rem;"></div>
+            `;
+        }
+
+        function getHealthEventStats(events) {
+            const stats = {
+                byCategory: {},
+                bySeverity: {},
+                uniqueAppliances: new Set()
+            };
+
+            events.forEach(event => {
+                stats.byCategory[event.Category] = (stats.byCategory[event.Category] || 0) + 1;
+                stats.bySeverity[event.Severity] = (stats.bySeverity[event.Severity] || 0) + 1;
+                if (event.ApplianceHost) {
+                    stats.uniqueAppliances.add(event.ApplianceHost);
+                }
+            });
+
+            stats.uniqueAppliances = stats.uniqueAppliances.size;
+            return stats;
+        }
+
+        function renderHealthEventsPage() {
+            const container = document.getElementById('health-events-container');
+            const pagination = document.getElementById('health-pagination');
+
+            if (!container || !pagination) return;
+
+            const totalPages = Math.ceil(healthFilteredEvents.length / healthPageSize);
+            const startIdx = (healthCurrentPage - 1) * healthPageSize;
+            const endIdx = Math.min(startIdx + healthPageSize, healthFilteredEvents.length);
+            const pageEvents = healthFilteredEvents.slice(startIdx, endIdx);
+
+            // Render event table
+            container.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 8px; overflow: hidden;">
+                    <thead>
+                        <tr style="background: #0f172a; border-bottom: 2px solid #334155;">
+                            <th style="padding: 0.5rem 0.75rem; text-align: left; color: #94a3b8; font-weight: 600; font-size: 0.875rem;">Timestamp</th>
+                            <th style="padding: 0.5rem 0.75rem; text-align: left; color: #94a3b8; font-weight: 600; font-size: 0.875rem;">Appliance</th>
+                            <th style="padding: 0.5rem 0.75rem; text-align: left; color: #94a3b8; font-weight: 600; font-size: 0.875rem;">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${pageEvents.map(event => renderHealthEventEntry(event)).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            // Render pagination controls
+            const prevDisabled = healthCurrentPage === 1;
+            const nextDisabled = healthCurrentPage === totalPages || totalPages === 0;
+
+            pagination.innerHTML = `
+                <button class="btn btn-secondary" onclick="healthChangePage(${healthCurrentPage - 1})" ${prevDisabled ? 'disabled' : ''}>← Previous</button>
+                <span style="color: var(--text-primary);">Page ${healthCurrentPage} of ${totalPages || 1} (${healthFilteredEvents.length} events)</span>
+                <button class="btn btn-secondary" onclick="healthChangePage(${healthCurrentPage + 1})" ${nextDisabled ? 'disabled' : ''}>Next →</button>
+            `;
+        }
+
+        function renderHealthEventEntry(event) {
+            // Build description with additional details
+            let description = event.Description;
+            if (event.Port) {
+                description += ` (Port: ${event.Port})`;
+            }
+            if (event.ApplianceIP) {
+                description += ` [${event.ApplianceIP}]`;
+            }
+
+            return `
+                <tr style="border-bottom: 1px solid #334155;">
+                    <td style="padding: 0.4rem 0.75rem; color: #94a3b8; font-size: 0.875rem; white-space: nowrap;">${new Date(event.Timestamp).toUTCString()}</td>
+                    <td style="padding: 0.4rem 0.75rem; color: #8b5cf6; font-size: 0.875rem;">${event.ApplianceHost || '-'}</td>
+                    <td style="padding: 0.4rem 0.75rem; color: var(--text-primary); font-size: 0.875rem;">${description}</td>
+                </tr>
+            `;
+        }
+
+        function healthChangePage(page) {
+            const totalPages = Math.ceil(healthFilteredEvents.length / healthPageSize);
+            if (page < 1 || page > totalPages) return;
+            healthCurrentPage = page;
+            renderHealthEventsPage();
+        }
+
+        function setupHealthEventsHandlers() {
+            const searchBox = document.getElementById('health-search');
+            const categorySelect = document.getElementById('health-category');
+            const severitySelect = document.getElementById('health-severity');
+            const applianceSelect = document.getElementById('health-appliance');
+            const pageSizeSelect = document.getElementById('health-page-size');
+
+            function filterHealthEvents() {
+                const query = searchBox.value.toLowerCase();
+                const category = categorySelect.value;
+                const severity = severitySelect.value;
+                const appliance = applianceSelect.value;
+
+                healthFilteredEvents = healthAllEvents.filter(event => {
+                    const matchesCategory = !category || event.Category === category;
+                    const matchesSeverity = !severity || event.Severity === severity;
+                    const matchesAppliance = !appliance || event.ApplianceHost === appliance;
+                    const matchesSearch = !query ||
+                        event.Description.toLowerCase().includes(query) ||
+                        (event.ApplianceHost && event.ApplianceHost.toLowerCase().includes(query)) ||
+                        (event.Port && event.Port.toLowerCase().includes(query));
+                    return matchesCategory && matchesSeverity && matchesAppliance && matchesSearch;
+                });
+
+                healthCurrentPage = 1;
+                renderHealthEventsPage();
+            }
+
+            searchBox.addEventListener('input', filterHealthEvents);
+            categorySelect.addEventListener('change', filterHealthEvents);
+            severitySelect.addEventListener('change', filterHealthEvents);
+            applianceSelect.addEventListener('change', filterHealthEvents);
+            pageSizeSelect.addEventListener('change', (e) => {
+                healthPageSize = parseInt(e.target.value);
+                healthCurrentPage = 1;
+                renderHealthEventsPage();
+            });
+
+            // Initial render
+            renderHealthEventsPage();
+        }
+
+        init();
     </script>
 </body>
 </html>
