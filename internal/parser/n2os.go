@@ -48,6 +48,18 @@ func ParseN2OSConfig(baseDir string, data *models.ArchiveData) error {
 	}
 
 	data.N2OSConfig.Settings = settings
+
+	// Extract timezone from settings and set in SystemInfo
+	// Look for "system time tz" setting
+	timezone := "UTC" // Default to UTC if not found
+	for _, setting := range settings {
+		if setting.Key == "system time tz" {
+			timezone = setting.Value
+			break
+		}
+	}
+	data.SystemInfo.Timezone = timezone
+
 	return scanner.Err()
 }
 
@@ -60,10 +72,15 @@ func parseN2OSLine(line string) *models.N2OSSetting {
 
 	var key, value string
 
-	// Special handling for license lines: "license base value" or "license asset_intelligence value"
+	// Special handling for multi-word keys
 	if parts[0] == "license" && len(parts) >= 3 {
-		key = parts[0] + " " + parts[1] // "license base" or "license asset_intelligence"
+		// "license base value" or "license asset_intelligence value"
+		key = parts[0] + " " + parts[1]
 		value = strings.Join(parts[2:], " ")
+	} else if parts[0] == "system" && len(parts) >= 4 && parts[1] == "time" && parts[2] == "tz" {
+		// "system time tz Asia/Tokyo"
+		key = parts[0] + " " + parts[1] + " " + parts[2]
+		value = strings.Join(parts[3:], " ")
 	} else {
 		// Standard key value format
 		key = parts[0]

@@ -250,6 +250,11 @@ func parseArchive(dir string) (*models.ArchiveData, error) {
 		log.Printf("Warning: Error parsing network config: %v", err)
 	}
 
+	// Parse BPF statistics
+	if err := parser.ParseBPFStats(dir, data); err != nil {
+		log.Printf("Warning: Error parsing BPF stats: %v", err)
+	}
+
 	// Parse storage info
 	if err := parser.ParseStorage(dir, data); err != nil {
 		log.Printf("Warning: Error parsing storage info: %v", err)

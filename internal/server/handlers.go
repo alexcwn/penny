@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"penny/internal/models"
 	"sort"
 	"strings"
@@ -119,6 +121,21 @@ func handleNetwork(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, archiveData.NetworkConfig)
+}
+
+// handleBPFStats returns BPF statistics
+func handleBPFStats(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]interface{}{
+		"snapshots":   archiveData.BPFSnapshots,
+		"comparisons": archiveData.BPFComparisons,
+	}
+
+	respondJSON(w, response)
 }
 
 // handleStorage returns storage information
@@ -345,6 +362,50 @@ func handleIssues(w http.ResponseWriter, r *http.Request) {
 				"dead_tuples": table.DeadTuples,
 				"threshold":   table.AutovacuumThreshold,
 				"description": fmt.Sprintf("Table '%s' has %d dead tuples (threshold: %d)", table.TableName, table.DeadTuples, table.AutovacuumThreshold),
+			})
+		}
+	}
+
+	// Check BPF statistics for packet capture issues
+	for _, comp := range archiveData.BPFComparisons {
+		// Flag interfaces with packet drops
+		if comp.DropDelta > 0 {
+			severity := "WARNING"
+			if comp.DropPercentage > 1.0 { // More than 1% drop rate
+				severity = "CRITICAL"
+			}
+
+			issues = append(issues, map[string]interface{}{
+				"severity":        severity,
+				"source":          "bpf",
+				"title":           fmt.Sprintf("Packet drops detected on %s", comp.Interface),
+				"interface":       comp.Interface,
+				"process":         comp.Command,
+				"pid":             comp.PID,
+				"drops":           comp.DropDelta,
+				"drop_rate":       fmt.Sprintf("%.2f pkt/s", comp.DropRate),
+				"drop_percentage": fmt.Sprintf("%.2f%%", comp.DropPercentage),
+				"description":     fmt.Sprintf("Interface %s (PID %d, %s) dropped %d packets (%.2f%%) at %.2f pkt/s", comp.Interface, comp.PID, comp.Command, comp.DropDelta, comp.DropPercentage, comp.DropRate),
+			})
+		}
+
+		// Flag interfaces with significant buffer growth (potential backpressure)
+		if comp.BufferGrowth > 200 { // More than 200% growth
+			severity := "WARNING"
+			if comp.BufferGrowth > 500 { // More than 500% growth is critical
+				severity = "CRITICAL"
+			}
+
+			issues = append(issues, map[string]interface{}{
+				"severity":      severity,
+				"source":        "bpf",
+				"title":         fmt.Sprintf("High buffer growth on %s", comp.Interface),
+				"interface":     comp.Interface,
+				"process":       comp.Command,
+				"pid":           comp.PID,
+				"buffer_growth": fmt.Sprintf("%.0f%%", comp.BufferGrowth),
+				"recv_rate":     fmt.Sprintf("%.2f pkt/s", comp.RecvRate),
+				"description":   fmt.Sprintf("Interface %s (PID %d, %s) has %s buffer growth at %.2f pkt/s receive rate", comp.Interface, comp.PID, comp.Command, fmt.Sprintf("%.0f%%", comp.BufferGrowth), comp.RecvRate),
 			})
 		}
 	}
@@ -587,6 +648,159 @@ func detectAuthSecurityIssues() []map[string]interface{} {
 	}
 
 	return issues
+}
+
+// handleGraphs serves system and network utilization graph PNG files
+func handleGraphs(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	// Extract path from URL: /api/graphs/{type}/{filename}
+	// Examples:
+	//   /api/graphs/interface_port1.rrd-daily.png (network interface)
+	//   /api/graphs/cpu-daily.png (CPU)
+	//   /api/graphs/ram-used-daily.png (RAM)
+	//   /api/graphs/disk-used-daily.png (Disk)
+	pathParts := strings.TrimPrefix(r.URL.Path, "/api/graphs/")
+
+	// Security: validate path to prevent path traversal attacks
+	if strings.Contains(pathParts, "..") {
+		http.Error(w, "Invalid path", http.StatusBadRequest)
+		return
+	}
+
+	// Only allow .png files
+	if !strings.HasSuffix(pathParts, ".png") {
+		http.Error(w, "Only PNG files are allowed", http.StatusBadRequest)
+		return
+	}
+
+	// Get base directory from archive metadata
+	baseDir := archiveData.Metadata.ExtractedPath
+
+	// Determine subdirectory based on filename pattern
+	var graphPath string
+	filename := filepath.Base(pathParts)
+
+	if strings.HasPrefix(filename, "cpu-") {
+		// CPU graphs: health_check/stats/cpu/cpu-{daily,weekly,monthly}.png
+		graphPath = filepath.Join(baseDir, "health_check", "stats", "cpu", filename)
+	} else if strings.HasPrefix(filename, "ram-") {
+		// RAM graphs: health_check/stats/ram/ram-used-{daily,weekly,monthly}.png
+		graphPath = filepath.Join(baseDir, "health_check", "stats", "ram", filename)
+	} else if strings.HasPrefix(filename, "disk-") {
+		// Disk graphs: health_check/stats/disk/disk-used-{daily,weekly,monthly}.png
+		graphPath = filepath.Join(baseDir, "health_check", "stats", "disk", filename)
+	} else if strings.HasPrefix(filename, "interface_") {
+		// Network interface graphs: health_check/stats/net_interfaces/interface_{name}.rrd-{period}.png
+		graphPath = filepath.Join(baseDir, "health_check", "stats", "net_interfaces", filename)
+	} else {
+		http.Error(w, "Unknown graph type", http.StatusBadRequest)
+		return
+	}
+
+	// Check if file exists
+	if _, err := os.Stat(graphPath); os.IsNotExist(err) {
+		http.Error(w, "Graph not found", http.StatusNotFound)
+		return
+	}
+
+	// Set content type for PNG
+	w.Header().Set("Content-Type", "image/png")
+
+	// Serve the PNG file
+	http.ServeFile(w, r, graphPath)
+}
+
+// handleOutputAnalysisCheck checks if the output_analysis.out file exists
+func handleOutputAnalysisCheck(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		respondJSON(w, map[string]bool{"exists": false})
+		return
+	}
+
+	// Construct path to output_analysis.out
+	baseDir := archiveData.Metadata.ExtractedPath
+	outputPath := filepath.Join(baseDir, "health_check", "log_analysis", "output_analysis.out")
+
+	// Check if file exists
+	_, err := os.Stat(outputPath)
+	exists := err == nil
+
+	respondJSON(w, map[string]bool{"exists": exists})
+}
+
+// handleGoAccessCheck checks if the goaccess-out.html file exists
+func handleGoAccessCheck(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		respondJSON(w, map[string]bool{"exists": false})
+		return
+	}
+
+	// Construct path to goaccess-out.html
+	baseDir := archiveData.Metadata.ExtractedPath
+	goAccessPath := filepath.Join(baseDir, "health_check", "log_analysis", "goaccess-out.html")
+
+	// Check if file exists
+	_, err := os.Stat(goAccessPath)
+	exists := err == nil
+
+	respondJSON(w, map[string]bool{"exists": exists})
+}
+
+// handleOutputAnalysis serves the raw output_analysis.out file
+func handleOutputAnalysis(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	// Construct path to output_analysis.out
+	baseDir := archiveData.Metadata.ExtractedPath
+	outputPath := filepath.Join(baseDir, "health_check", "log_analysis", "output_analysis.out")
+
+	// Check if file exists
+	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+		http.Error(w, "Output analysis file not found", http.StatusNotFound)
+		return
+	}
+
+	// Read the file content
+	content, err := os.ReadFile(outputPath)
+	if err != nil {
+		http.Error(w, "Error reading output analysis file", http.StatusInternalServerError)
+		return
+	}
+
+	// Set content type to plain text
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Write(content)
+}
+
+// handleGoAccess serves the goaccess-out.html file
+func handleGoAccess(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	// Construct path to goaccess-out.html
+	baseDir := archiveData.Metadata.ExtractedPath
+	goAccessPath := filepath.Join(baseDir, "health_check", "log_analysis", "goaccess-out.html")
+
+	// Check if file exists
+	if _, err := os.Stat(goAccessPath); os.IsNotExist(err) {
+		http.Error(w, "GoAccess report not found", http.StatusNotFound)
+		return
+	}
+
+	// Set content type to HTML
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// Serve the HTML file
+	http.ServeFile(w, r, goAccessPath)
 }
 
 func respondJSON(w http.ResponseWriter, data interface{}) {

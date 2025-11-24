@@ -146,6 +146,8 @@ type ArchiveData struct {
 	N2OpLogs      []N2OpLogEntry
 	HealthEvents  []HealthEvent
 	Database      DatabaseDiagnostics
+	BPFSnapshots  []BPFSnapshot
+	BPFComparisons []BPFComparison
 }
 
 // ArchiveMetadata contains basic info about the archive
@@ -181,6 +183,7 @@ type SystemInfo struct {
 	MachineID         string
 	FreeBSDRelease    string
 	KernelVersion     string
+	Timezone          string // e.g., "America/New_York", "UTC" (default if not configured)
 	CreationTimestamp time.Time
 	// Asset metrics from meta.json
 	TotalNodes     int // Total discovered network assets
@@ -308,6 +311,46 @@ type NetworkInterface struct {
 	OptionsHex       string
 	Config           string // Original rc.conf config line
 	RawIfconfigBlock string // Raw ifconfig output for this interface
+}
+
+// BPFStat represents a single BPF (Berkeley Packet Filter) statistics entry
+type BPFStat struct {
+	PID        int
+	Interface  string
+	Flags      string
+	Recv       int64 // Packets received
+	Drop       int64 // Packets dropped
+	Match      int64 // Packets matched
+	Sblen      int64 // Send buffer length
+	Hblen      int64 // Hold buffer length
+	Command    string
+	Timestamp  time.Time // When this snapshot was taken
+	SnapshotID string    // Identifier for the snapshot (e.g., filename)
+}
+
+// BPFSnapshot represents a collection of BPF stats at a point in time
+type BPFSnapshot struct {
+	Timestamp time.Time
+	Filename  string
+	Stats     []BPFStat
+}
+
+// BPFComparison represents the delta between two BPF snapshots
+type BPFComparison struct {
+	Interface      string
+	PID            int
+	Command        string
+	RecvDelta      int64
+	DropDelta      int64
+	MatchDelta     int64
+	SblenDelta     int64
+	HblenDelta     int64
+	RecvRate       float64 // Packets per second
+	DropRate       float64 // Packets per second
+	TimeDelta      float64 // Seconds between snapshots
+	DropPercentage float64 // Percentage of packets dropped
+	BufferGrowth   float64 // Percentage growth in send buffer
+	HasIssue       bool    // True if drops > 0 or buffer growth > 200%
 }
 
 // Storage contains storage-related information
