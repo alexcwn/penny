@@ -179,7 +179,9 @@ func handleN2OpLogs(w http.ResponseWriter, r *http.Request) {
 		logs = filtered
 	}
 
-	respondJSON(w, logs)
+	respondJSON(w, map[string]interface{}{
+		"logs": logs,
+	})
 }
 
 // handleHealthEvents returns health events with optional filtering
@@ -745,6 +747,31 @@ func handleGoAccessCheck(w http.ResponseWriter, r *http.Request) {
 
 	// Check if file exists
 	_, err := os.Stat(goAccessPath)
+	exists := err == nil
+
+	respondJSON(w, map[string]bool{"exists": exists})
+}
+
+// handleInterfaceGraphsCheck checks which interfaces have utilization graphs available
+func handleInterfaceGraphsCheck(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		respondJSON(w, map[string]interface{}{"interfaces": []string{}})
+		return
+	}
+
+	// Get the interface name from query parameter
+	interfaceName := r.URL.Query().Get("interface")
+	if interfaceName == "" {
+		http.Error(w, "interface parameter required", http.StatusBadRequest)
+		return
+	}
+
+	// Check if at least one graph file exists for this interface (daily)
+	baseDir := archiveData.Metadata.ExtractedPath
+	graphPath := filepath.Join(baseDir, "health_check", "stats", "net_interfaces",
+		fmt.Sprintf("interface_%s.rrd-daily.png", interfaceName))
+
+	_, err := os.Stat(graphPath)
 	exists := err == nil
 
 	respondJSON(w, map[string]bool{"exists": exists})

@@ -42,6 +42,7 @@ func Start(port int, data *models.ArchiveData) error {
 	http.HandleFunc("/api/output-analysis", handleOutputAnalysis)
 	http.HandleFunc("/api/goaccess-check", handleGoAccessCheck)
 	http.HandleFunc("/api/goaccess", handleGoAccess)
+	http.HandleFunc("/api/interface-graphs-check", handleInterfaceGraphsCheck)
 
 	// Serve static files (dashboard UI)
 	http.Handle("/", http.FileServer(http.FS(staticFS)))

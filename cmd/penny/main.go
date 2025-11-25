@@ -265,6 +265,11 @@ func parseArchive(dir string) (*models.ArchiveData, error) {
 		log.Printf("Warning: Error parsing N2OS config: %v", err)
 	}
 
+	// Parse N2Op logs for upgrade history
+	if err := parser.ParseN2OpLogs(dir, data); err != nil {
+		log.Printf("Warning: Error parsing N2Op logs: %v", err)
+	}
+
 	return data, nil
 }
 

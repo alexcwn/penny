@@ -166,6 +166,74 @@ func mergeInterfaceData(ifconfigInterfaces []models.NetworkInterface, rcConf map
 	return ifconfigInterfaces
 }
 
+// parseDiskUsage parses diskusage.txt content into structured entries
+func parseDiskUsage(content string) []models.DiskUsageEntry {
+	var entries []models.DiskUsageEntry
+
+	lines := strings.Split(content, "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+
+		// Split by tab or multiple spaces
+		fields := strings.Fields(line)
+		if len(fields) < 2 {
+			continue
+		}
+
+		size := fields[0]
+		path := strings.Join(fields[1:], " ")
+
+		// Convert size to bytes for sorting (inline to avoid duplicate function)
+		sizeBytes := convertDiskSizeToBytes(size)
+
+		entries = append(entries, models.DiskUsageEntry{
+			Size:      size,
+			SizeBytes: sizeBytes,
+			Path:      path,
+		})
+	}
+
+	return entries
+}
+
+// convertDiskSizeToBytes converts size strings like "15G", "4.7G", "604M" to bytes
+func convertDiskSizeToBytes(size string) int64 {
+	size = strings.TrimSpace(size)
+	if size == "" {
+		return 0
+	}
+
+	// Get the suffix (last character)
+	suffix := size[len(size)-1:]
+	var multiplier int64 = 1
+
+	switch suffix {
+	case "K", "k":
+		multiplier = 1024
+		size = size[:len(size)-1]
+	case "M", "m":
+		multiplier = 1024 * 1024
+		size = size[:len(size)-1]
+	case "G", "g":
+		multiplier = 1024 * 1024 * 1024
+		size = size[:len(size)-1]
+	case "T", "t":
+		multiplier = 1024 * 1024 * 1024 * 1024
+		size = size[:len(size)-1]
+	}
+
+	// Parse the numeric part
+	value, err := strconv.ParseFloat(size, 64)
+	if err != nil {
+		return 0
+	}
+
+	return int64(value * float64(multiplier))
+}
+
 // ParseStorage parses storage information
 func ParseStorage(baseDir string, data *models.ArchiveData) error {
 	// Parse zpool status
@@ -175,8 +243,11 @@ func ParseStorage(baseDir string, data *models.ArchiveData) error {
 	}
 
 	// Parse disk usage
-	if usage, err := readFile(filepath.Join(baseDir, "diskusage.txt")); err == nil {
-		data.Storage.DiskUsage = usage
+	diskUsagePath := filepath.Join(baseDir, "diskusage.txt")
+	if usage, err := readFile(diskUsagePath); err == nil {
+		data.Storage.DiskUsageRaw = usage
+		// Parse the diskusage entries
+		data.Storage.DiskUsage = parseDiskUsage(usage)
 	}
 
 	// Parse disk free

@@ -136,17 +136,17 @@ type DatabaseDiagnostics struct {
 
 // ArchiveData holds all parsed data from a support archive
 type ArchiveData struct {
-	Metadata      ArchiveMetadata
-	SystemInfo    SystemInfo
-	Logs          Logs
-	Processes     []Process
-	NetworkConfig NetworkConfig
-	Storage       Storage
-	N2OSConfig    N2OSConfig
-	N2OpLogs      []N2OpLogEntry
-	HealthEvents  []HealthEvent
-	Database      DatabaseDiagnostics
-	BPFSnapshots  []BPFSnapshot
+	Metadata          ArchiveMetadata
+	SystemInfo        SystemInfo
+	Logs              Logs
+	Processes         []Process
+	NetworkConfig     NetworkConfig
+	Storage           Storage
+	N2OSConfig     N2OSConfig
+	N2OpLogs       []N2OpLogEntry
+	HealthEvents   []HealthEvent
+	Database       DatabaseDiagnostics
+	BPFSnapshots   []BPFSnapshot
 	BPFComparisons []BPFComparison
 }
 
@@ -353,14 +353,22 @@ type BPFComparison struct {
 	HasIssue       bool    // True if drops > 0 or buffer growth > 200%
 }
 
+// DiskUsageEntry represents a single disk usage entry from diskusage.txt
+type DiskUsageEntry struct {
+	Size      string // Human-readable size (e.g., "15G", "4.7G")
+	SizeBytes int64  // Size in bytes for sorting
+	Path      string // Directory path
+}
+
 // Storage contains storage-related information
 type Storage struct {
-	ZpoolStatus []ZpoolStatus
-	DiskInfo    []DiskInfo
-	DiskUsage   string
-	DiskFree    string
-	Fstab       []FstabEntry
-	ZfsList     []ZfsDataset
+	ZpoolStatus    []ZpoolStatus
+	DiskInfo       []DiskInfo
+	DiskUsage      []DiskUsageEntry // Parsed disk usage entries
+	DiskUsageRaw   string           // Raw diskusage.txt content
+	DiskFree       string
+	Fstab          []FstabEntry
+	ZfsList        []ZfsDataset
 }
 
 // ZpoolStatus represents zpool status output

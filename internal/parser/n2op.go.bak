@@ -110,16 +110,15 @@ func parseN2OpLogFile(path string) ([]models.N2OpLogEntry, error) {
 				entry.EventType = models.N2OpEventUpgradeComplete
 				versionInfo := strings.TrimSpace(matches[1])
 
-				// Check if it's "from X to Y" format - flexible with whitespace
-				fromToCheckRegex := regexp.MustCompile(`^from\s+.+?\s+to\s+`)
-				if fromToCheckRegex.MatchString(versionInfo) {
+				// Check if it's "from X to Y" format
+				if strings.Contains(versionInfo, "from ") && strings.Contains(versionInfo, " to ") {
 					// For chained upgrades (X → Y → Z), extract only the last segment
 					// This represents the most recent actual upgrade performed
 					segments := strings.Split(versionInfo, " → ")
 					lastSegment := strings.TrimSpace(segments[len(segments)-1])
 
 					// Extract from and to versions from the last segment
-					fromToRegex := regexp.MustCompile(`^from\s+(.+?)\s+to\s+(.+?)$`)
+					fromToRegex := regexp.MustCompile(`from\s+(.+?)\s+to\s+(.+?)(?:\s|$)`)
 					fromToMatches := fromToRegex.FindStringSubmatch(lastSegment)
 					if len(fromToMatches) > 2 {
 						entry.FromVersion = strings.TrimSpace(fromToMatches[1])
