@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"penny/internal/models"
+	"penny/internal/validator"
 	"regexp"
 	"sort"
 	"strings"
@@ -39,6 +40,10 @@ func ParseN2OpLogs(baseDir string, data *models.ArchiveData) error {
 	})
 
 	data.N2OpLogs = allEntries
+
+	// Validate upgrade paths and collect violations
+	data.UpgradeViolations = ValidateUpgradePaths(allEntries)
+
 	return nil
 }
 
@@ -223,4 +228,35 @@ func parseN2OpTimestamp(ts string) (time.Time, error) {
 	}
 
 	return time.Time{}, err
+}
+
+// ValidateUpgradePaths validates all upgrade entries and returns violations
+func ValidateUpgradePaths(entries []models.N2OpLogEntry) []models.UpgradeViolation {
+	var violations []models.UpgradeViolation
+
+	for _, entry := range entries {
+		// Only validate upgrade_complete events with both FromVersion and ToVersion
+		if entry.EventType != models.N2OpEventUpgradeComplete {
+			continue
+		}
+
+		// Skip entries without proper version data
+		if entry.FromVersion == "" || entry.ToVersion == "" {
+			continue
+		}
+
+		// Validate the upgrade path
+		errMsg := validator.ValidateUpgradePath(entry.FromVersion, entry.ToVersion)
+		if errMsg != "" {
+			violations = append(violations, models.UpgradeViolation{
+				Timestamp:   entry.Timestamp,
+				FromVersion: entry.FromVersion,
+				ToVersion:   entry.ToVersion,
+				Description: errMsg,
+				DocsURL:     validator.GetDocsURL(entry.ToVersion),
+			})
+		}
+	}
+
+	return violations
 }

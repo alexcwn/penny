@@ -180,8 +180,19 @@ func handleN2OpLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, map[string]interface{}{
-		"logs": logs,
+		"logs":       logs,
+		"violations": archiveData.UpgradeViolations,
 	})
+}
+
+// handleN2OSJobLogs returns N2OS job logs (background tasks)
+func handleN2OSJobLogs(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	respondJSON(w, archiveData.N2OSJobLogs)
 }
 
 // handleHealthEvents returns health events with optional filtering

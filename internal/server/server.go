@@ -36,6 +36,7 @@ func Start(port int, data *models.ArchiveData) error {
 	http.HandleFunc("/api/issues", handleIssues)
 	http.HandleFunc("/api/n2os-config", handleN2OSConfig)
 	http.HandleFunc("/api/n2op-logs", handleN2OpLogs)
+	http.HandleFunc("/api/n2osjobs-logs", handleN2OSJobLogs)
 	http.HandleFunc("/api/health-events", handleHealthEvents)
 	http.HandleFunc("/api/database", handleDatabase)
 	http.HandleFunc("/api/output-analysis-check", handleOutputAnalysisCheck)

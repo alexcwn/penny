@@ -118,11 +118,18 @@
         .usage-yellow { background: linear-gradient(90deg, #eab308 0%, #f59e0b 100%); }
         .usage-red { background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%); }
         .usage-text { position: absolute; right: 0.5rem; color: var(--text-primary); font-size: 0.75rem; font-weight: 600; }
-        .log-entry { background: var(--color-bg-primary); border-left: 3px solid var(--color-border-primary); padding: 0.5rem 0.75rem; margin-bottom: 0.25rem; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.8rem; line-height: 1.3; }
+        .log-entry { background: var(--color-bg-primary); border-left: 3px solid var(--color-border-primary); padding: 0.5rem 0.75rem; margin-bottom: 0.25rem; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.8rem; line-height: 1.3; cursor: pointer; transition: background 0.2s ease; }
         body.dark-mode .log-entry { background: #1e293b; border-left: 3px solid #334155; }
+        .log-entry:hover { background: var(--color-bg-secondary); }
+        body.dark-mode .log-entry:hover { background: #334155; }
         .log-entry.error { border-left-color: #ef4444; }
         .log-entry.warning { border-left-color: #f59e0b; }
         .log-entry.auth-log-entry { border-left-width: 4px; }
+        .log-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; padding-right: 30px; }
+        .log-line::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 30px; background: linear-gradient(to right, transparent, var(--color-bg-primary)); pointer-events: none; }
+        body.dark-mode .log-line::after { background: linear-gradient(to right, transparent, #1e293b); }
+        .log-line.expanded { white-space: pre-wrap; word-break: break-all; padding-right: 0; }
+        .log-line.expanded::after { display: none; }
         .log-timestamp { color: var(--text-muted); margin-right: 1rem; }
         .log-process { color: var(--color-brand-primary); margin-right: 1rem; }
         body.dark-mode .log-process { color: #8b5cf6; }
@@ -146,6 +153,9 @@
         .btn-secondary:hover { background: var(--color-bg-hover); }
         body.dark-mode .btn-secondary { background: #334155; color: #e2e8f0; }
         body.dark-mode .btn-secondary:hover { background: #475569; }
+        select { cursor: pointer; transition: all 0.2s; }
+        select:hover { background: var(--color-bg-hover) !important; }
+        body.dark-mode select:hover { background: #475569 !important; }
         .raw-content { background: var(--color-bg-body); border: 1px solid var(--color-border-primary); border-radius: 8px; padding: 1rem; font-family: 'Courier New', monospace; font-size: 0.875rem; line-height: 1.6; color: var(--text-primary); white-space: pre-wrap; word-break: break-all; max-height: 60vh; overflow-y: auto; }
         body.dark-mode .raw-content { background: #0f172a; border: 1px solid #334155; }
         .title-icon { cursor: pointer; margin-left: 0.5rem; color: var(--color-brand-primary); font-size: 1.25rem; vertical-align: middle; }
@@ -491,7 +501,7 @@
             <nav>
                 <div class="nav-section"><div class="nav-section-title">Overview</div><div class="nav-item active" data-view="dashboard"><span>📊</span><span class="nav-item-text">Dashboard</span></div><div class="nav-item" data-view="issues"><span>⚠️</span><span class="nav-item-text">Issues</span></div></div>
                 <div class="nav-section"><div class="nav-section-title">System</div><div class="nav-item" data-view="system"><span>💻</span><span class="nav-item-text">System Info</span></div><div class="nav-item" data-view="network"><span>🌐</span><span class="nav-item-text">Network</span></div><div class="nav-item" data-view="storage"><span>💾</span><span class="nav-item-text">Storage</span></div><div class="nav-item" data-view="database"><span>🗄️</span><span class="nav-item-text">Database</span></div></div>
-                <div class="nav-section"><div class="nav-section-title">N2OS</div><div class="nav-item" data-view="n2os-config"><span>⚙️</span><span class="nav-item-text">N2OS User Conf</span></div><div class="nav-item" data-view="rc-conf"><span>🔧</span><span class="nav-item-text">RC Config</span></div><div class="nav-item" data-view="n2op-logs"><span>📋</span><span class="nav-item-text">Operations</span></div><div class="nav-item" data-view="health-events"><span>💊</span><span class="nav-item-text">Health Events</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">N2OS</div><div class="nav-item" data-view="n2os-config"><span>⚙️</span><span class="nav-item-text">N2OS User Conf</span></div><div class="nav-item" data-view="rc-conf"><span>🔧</span><span class="nav-item-text">RC Config</span></div><div class="nav-item" data-view="n2op-logs"><span>📋</span><span class="nav-item-text">Operations</span></div><div class="nav-item" data-view="health-events"><span>💊</span><span class="nav-item-text">Health Events</span></div><div class="nav-item" data-view="n2osjobs-logs"><span>⏱️</span><span class="nav-item-text">Background Tasks</span></div></div>
                 <div class="nav-section"><div class="nav-section-title">Logs</div><div class="nav-item" data-view="logs-syslog"><span>📝</span><span class="nav-item-text">System Logs</span></div><div class="nav-item" data-view="logs-nginx"><span>🌐</span><span class="nav-item-text">Nginx Logs</span></div><div class="nav-item" data-view="logs-auth"><span>🔐</span><span class="nav-item-text">Auth Logs</span></div><div class="nav-item" data-view="logs-output-analysis"><span>📄</span><span class="nav-item-text">Output Analysis</span></div><div class="nav-item" data-view="logs-goaccess"><span>📊</span><span class="nav-item-text">GoAccess Report</span></div></div>
                 <div class="nav-section"><div class="nav-section-title">Processes</div><div class="nav-item" data-view="processes"><span>🔧</span><span class="nav-item-text">Process List</span></div></div>
             </nav>
@@ -499,6 +509,7 @@
         <main class="main-content" id="main-content"><div class="loading">Loading data...</div></main>
     </div>
     <div id="raw-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title" id="modal-title">Raw Configuration File</div><button class="modal-close" onclick="closeModal()">×</button></div><div class="modal-body"><div class="raw-content" id="modal-content"></div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="copyModalContent()">📋 Copy</button><button class="btn btn-secondary" onclick="downloadModalContent()">💾 Download</button></div></div></div>
+    <div id="json-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title" id="json-modal-title">JSON Content</div><button class="modal-close" onclick="closeJSONModal()">×</button></div><div class="modal-body"><div class="raw-content" id="json-modal-content"></div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="copyJSONModalContent()">📋 Copy</button><button class="btn btn-secondary" onclick="downloadJSONModalContent()">💾 Download</button></div></div></div>
     <script>
         let appData = {};
         let currentModalData = { content: '', filename: '' };
@@ -654,11 +665,15 @@
                 case 'rc-conf': content.innerHTML = renderRcConf(); setupRcConfSearch(); break;
                 case 'n2op-logs':
                     const n2opdata = await fetch('/api/n2op-logs').then(r => r.json());
-                    if (!checkForRickrollTrigger(n2opdata.logs || n2opdata, 'n2op-logs')) { content.innerHTML = renderN2OpLogs(n2opdata.logs || n2opdata); setupN2OpLogsHandlers(); }
+                    if (!checkForRickrollTrigger(n2opdata.logs || n2opdata, 'n2op-logs')) { content.innerHTML = renderN2OpLogs(n2opdata.logs || n2opdata, n2opdata.violations || []); setupN2OpLogsHandlers(); }
                     break;
                 case 'health-events':
                     const healthevents = await fetch('/api/health-events').then(r => r.json());
                     if (!checkForRickrollTrigger(healthevents, 'health-events')) { content.innerHTML = renderHealthEvents(healthevents); setupHealthEventsHandlers(); }
+                    break;
+                case 'n2osjobs-logs':
+                    const n2osjobs = await fetch('/api/n2osjobs-logs').then(r => r.json());
+                    if (!checkForRickrollTrigger(n2osjobs, 'n2osjobs-logs')) { content.innerHTML = renderN2OSJobLogs(n2osjobs); setupN2OSJobLogsHandlers(); }
                     break;
             }
         }
@@ -834,8 +849,112 @@
         `;
     };
 
+    // Render CMC Configuration
+    const renderCMCConfig = () => {
+        const cmc = system.cmc_config;
+
+        if (!cmc || !cmc.has_config) {
+            return '';
+        }
+
+        // Determine which logo to display
+        const isVantage = cmc.sync_to && cmc.sync_to.includes('vantage.nozominetworks.io');
+        const logoHTML = isVantage
+            ? '<img src="/vantage.ico" style="width: 24px; height: 24px; margin-right: 0.5rem; vertical-align: middle;" alt="Vantage">'
+            : '<img src="/cmc.ico" style="width: 20px; height: 20px; margin-right: 0.25rem; vertical-align: middle;" alt="CMC"><img src="/guardian.ico" style="width: 20px; height: 20px; margin-right: 0.5rem; vertical-align: middle;" alt="Guardian">';
+
+        // Status indicator
+        const enabledIcon = '<span style="color: #22c55e;">✓</span>';
+
+        return `
+            <div class="card" style="margin-top: 1.5rem;">
+                <div class="card-title">${logoHTML}Upstream Connection</div>
+                <table style="width: 100%;">
+                    ${cmc.sync_to ? `
+                    <tr>
+                        <td style="padding: 0.5rem; color: #94a3b8;">Upstream Host</td>
+                        <td style="padding: 0.5rem;">
+                            <a href="${cmc.sync_to}" target="_blank" rel="noopener noreferrer"
+                               style="color: #3b82f6; text-decoration: none; word-break: break-all;">
+                                ${cmc.sync_to} <span style="font-size: 0.75rem;">↗</span>
+                            </a>
+                        </td>
+                    </tr>
+                    ` : ''}
+                    ${cmc.sync_mode ? `
+                    <tr>
+                        <td style="padding: 0.5rem; color: #94a3b8;">Sync Mode</td>
+                        <td style="padding: 0.5rem;">${enabledIcon} ${cmc.sync_mode}</td>
+                    </tr>
+                    ` : ''}
+                    ${cmc.sync_conf_variables ? `
+                    <tr>
+                        <td style="padding: 0.5rem; color: #94a3b8;">Variables</td>
+                        <td style="padding: 0.5rem;">${enabledIcon} <span style="color: #22c55e;">Enabled</span></td>
+                    </tr>
+                    ` : ''}
+                    ${cmc.sync_conf_physical_links ? `
+                    <tr>
+                        <td style="padding: 0.5rem; color: #94a3b8;">Physical Links</td>
+                        <td style="padding: 0.5rem;">${enabledIcon} <span style="color: #22c55e;">Enabled</span></td>
+                    </tr>
+                    ` : ''}
+                    ${cmc.sync_conf_nodes ? `
+                    <tr>
+                        <td style="padding: 0.5rem; color: #94a3b8;">Nodes</td>
+                        <td style="padding: 0.5rem;">${enabledIcon} <span style="color: #22c55e;">Enabled</span></td>
+                    </tr>
+                    ` : ''}
+                    ${cmc.sync_conf_links ? `
+                    <tr>
+                        <td style="padding: 0.5rem; color: #94a3b8;">Links</td>
+                        <td style="padding: 0.5rem;">${enabledIcon} <span style="color: #22c55e;">Enabled</span></td>
+                    </tr>
+                    ` : ''}
+                    ${system.Product && system.Product.toLowerCase().includes('cmc') ? `
+                    <tr>
+                        <td style="padding: 0.5rem; color: #94a3b8;">Deployment Mode</td>
+                        <td style="padding: 0.5rem;">${enabledIcon} <span style="color: #22c55e;">${cmc.multi_context ? 'Multi Context' : 'All-In-One'}</span></td>
+                    </tr>
+                    ` : ''}
+                    ${cmc.send_bundle_without_updating ? `
+                    <tr>
+                        <td style="padding: 0.5rem; color: #94a3b8;">Send Bundle Without Updating</td>
+                        <td style="padding: 0.5rem;">${enabledIcon} <span style="color: #22c55e;">Enabled</span></td>
+                    </tr>
+                    ` : ''}
+                    ${cmc.proxy_enabled ? `
+                    <tr>
+                        <td style="padding: 0.5rem; color: #94a3b8;">Proxy</td>
+                        <td style="padding: 0.5rem;">${enabledIcon} <span style="color: #22c55e;">Enabled</span></td>
+                    </tr>
+                    ${cmc.proxy_host ? `
+                    <tr>
+                        <td style="padding: 0.5rem; color: #94a3b8; padding-left: 2rem;">Proxy Host</td>
+                        <td style="padding: 0.5rem;">${cmc.proxy_host}</td>
+                    </tr>
+                    ` : ''}
+                    ${cmc.proxy_port ? `
+                    <tr>
+                        <td style="padding: 0.5rem; color: #94a3b8; padding-left: 2rem;">Proxy Port</td>
+                        <td style="padding: 0.5rem;">${cmc.proxy_port}</td>
+                    </tr>
+                    ` : ''}
+                    ${cmc.proxy_auth_enabled ? `
+                    <tr>
+                        <td style="padding: 0.5rem; color: #94a3b8; padding-left: 2rem;">Proxy Authentication</td>
+                        <td style="padding: 0.5rem;">${enabledIcon} <span style="color: #22c55e;">Enabled</span></td>
+                    </tr>
+                    ` : ''}
+                    ` : ''}
+                </table>
+            </div>
+        `;
+    };
+
     return `<div class="section-title">System Information</div><div class="card"><table style="width: 100%;"><tr><td style="padding: 0.5rem; color: #94a3b8;">Product</td><td style="padding: 0.5rem;">${system.Product || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Version</td><td style="padding: 0.5rem;">${system.Version || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Hostname</td><td style="padding: 0.5rem;">${system.Hostname || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Platform</td><td style="padding: 0.5rem;">${system.Platform || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Machine ID</td><td style="padding: 0.5rem;">${system.MachineID || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Timezone</td><td style="padding: 0.5rem;">${system.Timezone || 'UTC'}${system.Timezone === 'UTC' ? ' <span style="color: #64748b; font-size: 0.875rem;">(default)</span>' : ''}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Uptime</td><td style="padding: 0.5rem;">${system.Uptime || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Creation Time</td><td style="padding: 0.5rem;">${creationTime}</td></tr></table></div>
     ${renderHardware()}
+    ${renderCMCConfig()}
     ${system.TotalNodes > 0 ? `<div class="card" style="margin-top: 1.5rem;"><div class="card-title"> Network Element</div><table style="width: 100%;"><tr><td style="padding: 0.5rem; color: #94a3b8;">Nodes</td><td style="padding: 0.5rem; color: #94a3b8;">Links</td><td style="padding: 0.5rem; color: #94a3b8;">Variables</td><td style="padding: 0.5rem; color: #94a3b8;">Total</td></tr><tr><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(system.TotalNodes)} (${((system.TotalNodes / totalElements) * 100).toFixed(1)}%)</td><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(system.TotalLinks)} (${((system.TotalLinks / totalElements) * 100).toFixed(1)}%)</td><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(system.TotalVariables)} (${((system.TotalVariables / totalElements) * 100).toFixed(1)}%)</td><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(totalElements)}</td></tr></table></div>` : ''}
     ${renderLicenses()}`;
 
@@ -1361,7 +1480,7 @@
 
         function renderDatabaseTableRow(table) {
             const rowStyle = table.IsOversized || table.NeedsVacuum ? 'background: rgba(245, 158, 11, 0.1);' : '';
-            const sizeColor = table.IsOversized ? '#f59e0b' : '#e2e8f0';
+            const sizeColor = table.IsOversized ? '#f59e0b' : '#64748b';
             const deadTuplesColor = table.NeedsVacuum ? '#f59e0b' : '#94a3b8';
 
             let statusBadge = '';
@@ -1466,7 +1585,7 @@
                 <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
                     <input type="text" class="search-box" id="syslog-search" placeholder="Search logs..." style="flex: 1; min-width: 200px; margin: 0;">
                     <button id="syslog-sort-toggle" class="btn btn-secondary" onclick="toggleSyslogSort()" style="white-space: nowrap;">↓ Newest First</button>
-                    <select id="syslog-page-size" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: var(--text-primary);">
+                    <select id="syslog-page-size" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
                         <option value="25">25 per page</option>
                         <option value="50" selected>50 per page</option>
                         <option value="100">100 per page</option>
@@ -1601,6 +1720,230 @@
 
             // Initial render
             renderSyslogPage();
+        }
+
+        // N2OS Job Logs state
+        let n2osjobsAllLogs = [];
+        let n2osjobsFilteredLogs = [];
+        let n2osjobsCurrentPage = 1;
+        let n2osjobsPageSize = 50;
+        let n2osjobsSortOrder = 'desc'; // 'desc' or 'asc'
+
+        function renderN2OSJobLogs(logs) {
+            // Store logs globally (unsorted - will be sorted in renderN2OSJobsPage)
+            n2osjobsAllLogs = [...logs];
+            n2osjobsFilteredLogs = [...n2osjobsAllLogs];
+            n2osjobsCurrentPage = 1;
+
+            // Load column visibility preferences from localStorage (default to hidden/off)
+            const showSource = localStorage.getItem('n2osjobs_show_source') === 'true';
+            const showLineNumber = localStorage.getItem('n2osjobs_show_line_number') === 'true';
+
+            return `
+                <div class="section-title">Background Tasks (${n2osjobsAllLogs.length} entries)</div>
+
+                <!-- Search and Page Size -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                    <input type="text" class="search-box" id="n2osjobs-search" placeholder="Search tasks..." style="flex: 1; min-width: 200px; margin: 0;">
+                    <button id="n2osjobs-sort-toggle" class="btn btn-secondary" onclick="toggleN2OSJobsSort()" style="white-space: nowrap;">↓ Newest First</button>
+                    <select id="n2osjobs-page-size" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+                        <option value="25">25 per page</option>
+                        <option value="50" selected>50 per page</option>
+                        <option value="100">100 per page</option>
+                        <option value="200">200 per page</option>
+                    </select>
+                </div>
+
+                <!-- Column Toggle Switches -->
+                <div style="display: flex; gap: 1.5rem; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="toggle-source" ${showSource ? 'checked' : ''} onchange="toggleN2OSJobsColumn('source', this.checked)">
+                        <span>Show Source</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="toggle-line-number" ${showLineNumber ? 'checked' : ''} onchange="toggleN2OSJobsColumn('line_number', this.checked)">
+                        <span>Show Line Number</span>
+                    </label>
+                </div>
+
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                    <strong>Search operators:</strong> <code>|</code> (OR), <code>&</code> (AND), <code>!</code> (NOT) &mdash; e.g., <code>SyncTask | UpdateTask</code>, <code>error & timeout</code>, <code>executed ! SyncTask</code>
+                </div>
+
+                <div id="n2osjobs-container"></div>
+                <div id="n2osjobs-pagination" style="margin-top: 1.5rem; display: flex; justify-content: center; align-items: center; gap: 1rem;"></div>
+            `;
+        }
+
+        function renderN2OSJobsPage() {
+            const container = document.getElementById('n2osjobs-container');
+            const pagination = document.getElementById('n2osjobs-pagination');
+
+            if (!container || !pagination) return;
+
+            // Check column visibility from localStorage
+            const showSource = localStorage.getItem('n2osjobs_show_source') === 'true';
+            const showLineNumber = localStorage.getItem('n2osjobs_show_line_number') === 'true';
+
+            // Sort logs based on current sort order
+            const sortedLogs = [...n2osjobsFilteredLogs].sort((a, b) => {
+                const timeA = new Date(a.timestamp).getTime();
+                const timeB = new Date(b.timestamp).getTime();
+                return n2osjobsSortOrder === 'desc' ? timeB - timeA : timeA - timeB;
+            });
+
+            const totalPages = Math.ceil(sortedLogs.length / n2osjobsPageSize);
+            const startIdx = (n2osjobsCurrentPage - 1) * n2osjobsPageSize;
+            const endIdx = Math.min(startIdx + n2osjobsPageSize, sortedLogs.length);
+            const pageLogs = sortedLogs.slice(startIdx, endIdx);
+
+            // Render log entries
+            container.innerHTML = pageLogs.map((log, idx) => {
+                const hasJSON = extractJSON(log.raw_line) !== null;
+                const logId = `n2osjob-${n2osjobsCurrentPage}-${idx}`;
+
+                // Build the columns HTML
+                let columnsHTML = '';
+                if (showSource) {
+                    columnsHTML += `<div style="font-weight: bold; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">Source: ${log.source || 'N/A'}</div>`;
+                }
+                if (showLineNumber) {
+                    columnsHTML += `<div style="font-weight: bold; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">Line: ${log.line_number || 'N/A'}</div>`;
+                }
+
+                return `
+                    <div class="log-entry" data-log-id="${logId}" onclick="toggleLogLine(this)">
+                        ${columnsHTML}
+                        <div class="log-line">${log.raw_line}</div>
+                        ${hasJSON ? `<div style="margin-top: 0.5rem;"><button class="btn btn-secondary json-view-btn" data-log-index="${idx}" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;" title="View JSON" onclick="event.stopPropagation();">🔍</button></div>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            // Add click handlers for JSON view buttons
+            container.querySelectorAll('.json-view-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const idx = parseInt(this.getAttribute('data-log-index'));
+                    const log = pageLogs[idx];
+                    if (log) {
+                        showJSONModal(log.raw_line, log.timestamp);
+                    }
+                });
+            });
+
+            // Render pagination with First/Last buttons
+            const firstDisabled = n2osjobsCurrentPage === 1;
+            const prevDisabled = n2osjobsCurrentPage === 1;
+            const nextDisabled = n2osjobsCurrentPage === totalPages || totalPages === 0;
+            const lastDisabled = n2osjobsCurrentPage === totalPages || totalPages === 0;
+
+            pagination.innerHTML = `
+                <button class="btn btn-secondary" onclick="n2osjobsChangePage(1)" ${firstDisabled ? 'disabled' : ''}>⏮ First</button>
+                <button class="btn btn-secondary" onclick="n2osjobsChangePage(${n2osjobsCurrentPage - 1})" ${prevDisabled ? 'disabled' : ''}>← Previous</button>
+                <span style="color: var(--text-primary);">Page ${n2osjobsCurrentPage} of ${totalPages || 1} (${sortedLogs.length} entries)</span>
+                <button class="btn btn-secondary" onclick="n2osjobsChangePage(${n2osjobsCurrentPage + 1})" ${nextDisabled ? 'disabled' : ''}>Next →</button>
+                <button class="btn btn-secondary" onclick="n2osjobsChangePage(${totalPages || 1})" ${lastDisabled ? 'disabled' : ''}>Last ⏭</button>
+            `;
+        }
+
+        function n2osjobsChangePage(page) {
+            const totalPages = Math.ceil(n2osjobsFilteredLogs.length / n2osjobsPageSize);
+            if (page < 1 || page > totalPages) return;
+            n2osjobsCurrentPage = page;
+            renderN2OSJobsPage();
+        }
+
+        function toggleN2OSJobsSort() {
+            n2osjobsSortOrder = n2osjobsSortOrder === 'desc' ? 'asc' : 'desc';
+
+            // Update button text
+            const sortButton = document.getElementById('n2osjobs-sort-toggle');
+            if (sortButton) {
+                sortButton.textContent = n2osjobsSortOrder === 'desc' ? '↓ Newest First' : '↑ Oldest First';
+            }
+
+            // Re-render current page
+            renderN2OSJobsPage();
+        }
+
+        function toggleN2OSJobsColumn(column, isVisible) {
+            // Save preference to localStorage
+            if (column === 'source') {
+                localStorage.setItem('n2osjobs_show_source', isVisible.toString());
+            } else if (column === 'line_number') {
+                localStorage.setItem('n2osjobs_show_line_number', isVisible.toString());
+            }
+
+            // Re-render to show/hide column
+            renderN2OSJobsPage();
+        }
+
+        function toggleLogLine(logEntry) {
+            const logLine = logEntry.querySelector('.log-line');
+            if (logLine) {
+                logLine.classList.toggle('expanded');
+            }
+        }
+
+        function filterN2OSJobs() {
+            const searchBox = document.getElementById('n2osjobs-search');
+            if (!searchBox) return;
+
+            const searchTerm = searchBox.value.trim();
+
+            n2osjobsFilteredLogs = n2osjobsAllLogs.filter(log => {
+                if (!searchTerm) return true;
+
+                const searchableText = `${log.timestamp} ${log.task_name} ${log.raw_line}`.toLowerCase();
+
+                // Split by OR operator (|) first
+                const orGroups = searchTerm.split('|').map(s => s.trim());
+
+                // For each OR group, check if it matches
+                return orGroups.some(orGroup => {
+                    if (!orGroup) return false;
+
+                    // Split by AND operator (&)
+                    const andTerms = orGroup.split('&').map(s => s.trim());
+
+                    // All AND terms must match
+                    return andTerms.every(term => {
+                        if (!term) return true;
+
+                        // Handle NOT operator (!)
+                        if (term.startsWith('!')) {
+                            const notTerm = term.substring(1).trim().toLowerCase();
+                            return notTerm ? !searchableText.includes(notTerm) : true;
+                        }
+
+                        // Regular term - must be present
+                        return searchableText.includes(term.toLowerCase());
+                    });
+                });
+            });
+
+            n2osjobsCurrentPage = 1;
+            renderN2OSJobsPage();
+        }
+
+        function setupN2OSJobLogsHandlers() {
+            const searchBox = document.getElementById('n2osjobs-search');
+            const pageSizeSelect = document.getElementById('n2osjobs-page-size');
+
+            if (searchBox) {
+                searchBox.addEventListener('input', filterN2OSJobs);
+            }
+
+            if (pageSizeSelect) {
+                pageSizeSelect.addEventListener('change', (e) => {
+                    n2osjobsPageSize = parseInt(e.target.value);
+                    n2osjobsCurrentPage = 1;
+                    renderN2OSJobsPage();
+                });
+            }
+
+            // Initial render
+            renderN2OSJobsPage();
         }
 
         function renderNginxLogs(logs) {
@@ -1738,7 +2081,11 @@ function renderAuthLogs(logs) {
 
             container.innerHTML = window.n2osFilteredSettings.map(setting => {
                 const rawLine = `${setting.Key} ${setting.MaskedValue}`;
-                return `<div class="log-entry">${rawLine}</div>`;
+                return `
+                    <div class="log-entry" onclick="toggleLogLine(this)">
+                        <div class="log-line">${rawLine}</div>
+                    </div>
+                `;
             }).join('');
         }
 
@@ -1857,6 +2204,9 @@ function renderAuthLogs(logs) {
             document.addEventListener('click', (e) => {
                 const modal = document.getElementById('raw-modal');
                 if (e.target === modal) closeModal();
+
+                const jsonModal = document.getElementById('json-modal');
+                if (e.target === jsonModal) closeJSONModal();
             });
         }
 
@@ -1890,6 +2240,83 @@ function renderAuthLogs(logs) {
             const a = document.createElement('a');
             a.href = url;
             a.download = currentModalData.filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // JSON Modal Functions
+        let currentJSONModalData = { content: '', timestamp: '', filename: '' };
+
+        function extractJSON(line) {
+            // Try to find JSON content in the line
+            // First, try to match escaped JSON strings like: notify: [true, "{\"key\":\"value\"}"]
+            const escapedJsonMatch = line.match(/:\s*\[.*?,\s*"(\{\\".+?\})".*?\]/);
+            if (escapedJsonMatch) {
+                try {
+                    // Unescape the JSON string
+                    const unescaped = escapedJsonMatch[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                    const parsed = JSON.parse(unescaped);
+                    return JSON.stringify(parsed, null, 2);
+                } catch (e) {
+                    // Try without additional escaping
+                    try {
+                        const parsed = JSON.parse(escapedJsonMatch[1]);
+                        return JSON.stringify(parsed, null, 2);
+                    } catch (e2) {
+                        // Continue to other patterns
+                    }
+                }
+            }
+
+            // Try to match regular JSON objects or arrays at the end of the line
+            const jsonMatch = line.match(/:\s*(\{[\s\S]*\}|\[[\s\S]*\])\s*$/);
+            if (jsonMatch) {
+                try {
+                    const parsed = JSON.parse(jsonMatch[1]);
+                    return JSON.stringify(parsed, null, 2);
+                } catch (e) {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        function showJSONModal(rawLine, timestamp) {
+            const jsonContent = extractJSON(rawLine);
+            if (!jsonContent) {
+                alert('No valid JSON found in this log entry');
+                return;
+            }
+
+            currentJSONModalData = {
+                content: jsonContent,
+                timestamp: timestamp,
+                filename: `n2osjobs-${timestamp.replace(/[:.]/g, '-')}.json`
+            };
+
+            document.getElementById('json-modal-title').textContent = `JSON Content - ${timestamp}`;
+            document.getElementById('json-modal-content').textContent = jsonContent;
+            document.getElementById('json-modal').classList.add('show');
+        }
+
+        function closeJSONModal() {
+            document.getElementById('json-modal').classList.remove('show');
+        }
+
+        function copyJSONModalContent() {
+            navigator.clipboard.writeText(currentJSONModalData.content).then(() => {
+                alert('JSON copied to clipboard!');
+            }).catch(err => console.error('Failed to copy:', err));
+        }
+
+        function downloadJSONModalContent() {
+            const blob = new Blob([currentJSONModalData.content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = currentJSONModalData.filename;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -1939,23 +2366,79 @@ function renderAuthLogs(logs) {
             return versionParts.slice(0, 3).join('.');
         }
 
-        function renderN2OpLogs(logs) {
+        function toggleViolationDetails(index) {
+            const detailsDiv = document.getElementById(`violation-details-${index}`);
+            const toggleBtn = document.getElementById(`violation-toggle-${index}`);
+            if (detailsDiv.style.display === 'none' || detailsDiv.style.display === '') {
+                detailsDiv.style.display = 'block';
+                toggleBtn.textContent = '▼ Details';
+            } else {
+                detailsDiv.style.display = 'none';
+                toggleBtn.textContent = '▶ Details';
+            }
+        }
+
+        function renderN2OpLogs(logs, violations) {
             n2opAllLogs = logs || [];
             n2opFilteredLogs = [...n2opAllLogs];
             n2opCurrentPage = 1;
+            violations = violations || [];
+
+            // Create violation lookup map
+            const violationMap = {};
+            violations.forEach(v => {
+                const key = `${v.from_version}→${v.to_version}`;
+                violationMap[key] = v;
+            });
 
             const upgrades = logs.filter(l => l.EventType === 'upgrade_complete');
             const upgradeTimeline = upgrades.length > 0 ? `
                 <div class="card" style="margin-bottom: 2rem;">
-                    <div class="card-title">Upgrade History</div>
+                    <div class="card-title">Upgrade History (${upgrades.length} upgrade${upgrades.length > 1 ? 's' : ''}${violations.length > 0 ? `, ⚠️ ${violations.length} violation${violations.length > 1 ? 's' : ''}` : ''})</div>
                     <div style="display: flex; flex-direction: column; gap: 1rem;">
-                        ${upgrades.map(u => {
+                        ${upgrades.map((u, index) => {
+                            const violationKey = `${u.FromVersion}→${u.ToVersion}`;
+                            const violation = violationMap[violationKey];
+                            const hasViolation = !!violation;
+
+                            const borderColor = hasViolation ? '#ef4444' : '#22c55e';
+                            const bgColor = hasViolation ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)';
+                            const icon = hasViolation ? '⚠️' : '✅';
+
                             return `
-                                <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: rgba(59, 130, 246, 0.1); border-radius: 6px; border-left: 3px solid #3b82f6;">
-                                    <span style="color: #64748b; font-size: 0.85rem;">${new Date(u.Timestamp).toUTCString()}</span>
-                                    <span style="color: var(--text-primary); font-weight: 500;">${u.FromVersion}</span>
-                                    <span style="color: #64748b;">→</span>
-                                    <span style="color: #11a246; font-weight: 500;">${u.ToVersion}</span>
+                                <div style="padding: 0.75rem; background: ${bgColor}; border-radius: 6px; border-left: 3px solid ${borderColor};">
+                                    <div style="display: flex; align-items: center; gap: 1rem; justify-content: space-between;">
+                                        <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+                                            <span style="font-size: 1.2rem;">${icon}</span>
+                                            <span style="color: #64748b; font-size: 0.85rem;">${new Date(u.Timestamp).toUTCString()}</span>
+                                            <span style="color: var(--text-primary); font-weight: 500;">${u.FromVersion}</span>
+                                            <span style="color: #64748b;">→</span>
+                                            <span style="color: ${hasViolation ? '#ef4444' : '#22c55e'}; font-weight: 500;">${u.ToVersion}</span>
+                                        </div>
+                                        ${hasViolation ? `
+                                            <button
+                                                id="violation-toggle-${index}"
+                                                onclick="toggleViolationDetails(${index})"
+                                                style="padding: 0.4rem 0.8rem; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 4px; color: #dc2626; cursor: pointer; font-size: 0.85rem; white-space: nowrap;">
+                                                ▶ Details
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                    ${hasViolation ? `
+                                        <div id="violation-details-${index}" style="display: none; margin-top: 0.75rem; padding: 0.75rem; background: rgba(239, 68, 68, 0.15); border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3);">
+                                            <div style="color: #dc2626; font-size: 0.875rem;">
+                                                ${violation.description}
+                                            </div>
+                                            ${violation.docs_url ? `
+                                                <div style="margin-top: 0.75rem;">
+                                                    <a href="${violation.docs_url}" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: none; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                                        📄 View Documentation
+                                                        <span style="font-size: 0.75rem;">↗</span>
+                                                    </a>
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    ` : ''}
                                 </div>
                             `;
                         }).join('')}
@@ -1969,7 +2452,7 @@ function renderAuthLogs(logs) {
                 <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
                     <input type="text" class="search-box" id="n2op-search" placeholder="Search operations... (Supports & | ! operators)" style="flex: 1; min-width: 200px; margin: 0;">
                     <button id="n2op-sort-toggle" class="btn btn-secondary" onclick="toggleN2OpSort()" style="white-space: nowrap;">↓ Newest First</button>
-                    <select id="n2op-page-size" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: var(--text-primary);">
+                    <select id="n2op-page-size" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
                         <option value="25">25 per page</option>
                         <option value="50" selected>50 per page</option>
                         <option value="100">100 per page</option>
@@ -2240,7 +2723,7 @@ function renderAuthLogs(logs) {
                 <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
                     <input type="text" class="search-box" id="health-search" placeholder="Search events..." style="flex: 1; min-width: 200px; margin: 0;">
                     <button id="health-sort-toggle" class="btn btn-secondary" onclick="toggleHealthSort()" style="white-space: nowrap;">↓ Newest First</button>
-                    <select id="health-category" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: var(--text-primary);">
+                    <select id="health-category" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
                         <option value="">All Categories</option>
                         <option value="network">Network</option>
                         <option value="appliance">Appliance</option>
@@ -2249,20 +2732,20 @@ function renderAuthLogs(logs) {
                         <option value="upgrade">Upgrade</option>
                         <option value="other">Other</option>
                     </select>
-                    <select id="health-severity" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: var(--text-primary);">
+                    <select id="health-severity" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
                         <option value="">All Severities</option>
                         <option value="info">Info</option>
                         <option value="warning">Warning</option>
                         <option value="error">Error</option>
                         <option value="critical">Critical</option>
                     </select>
-                    <select id="health-appliance" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: var(--text-primary);">
+                    <select id="health-appliance" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
                         <option value="">All Appliances</option>
                         ${[...new Set(events.map(e => e.ApplianceHost).filter(Boolean))].sort().map(host =>
                             `<option value="${host}">${host}</option>`
                         ).join('')}
                     </select>
-                    <select id="health-page-size" style="padding: 0.75rem; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: var(--text-primary);">
+                    <select id="health-page-size" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
                         <option value="25">25 per page</option>
                         <option value="50" selected>50 per page</option>
                         <option value="100">100 per page</option>

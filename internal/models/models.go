@@ -30,6 +30,15 @@ type N2OpLogEntry struct {
 	RawLine     string // Original log line
 }
 
+// UpgradeViolation represents an invalid upgrade path
+type UpgradeViolation struct {
+	Timestamp   time.Time `json:"timestamp"`
+	FromVersion string    `json:"from_version"`
+	ToVersion   string    `json:"to_version"`
+	Description string    `json:"description"`
+	DocsURL     string    `json:"docs_url,omitempty"`
+}
+
 // HealthEventCategory represents broad categories of health events
 type HealthEventCategory string
 
@@ -134,20 +143,32 @@ type DatabaseDiagnostics struct {
 	IssuesCount int    // Tables needing attention (vacuum or oversized)
 }
 
+// N2OSJobLogEntry represents a parsed n2osjobs.log entry
+type N2OSJobLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	TaskName   string    `json:"task_name"`    // e.g., "IDSApi::CMC::SyncTask"
+	DurationMS float64   `json:"duration_ms"`  // Task execution duration in milliseconds
+	Source     string    `json:"source"`       // Log file source: "jobs", "jobs.0", "jobs.1", etc.
+	LineNumber int       `json:"line_number"`  // Line number within the source file
+	RawLine    string    `json:"raw_line"`     // Original log line
+}
+
 // ArchiveData holds all parsed data from a support archive
 type ArchiveData struct {
-	Metadata          ArchiveMetadata
-	SystemInfo        SystemInfo
-	Logs              Logs
-	Processes         []Process
-	NetworkConfig     NetworkConfig
-	Storage           Storage
-	N2OSConfig     N2OSConfig
-	N2OpLogs       []N2OpLogEntry
-	HealthEvents   []HealthEvent
-	Database       DatabaseDiagnostics
-	BPFSnapshots   []BPFSnapshot
-	BPFComparisons []BPFComparison
+	Metadata           ArchiveMetadata
+	SystemInfo         SystemInfo
+	Logs               Logs
+	Processes          []Process
+	NetworkConfig      NetworkConfig
+	Storage            Storage
+	N2OSConfig         N2OSConfig
+	N2OpLogs           []N2OpLogEntry
+	UpgradeViolations  []UpgradeViolation
+	HealthEvents       []HealthEvent
+	Database           DatabaseDiagnostics
+	BPFSnapshots       []BPFSnapshot
+	BPFComparisons     []BPFComparison
+	N2OSJobLogs        []N2OSJobLogEntry
 }
 
 // ArchiveMetadata contains basic info about the archive
@@ -173,6 +194,32 @@ type License struct {
 	IsDisabled          bool
 }
 
+// CMCConfig contains Central Management Console configuration
+type CMCConfig struct {
+	// Sync configuration
+	SyncTo   string `json:"sync_to"`   // URL of CMC or Vantage
+	SyncMode string `json:"sync_mode"` // e.g., "Send Only Visible Alerts"
+
+	// Sync data types
+	SyncConfVariables     bool `json:"sync_conf_variables"`
+	SyncConfPhysicalLinks bool `json:"sync_conf_physical_links"`
+	SyncConfNodes         bool `json:"sync_conf_nodes"`
+	SyncConfLinks         bool `json:"sync_conf_links"`
+
+	// Advanced settings
+	MultiContext             bool `json:"multi_context"`
+	SendBundleWithoutUpdating bool `json:"send_bundle_without_updating"`
+
+	// Proxy configuration
+	ProxyEnabled     bool   `json:"proxy_enabled"`
+	ProxyHost        string `json:"proxy_host,omitempty"`
+	ProxyPort        string `json:"proxy_port,omitempty"`
+	ProxyAuthEnabled bool   `json:"proxy_auth_enabled"`
+
+	// Configuration availability
+	HasConfig bool `json:"has_config"` // True if any CMC settings found
+}
+
 // SystemInfo contains system-level information
 type SystemInfo struct {
 	Product           string
@@ -190,13 +237,15 @@ type SystemInfo struct {
 	TotalLinks     int // Total network connections between assets
 	TotalVariables int // Custom variables count
 	// Hardware info from sysctl.txt
-	CPUModel       string
-	CPUCores       int
-	PhysicalMemory string // Human-readable (e.g., "16 GB")
+	CPUModel        string
+	CPUCores        int
+	PhysicalMemory  string // Human-readable (e.g., "16 GB")
 	AvailableMemory string // Human-readable
-	BootTime       time.Time
+	BootTime        time.Time
 	// Licenses
 	Licenses []License
+	// CMC Configuration
+	CMCConfig CMCConfig `json:"cmc_config"`
 }
 
 // AuthEventType represents the type of authentication event

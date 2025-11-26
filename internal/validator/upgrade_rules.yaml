@@ -1,0 +1,159 @@
+# Nozomi Networks N2OS Recommended Upgrade Paths
+# This file defines the valid direct upgrade paths from one version to another.
+# Format: source_version -> list of valid target versions
+
+# For each source version, list all versions it can directly upgrade to.
+# Versions are in the format: MAJOR.MINOR.PATCH (without build hashes)
+
+valid_upgrades:
+  # Version 25.x sources
+  "25.5.0": ["25.6.0"]
+  "25.4.0": ["25.5.0", "25.6.0"]
+  "25.3.0": ["25.4.0", "25.5.0", "25.6.0"]
+  "25.2.0": ["25.3.0", "25.4.0", "25.5.0", "25.6.0"]
+  "25.1.0": ["25.2.0", "25.3.0", "25.4.0", "25.5.0", "25.6.0"]
+  "25.0.0": ["25.1.0", "25.2.0", "25.3.0", "25.4.0", "25.5.0", "25.6.0"]
+
+  # Version 24.x sources
+  "24.6.0": ["25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0", "25.5.0", "25.6.0"]
+  "24.5.1": ["24.6.0", "25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0", "25.5.0", "25.6.0"]
+  "24.5.0": ["24.5.1", "24.6.0", "25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0", "25.5.0", "25.6.0"]
+  "24.4.1": ["24.5.0", "24.5.1", "24.6.0", "25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0", "25.5.0", "25.6.0"]
+  "24.4.0": ["24.4.1", "24.5.0", "24.5.1", "24.6.0", "25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0", "25.5.0", "25.6.0"]
+  "24.3.1": ["24.4.0", "24.4.1", "24.5.0", "24.5.1", "24.6.0", "25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0", "25.5.0", "25.6.0"]
+  "24.3.0": ["24.3.1", "24.4.0", "24.4.1", "24.5.0", "24.5.1", "24.6.0", "25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0", "25.5.0", "25.6.0"]
+  "24.2.0": ["24.3.0", "24.3.1", "24.4.0", "24.4.1", "24.5.0", "24.5.1", "24.6.0", "25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0", "25.5.0", "25.6.0"]
+  "24.1.0": ["24.2.0", "24.3.0", "24.3.1", "24.4.0", "24.4.1", "24.5.0", "24.5.1", "24.6.0", "25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0", "25.5.0", "25.6.0"]
+  "24.0.0": ["24.1.0", "24.2.0", "24.3.0", "24.3.1", "24.4.0", "24.4.1", "24.5.0", "24.5.1", "24.6.0", "25.0.0", "25.1.0", "25.2.0", "25.3.0", "25.4.0", "25.5.0", "25.6.0"]
+
+  # Version 23.x sources
+  "23.4.1": ["24.0.0", "24.1.0", "24.2.0", "24.3.0", "24.3.1", "24.4.0", "24.4.1", "24.5.0", "24.5.1", "24.6.0"]
+  "23.4.0": ["23.4.1", "24.0.0", "24.1.0", "24.2.0", "24.3.0", "24.3.1", "24.4.0", "24.4.1", "24.5.0", "24.5.1", "24.6.0"]
+  "23.3.1": ["23.4.0", "23.4.1"]
+  "23.3.0": ["23.3.1", "23.4.0", "23.4.1"]
+  "23.2.0": ["23.3.0", "23.3.1", "23.4.0", "23.4.1"]
+  "23.1.0": ["23.2.0", "23.3.0", "23.3.1", "23.4.0", "23.4.1"]
+  "23.0.0": ["23.1.0", "23.2.0", "23.3.0", "23.3.1", "23.4.0", "23.4.1"]
+
+  # Version 22.x sources
+  "22.6.2": ["23.0.0", "23.1.0", "23.2.0", "23.3.0", "23.3.1"]
+  "22.4.0": ["22.6.2"]
+  "22.3.0": ["22.4.0", "22.6.2"]
+
+  # Version 21.x sources
+  "21.9.0": ["22.3.0", "22.4.0", "22.6.2"]
+  "21.7.0": ["21.9.0"]
+  "21.6.0": ["21.7.0", "21.9.0"]
+
+# Recommended upgrade paths for common scenarios
+# Format: from_version -> to_version -> recommended intermediate steps
+recommended_paths:
+  # To 25.6.0
+  "23.4.0->25.6.0": ["24.5.1"]
+  "23.3.0->25.6.0": ["23.4.1", "24.5.1"]
+
+  # To 25.5.0
+  "23.4.0->25.5.0": ["24.5.1"]
+  "23.3.0->25.5.0": ["23.4.1", "24.5.1"]
+
+  # To 25.4.0
+  "23.4.0->25.4.0": ["24.5.1"]
+  "23.3.0->25.4.0": ["23.4.1", "24.5.1"]
+
+  # To 25.3.0
+  "23.4.0->25.3.0": ["24.5.1"]
+  "23.3.0->25.3.0": ["23.4.1", "24.5.1"]
+
+  # To 25.2.0
+  "23.4.0->25.2.0": ["24.5.1"]
+  "23.3.0->25.2.0": ["23.4.1", "24.5.1"]
+
+  # To 25.1.0
+  "23.4.0->25.1.0": ["24.5.1"]
+  "23.3.0->25.1.0": ["23.4.1", "24.5.1"]
+
+  # To 25.0.0
+  "23.4.0->25.0.0": ["24.5.1"]
+  "23.3.0->25.0.0": ["23.4.1", "24.5.1"]
+
+  # To 24.6.0
+  "23.3.0->24.6.0": ["23.4.1"]
+  "22.6.2->24.6.0": ["23.3.1", "23.4.1"]
+
+  # To 24.5.1
+  "23.3.0->24.5.1": ["23.4.1"]
+  "22.6.2->24.5.1": ["23.3.1", "23.4.1"]
+  "21.9.0->24.5.1": ["22.6.2", "23.3.1", "23.4.1"]
+
+  # To 24.x.x (general)
+  "23.3.0->24.0.0": ["23.4.1"]
+  "23.3.0->24.1.0": ["23.4.1"]
+  "23.3.0->24.2.0": ["23.4.1"]
+  "23.3.0->24.3.0": ["23.4.1"]
+  "23.3.0->24.4.0": ["23.4.1"]
+  "23.3.0->24.4.1": ["23.4.1"]
+  "23.3.0->24.5.0": ["23.4.1"]
+  "22.6.2->24.0.0": ["23.3.1", "23.4.1"]
+  "22.6.2->24.1.0": ["23.3.1", "23.4.1"]
+  "22.6.2->24.2.0": ["23.3.1", "23.4.1"]
+  "22.6.2->24.3.0": ["23.3.1", "23.4.1"]
+  "22.6.2->24.4.0": ["23.3.1", "23.4.1"]
+  "22.6.2->24.4.1": ["23.3.1", "23.4.1"]
+  "22.6.2->24.5.0": ["23.3.1", "23.4.1"]
+  "21.9.0->24.0.0": ["22.6.2", "23.3.1", "23.4.1"]
+  "21.9.0->24.1.0": ["22.6.2", "23.3.1", "23.4.1"]
+  "21.9.0->24.2.0": ["22.6.2", "23.3.1", "23.4.1"]
+  "21.9.0->24.3.0": ["22.6.2", "23.3.1", "23.4.1"]
+  "21.9.0->24.4.0": ["22.6.2", "23.3.1", "23.4.1"]
+  "21.9.0->24.4.1": ["22.6.2", "23.3.1", "23.4.1"]
+  "21.9.0->24.5.0": ["22.6.2", "23.3.1", "23.4.1"]
+
+  # To 23.4.1
+  "22.6.2->23.4.1": ["23.3.1"]
+  "21.9.0->23.4.1": ["22.6.2", "23.3.1"]
+
+  # To 23.4.0
+  "22.6.2->23.4.0": ["23.3.1"]
+  "21.9.0->23.4.0": ["22.6.2", "23.3.1"]
+
+  # To 23.3.1
+  "21.9.0->23.3.1": ["22.6.2"]
+
+  # To 23.3.0
+  "21.9.0->23.3.0": ["22.6.2"]
+
+  # To 23.2.0
+  "22.4.0->23.2.0": ["22.6.2"]
+  "21.9.0->23.2.0": ["22.6.2"]
+
+  # To 23.1.0
+  "21.9.0->23.1.0": ["22.6.2"]
+
+  # To 23.0.0
+  "21.9.0->23.0.0": ["22.6.2"]
+
+# Documentation URLs for each target version
+docs_urls:
+  "25.6.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/25.6.0/r_n2os_release_update_remarks.html"
+  "25.5.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/25.5.0/r_n2os_release_update_remarks.html"
+  "25.4.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/25.4.0/r_n2os_release_update_remarks.html"
+  "25.3.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/25.3.0/r_n2os_release_update_remarks.html"
+  "25.2.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/25.2.0/r_n2os_release_update_remarks.html"
+  "25.1.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/25.1.0/r_n2os_release_update_remarks.html"
+  "25.0.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/25.0.0/r_n2os_release_update_remarks.html"
+  "24.6.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/24.6.0/r_n2os_release_update_remarks.html"
+  "24.5.1": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/24.5.1/r_n2os_release_update_remarks.html"
+  "24.5.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/24.5.0/r_n2os_release_update_remarks.html"
+  "24.4.1": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/24.4.1/r_n2os_release_update_remarks.html"
+  "24.4.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/24.4.0/r_n2os_release_update_remarks.html"
+  "24.3.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/24.3.0/r_n2os_release_update_remarks.html"
+  "24.2.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/24.2.0/r_n2os_release_update_remarks.html"
+  "24.1.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/24.1.0/r_n2os_release_update_remarks.html"
+  "24.0.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/24.0.0/r_n2os_release_update_remarks.html"
+  "23.4.1": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/23.4.1/r_n2os_release_update_remarks.html"
+  "23.4.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/23.4.0/r_n2os_release_update_remarks.html"
+  "23.3.1": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/23.3.1/r_n2os_release_update_remarks.html"
+  "23.3.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/23.3.0/r_n2os_release_update_remarks.html"
+  "23.2.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/23.2.0/r_n2os_release_update_remarks.html"
+  "23.1.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/23.1.0/r_n2os_release_update_remarks.html"
+  "23.0.0": "https://technicaldocs.nozominetworks.com/products/n2os/release-notes/23.0.0/r_n2os_release_update_remarks.html"

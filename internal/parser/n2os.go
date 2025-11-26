@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bufio"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -60,7 +61,98 @@ func ParseN2OSConfig(baseDir string, data *models.ArchiveData) error {
 	}
 	data.SystemInfo.Timezone = timezone
 
+	// Parse CMC configuration
+	data.SystemInfo.CMCConfig = parseCMCConfig(settings)
+
 	return scanner.Err()
+}
+
+// parseCMCConfig extracts CMC configuration from n2os settings
+func parseCMCConfig(settings []models.N2OSSetting) models.CMCConfig {
+	config := models.CMCConfig{
+		HasConfig: false,
+		// Default sync-conf to true (enabled by default)
+		SyncConfVariables:     true,
+		SyncConfPhysicalLinks: true,
+		SyncConfNodes:         true,
+		SyncConfLinks:         true,
+	}
+
+	for _, setting := range settings {
+		// Skip non-CMC settings and token-related settings
+		if !strings.HasPrefix(setting.Key, "cmc") {
+			continue
+		}
+
+		// Skip token fields
+		if strings.Contains(setting.Key, "token") {
+			continue
+		}
+
+		config.HasConfig = true
+
+		// Parse specific CMC settings
+		switch {
+		case setting.Key == "cmc sync-to":
+			// Extract URL from "!https://..." format
+			config.SyncTo = strings.TrimPrefix(setting.Value, "!")
+			// Remove any trailing token/UUID
+			parts := strings.Fields(config.SyncTo)
+			if len(parts) > 0 {
+				config.SyncTo = parts[0]
+			}
+
+		case setting.Key == "cmc sync send_only_visible_alert":
+			if setting.Value == "true" {
+				config.SyncMode = "Send Only Visible Alerts"
+			} else {
+				config.SyncMode = "Send All Alerts"
+			}
+
+		case setting.Key == "cmc multi-context":
+			config.MultiContext = setting.Value == "true"
+
+		case setting.Key == "cmc send_bundle_without_updating":
+			config.SendBundleWithoutUpdating = setting.Value == "true"
+
+		case setting.Key == "cmc sync-conf variables":
+			config.SyncConfVariables = setting.Value != "false"
+
+		case setting.Key == "cmc sync-conf physical_links":
+			config.SyncConfPhysicalLinks = setting.Value != "false"
+
+		case setting.Key == "cmc sync-conf nodes":
+			config.SyncConfNodes = setting.Value != "false"
+
+		case setting.Key == "cmc sync-conf links":
+			config.SyncConfLinks = setting.Value != "false"
+
+		case setting.Key == "cmc proxy-conf":
+			// Parse JSON proxy configuration
+			parseProxyConfig(&config, setting.Value)
+		}
+	}
+
+	return config
+}
+
+// parseProxyConfig parses the JSON proxy configuration
+func parseProxyConfig(config *models.CMCConfig, jsonStr string) {
+	var proxyData struct {
+		Enabled     bool   `json:"enabled"`
+		Host        string `json:"host"`
+		Port        string `json:"port"`
+		AuthEnabled bool   `json:"auth_enabled"`
+	}
+
+	if err := json.Unmarshal([]byte(jsonStr), &proxyData); err != nil {
+		return // Silently ignore parse errors
+	}
+
+	config.ProxyEnabled = proxyData.Enabled
+	config.ProxyHost = proxyData.Host
+	config.ProxyPort = proxyData.Port
+	config.ProxyAuthEnabled = proxyData.AuthEnabled
 }
 
 func parseN2OSLine(line string) *models.N2OSSetting {
@@ -81,6 +173,21 @@ func parseN2OSLine(line string) *models.N2OSSetting {
 		// "system time tz Asia/Tokyo"
 		key = parts[0] + " " + parts[1] + " " + parts[2]
 		value = strings.Join(parts[3:], " ")
+	} else if parts[0] == "cmc" && len(parts) >= 3 {
+		// "cmc sync-to value" or "cmc sync-conf nodes true"
+		if parts[1] == "sync-conf" && len(parts) >= 4 {
+			// "cmc sync-conf nodes true" -> key: "cmc sync-conf nodes", value: "true"
+			key = parts[0] + " " + parts[1] + " " + parts[2]
+			value = strings.Join(parts[3:], " ")
+		} else if parts[1] == "sync" && len(parts) >= 4 {
+			// "cmc sync send_only_visible_alert true" -> key: "cmc sync send_only_visible_alert", value: "true"
+			key = parts[0] + " " + parts[1] + " " + parts[2]
+			value = strings.Join(parts[3:], " ")
+		} else {
+			// "cmc sync-to value" or "cmc multi-context value"
+			key = parts[0] + " " + parts[1]
+			value = strings.Join(parts[2:], " ")
+		}
 	} else {
 		// Standard key value format
 		key = parts[0]

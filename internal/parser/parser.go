@@ -45,5 +45,11 @@ func ParseLogs(dir string, data *models.ArchiveData) error {
 		// Could log this if needed
 	}
 
+	// Parse N2OS job logs
+	if err := ParseN2OSJobLogs(dir, data); err != nil {
+		// Non-fatal error, just skip if files don't exist
+		// Could log this if needed
+	}
+
 	return nil
 }
