@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -58,6 +59,12 @@ func handleLogs(w http.ResponseWriter, r *http.Request) {
 		logs := archiveData.Logs.NginxErrors
 		if level != "" {
 			logs = filterNginxByLevel(logs, level)
+		}
+		result = logs
+	case "nginx-access":
+		logs := archiveData.Logs.NginxAccess
+		if level != "" {
+			logs = filterSyslogByLevel(logs, level)
 		}
 		result = logs
 	case "auth":
@@ -195,6 +202,69 @@ func handleN2OSJobLogs(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, archiveData.N2OSJobLogs)
 }
 
+// handleN2OSMigrateLogs returns N2OS migration logs
+func handleN2OSMigrateLogs(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	respondJSON(w, map[string]interface{}{
+		"summary": archiveData.N2OSMigrateSummary,
+		"entries": archiveData.N2OSMigrateLogs,
+	})
+}
+
+// handleN2OSIDSLogs returns N2OS IDS logs
+func handleN2OSIDSLogs(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	respondJSON(w, archiveData.N2OSIDSLogs)
+}
+
+// handleN2OSIDSEventsLogs returns N2OS IDS events logs
+func handleN2OSIDSEventsLogs(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	respondJSON(w, archiveData.N2OSIDSEventsLogs)
+}
+
+// handleN2OSAlertLogs returns N2OS alert logs
+func handleN2OSAlertLogs(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	respondJSON(w, archiveData.N2OSAlertLogs)
+}
+
+// handleN2OSAlertEventsLogs returns N2OS alert events logs
+func handleN2OSAlertEventsLogs(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	respondJSON(w, archiveData.N2OSAlertEventsLogs)
+}
+
+// handleN2OSProductionLogs returns N2OS production logs
+func handleN2OSProductionLogs(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	respondJSON(w, archiveData.N2OSProductionLogs)
+}
+
 // handleHealthEvents returns health events with optional filtering
 func handleHealthEvents(w http.ResponseWriter, r *http.Request) {
 	if archiveData == nil {
@@ -264,6 +334,54 @@ func handleDatabase(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, archiveData.Database)
+}
+
+// handleDatabaseSampleData returns database sample data
+func handleDatabaseSampleData(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	respondJSON(w, archiveData.DatabaseSampleData)
+}
+
+// handleAppliances returns appliance data with optional filtering
+func handleAppliances(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	// Optional filtering
+	site := r.URL.Query().Get("site")
+	model := r.URL.Query().Get("model")
+
+	appliances := archiveData.Appliances
+
+	// Apply filters if provided
+	if site != "" || model != "" {
+		var filtered []models.Appliance
+		for _, a := range appliances {
+			if (site == "" || a.Site == site) &&
+				(model == "" || a.Model == model) {
+				filtered = append(filtered, a)
+			}
+		}
+		appliances = filtered
+	}
+
+	respondJSON(w, appliances)
+}
+
+// handleN2OSConf returns N2OS configuration data
+func handleN2OSConf(w http.ResponseWriter, r *http.Request) {
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	respondJSON(w, archiveData.N2OSConfData)
 }
 
 // handleOverview returns a summary of key metrics
@@ -839,6 +957,94 @@ func handleGoAccess(w http.ResponseWriter, r *http.Request) {
 
 	// Serve the HTML file
 	http.ServeFile(w, r, goAccessPath)
+}
+
+// handleSaveNotes saves markdown notes to penny_note.md in the archive folder
+func handleSaveNotes(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	// Read request body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Failed to read request body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	// Parse JSON request
+	var request struct {
+		Content string `json:"content"`
+	}
+	if err := json.Unmarshal(body, &request); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	// Get archive folder path
+	folderPath := archiveData.Metadata.ExtractedPath
+	if folderPath == "" {
+		http.Error(w, "Archive folder path not available", http.StatusInternalServerError)
+		return
+	}
+
+	// Create file path
+	notesPath := filepath.Join(folderPath, "penny_note.md")
+
+	// Write notes to file
+	if err := os.WriteFile(notesPath, []byte(request.Content), 0644); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to save notes: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Return success response
+	respondJSON(w, map[string]string{"status": "saved"})
+}
+
+// handleLoadNotes loads markdown notes from penny_note.md in the archive folder
+func handleLoadNotes(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if archiveData == nil {
+		http.Error(w, "No data loaded", http.StatusInternalServerError)
+		return
+	}
+
+	// Get archive folder path
+	folderPath := archiveData.Metadata.ExtractedPath
+	if folderPath == "" {
+		http.Error(w, "Archive folder path not available", http.StatusInternalServerError)
+		return
+	}
+
+	// Create file path
+	notesPath := filepath.Join(folderPath, "penny_note.md")
+
+	// Check if file exists
+	content, err := os.ReadFile(notesPath)
+	if os.IsNotExist(err) {
+		// File doesn't exist yet, return empty content
+		respondJSON(w, map[string]string{"content": ""})
+		return
+	}
+
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to load notes: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Return the content
+	respondJSON(w, map[string]string{"content": string(content)})
 }
 
 func respondJSON(w http.ResponseWriter, data interface{}) {

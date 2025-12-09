@@ -65,12 +65,11 @@ func parseN2OSJobLogFile(path string) ([]models.N2OSJobLogEntry, error) {
 	// Regex patterns for parsing
 	// Example: I, [2025-11-26T01:53:16+00:00  #53354]  INFO -- : IDSApi::CMC::SyncTask executed in 1900.083ms
 	timestampRegex := regexp.MustCompile(`^[A-Z], \[([^\]]+)\]`)
+	// Header format: # Logfile created on 2025-10-01 13:58:10 +0200 by logger.rb/v1.7.0
+	headerRegex := regexp.MustCompile(`^# Logfile created on (.+?) by`)
 	executedRegex := regexp.MustCompile(`(IDSApi::[A-Za-z:]+Task) executed in ([\d.]+)ms`)
 
-	// Cache to hold the last valid timestamp for entries without timestamps
-	var lastTimestamp time.Time
-
-	// Line number counter (counts non-empty lines only)
+	// Line number counter (only increments for lines with timestamps)
 	lineNumber := 0
 
 	for scanner.Scan() {
@@ -79,37 +78,62 @@ func parseN2OSJobLogFile(path string) ([]models.N2OSJobLogEntry, error) {
 			continue
 		}
 
-		// Increment line number for each non-empty line
-		lineNumber++
+		// Check for header line first
+		headerMatch := headerRegex.FindStringSubmatch(line)
+		if len(headerMatch) > 1 {
+			// Line is a log file header - create new entry
+			lineNumber++
 
-		entry := models.N2OSJobLogEntry{
-			RawLine:    line,
-			Source:     source,
-			LineNumber: lineNumber,
+			entry := models.N2OSJobLogEntry{
+				RawLine:    line,
+				Source:     source,
+				LineNumber: lineNumber,
+			}
+
+			// Parse header timestamp format: "2025-10-01 13:58:10 +0200"
+			if ts, err := parseLogHeaderTimestamp(headerMatch[1]); err == nil {
+				entry.Timestamp = ts
+			}
+
+			entries = append(entries, entry)
+			continue
 		}
 
-		// Parse timestamp
+		// Parse regular log timestamp to determine if this is a new entry or continuation
 		timestampMatch := timestampRegex.FindStringSubmatch(line)
 		if len(timestampMatch) > 1 {
+			// Line has timestamp - create new entry
+			lineNumber++
+
+			entry := models.N2OSJobLogEntry{
+				RawLine:    line,
+				Source:     source,
+				LineNumber: lineNumber,
+			}
+
+			// Parse timestamp
 			if ts, err := parseN2OSJobTimestamp(timestampMatch[1]); err == nil {
 				entry.Timestamp = ts
-				lastTimestamp = ts // Cache this timestamp for subsequent lines
 			}
-		} else if !lastTimestamp.IsZero() {
-			// No timestamp found, use cached timestamp from previous entry
-			entry.Timestamp = lastTimestamp
-		}
 
-		// Extract task name and duration from "executed in" lines
-		executedMatch := executedRegex.FindStringSubmatch(line)
-		if len(executedMatch) > 2 {
-			entry.TaskName = executedMatch[1]
-			if duration, err := strconv.ParseFloat(executedMatch[2], 64); err == nil {
-				entry.DurationMS = duration
+			// Extract task name and duration from "executed in" lines
+			executedMatch := executedRegex.FindStringSubmatch(line)
+			if len(executedMatch) > 2 {
+				entry.TaskName = executedMatch[1]
+				if duration, err := strconv.ParseFloat(executedMatch[2], 64); err == nil {
+					entry.DurationMS = duration
+				}
 			}
-		}
 
-		entries = append(entries, entry)
+			entries = append(entries, entry)
+		} else {
+			// Line has NO timestamp - append to previous entry
+			if len(entries) > 0 {
+				// Append to the RawLine of the last entry with a newline
+				entries[len(entries)-1].RawLine += "\n" + line
+			}
+			// If there's no previous entry, skip this line (orphaned continuation line)
+		}
 	}
 
 	return entries, scanner.Err()
@@ -133,6 +157,18 @@ func parseN2OSJobTimestamp(ts string) (time.Time, error) {
 
 	// Try without milliseconds
 	t, err = time.Parse("2006-01-02T15:04:05.000-07:00", ts)
+	if err == nil {
+		return t, nil
+	}
+
+	return time.Time{}, err
+}
+
+// parseLogHeaderTimestamp parses timestamps in log file header format
+// Example: 2025-10-01 13:58:10 +0200
+func parseLogHeaderTimestamp(ts string) (time.Time, error) {
+	// Header format: "2025-10-01 13:58:10 +0200"
+	t, err := time.Parse("2006-01-02 15:04:05 -0700", ts)
 	if err == nil {
 		return t, nil
 	}

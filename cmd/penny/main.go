@@ -5,12 +5,15 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
+	"path/filepath"
 	"penny/internal/extractor"
 	"penny/internal/models"
 	"penny/internal/parser"
 	"penny/internal/server"
 	"strings"
+	"time"
 )
 
 // MagicNumber represents a file signature
@@ -101,6 +104,9 @@ func main() {
 
 	flag.Parse()
 
+	// Initialize random seed for verb selection
+	rand.Seed(time.Now().UnixNano())
+
 	// Validate flags
 	if *archiveFile != "" && *analyzeDir != "" {
 		log.Fatal("Error: Cannot specify both -f (archive) and -d (directory)")
@@ -143,6 +149,11 @@ func main() {
 			log.Fatalf("Error extracting archive: %v", err)
 		}
 		fmt.Println("Extraction complete.")
+
+		// Validate support archive structure
+		if err := validateSupportArchive(targetDir); err != nil {
+			log.Fatal(err)
+		}
 	} else {
 		// Analyze existing directory mode
 		targetDir = *analyzeDir
@@ -150,6 +161,11 @@ func main() {
 		// Check if directory exists
 		if _, err := os.Stat(targetDir); os.IsNotExist(err) {
 			log.Fatalf("Error: Directory '%s' does not exist", targetDir)
+		}
+
+		// Validate support archive structure
+		if err := validateSupportArchive(targetDir); err != nil {
+			log.Fatal(err)
 		}
 	}
 
@@ -211,6 +227,25 @@ func isPosixTarArchive(filePath string) bool {
 	return false
 }
 
+func validateSupportArchive(dir string) error {
+	requiredFiles := []string{
+		filepath.Join("data", "cfg", "n2os.conf.gz"),
+		filepath.Join("data", "cfg", "n2os.conf.user"),
+		filepath.Join("data", "log", "n2os_ids.log"),
+		filepath.Join("data", "log", "n2osjobs.log"),
+		filepath.Join("data", "log", "messages"),
+	}
+
+	for _, relPath := range requiredFiles {
+		fullPath := filepath.Join(dir, relPath)
+		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+			return fmt.Errorf("Not a valid support archive...")
+		}
+	}
+
+	return nil
+}
+
 func promptForDirectory() string {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Extract to directory [default: support]: ")
@@ -231,43 +266,83 @@ func parseArchive(dir string) (*models.ArchiveData, error) {
 	}
 
 	// Parse system info files
-	if err := parser.ParseSystemInfo(dir, data); err != nil {
+	fmt.Printf("  %s system information...", parser.GetRandomVerb())
+	err := parser.ParseSystemInfo(dir, data)
+	if err != nil {
+		fmt.Printf(" ✗\n")
 		log.Printf("Warning: Error parsing system info: %v", err)
+	} else {
+		fmt.Printf(" ✓\n")
 	}
 
 	// Parse logs
-	if err := parser.ParseLogs(dir, data); err != nil {
+	fmt.Printf("  %s log files...", parser.GetRandomVerb())
+	err = parser.ParseLogs(dir, data)
+	if err != nil {
+		fmt.Printf(" ✗\n")
 		log.Printf("Warning: Error parsing logs: %v", err)
+	} else {
+		fmt.Printf(" ✓\n")
 	}
 
 	// Parse process list
-	if err := parser.ParseProcessList(dir, data); err != nil {
+	fmt.Printf("  %s process list...", parser.GetRandomVerb())
+	err = parser.ParseProcessList(dir, data)
+	if err != nil {
+		fmt.Printf(" ✗\n")
 		log.Printf("Warning: Error parsing process list: %v", err)
+	} else {
+		fmt.Printf(" ✓\n")
 	}
 
 	// Parse network config
-	if err := parser.ParseNetworkConfig(dir, data); err != nil {
+	fmt.Printf("  %s network configuration...", parser.GetRandomVerb())
+	err = parser.ParseNetworkConfig(dir, data)
+	if err != nil {
+		fmt.Printf(" ✗\n")
 		log.Printf("Warning: Error parsing network config: %v", err)
+	} else {
+		fmt.Printf(" ✓\n")
 	}
 
 	// Parse BPF statistics
-	if err := parser.ParseBPFStats(dir, data); err != nil {
+	fmt.Printf("  %s BPF statistics...", parser.GetRandomVerb())
+	err = parser.ParseBPFStats(dir, data)
+	if err != nil {
+		fmt.Printf(" ✗\n")
 		log.Printf("Warning: Error parsing BPF stats: %v", err)
+	} else {
+		fmt.Printf(" ✓\n")
 	}
 
 	// Parse storage info
-	if err := parser.ParseStorage(dir, data); err != nil {
+	fmt.Printf("  %s storage information...", parser.GetRandomVerb())
+	err = parser.ParseStorage(dir, data)
+	if err != nil {
+		fmt.Printf(" ✗\n")
 		log.Printf("Warning: Error parsing storage info: %v", err)
+	} else {
+		fmt.Printf(" ✓\n")
 	}
 
 	// Parse N2OS config
-	if err := parser.ParseN2OSConfig(dir, data); err != nil {
+	fmt.Printf("  %s N2OS configuration...", parser.GetRandomVerb())
+	err = parser.ParseN2OSConfig(dir, data)
+	if err != nil {
+		fmt.Printf(" ✗\n")
 		log.Printf("Warning: Error parsing N2OS config: %v", err)
+	} else {
+		fmt.Printf(" ✓\n")
 	}
 
 	// Parse N2Op logs for upgrade history
-	if err := parser.ParseN2OpLogs(dir, data); err != nil {
+	fmt.Printf("  %s N2Op upgrade logs...", parser.GetRandomVerb())
+	err = parser.ParseN2OpLogs(dir, data)
+	if err != nil {
+		fmt.Printf(" ✗\n")
 		log.Printf("Warning: Error parsing N2Op logs: %v", err)
+	} else {
+		fmt.Printf(" ✓\n")
 	}
 
 	return data, nil

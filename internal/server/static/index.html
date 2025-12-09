@@ -63,12 +63,15 @@
         .theme-toggle:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
         body.dark-mode .theme-toggle { background: #334155; border: none; color: #e2e8f0; }
         body.dark-mode .theme-toggle:hover { background: #475569; }
+        #back-to-top-btn:hover { transform: scale(1.1); box-shadow: 0 6px 16px rgba(0,0,0,0.4); }
+        body.dark-mode #back-to-top-btn { background: #3b82f6; }
         .container { display: grid; grid-template-columns: 280px 1fr; height: calc(100vh - 73px); transition: grid-template-columns 0.3s ease; }
         .container.sidebar-collapsed { grid-template-columns: 60px 1fr; }
         .sidebar { background: var(--color-bg-primary); border-right: 1px solid var(--color-border-primary); padding: 1.5rem; overflow-y: auto; overflow-x: hidden; transition: padding 0.3s ease, background 0.3s, border-color 0.3s; }
         body.dark-mode .sidebar { background: #1e293b; border-right: 1px solid #334155; }
         .sidebar.collapsed { padding: 1rem 0.5rem; }
-        .sidebar-toggle { position: absolute; top: 1rem; right: 0.5rem; width: 24px; height: 24px; background: var(--color-brand-accent); border: 2px solid var(--color-border-primary); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.75rem; z-index: 10; transition: all 0.3s ease; }
+        .sidebar-toggle { position: fixed; top: 50%; right: calc(100vw - 240px - 0.5rem - 12px); width: 24px; height: 24px; background: var(--color-brand-accent); border: 2px solid var(--color-border-primary); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.75rem; z-index: 100; transition: all 0.3s ease; }
+        .container.sidebar-collapsed .sidebar-toggle { right: calc(100vw - 60px - 0.5rem - 12px); }
         body.dark-mode .sidebar-toggle { background: #3b82f6; border-color: #334155; }
         .sidebar-toggle:hover { background: #B52856; transform: scale(1.1); }
         body.dark-mode .sidebar-toggle:hover { background: #2563eb; }
@@ -166,6 +169,7 @@
         .search-box:focus { outline: none; border-color: var(--color-brand-primary); }
         body.dark-mode .search-box { background: #0f172a; border: 1px solid #334155; }
         body.dark-mode .search-box:focus { border-color: #3b82f6; }
+        .search-filter-wrapper { position: sticky; top: 0; z-index: 50; background: var(--color-bg-body); padding: 1.5rem 0; margin-bottom: 0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .flags-toggle { color: var(--color-brand-primary); cursor: pointer; text-decoration: underline; font-size: 0.85rem; }
         .flags-toggle:hover { color: var(--color-brand-accent); }
         body.dark-mode .flags-toggle { color: #3b82f6; }
@@ -500,8 +504,8 @@
             <div class="sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar">◀</div>
             <nav>
                 <div class="nav-section"><div class="nav-section-title">Overview</div><div class="nav-item active" data-view="dashboard"><span>📊</span><span class="nav-item-text">Dashboard</span></div><div class="nav-item" data-view="issues"><span>⚠️</span><span class="nav-item-text">Issues</span></div></div>
-                <div class="nav-section"><div class="nav-section-title">System</div><div class="nav-item" data-view="system"><span>💻</span><span class="nav-item-text">System Info</span></div><div class="nav-item" data-view="network"><span>🌐</span><span class="nav-item-text">Network</span></div><div class="nav-item" data-view="storage"><span>💾</span><span class="nav-item-text">Storage</span></div><div class="nav-item" data-view="database"><span>🗄️</span><span class="nav-item-text">Database</span></div></div>
-                <div class="nav-section"><div class="nav-section-title">N2OS</div><div class="nav-item" data-view="n2os-config"><span>⚙️</span><span class="nav-item-text">N2OS User Conf</span></div><div class="nav-item" data-view="rc-conf"><span>🔧</span><span class="nav-item-text">RC Config</span></div><div class="nav-item" data-view="n2op-logs"><span>📋</span><span class="nav-item-text">Operations</span></div><div class="nav-item" data-view="health-events"><span>💊</span><span class="nav-item-text">Health Events</span></div><div class="nav-item" data-view="n2osjobs-logs"><span>⏱️</span><span class="nav-item-text">Background Tasks</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">System</div><div class="nav-item" data-view="system"><span>💻</span><span class="nav-item-text">System Info</span></div><div class="nav-item" data-view="network"><span>🌐</span><span class="nav-item-text">Network</span></div><div class="nav-item" data-view="storage"><span>💾</span><span class="nav-item-text">Storage</span></div><div class="nav-item" data-view="database"><span>🗄️</span><span class="nav-item-text">Database</span></div><div class="nav-item" data-view="db-sampledata"><span>📊</span><span class="nav-item-text">DB Sample Data</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">N2OS</div><div class="nav-item" data-view="n2os-config"><span>⚙️</span><span class="nav-item-text">N2OS User Conf</span></div><div class="nav-item" data-view="rc-conf"><span>🔧</span><span class="nav-item-text">RC Config</span></div><div class="nav-item" data-view="n2op-logs"><span>📋</span><span class="nav-item-text">Operations</span></div><div class="nav-item" data-view="health-events"><span>💊</span><span class="nav-item-text">Health Events</span></div><div class="nav-item" data-view="n2osjobs-logs"><span>⏱️</span><span class="nav-item-text">Background Tasks</span></div><div class="nav-item" data-view="n2osmigrate-logs"><span>🔄</span><span class="nav-item-text">Migration Log</span></div><div class="nav-item" data-view="n2osids"><span>🔍</span><span class="nav-item-text">IDS Logs</span></div><div class="nav-item" data-view="n2osalert"><span>🚨</span><span class="nav-item-text">Alert Logs</span></div><div class="nav-item" data-view="appliances"><span>🖥️</span><span class="nav-item-text">Appliances</span></div><div class="nav-item" data-view="n2os-conf"><span>📜</span><span class="nav-item-text">System Config</span></div></div>
                 <div class="nav-section"><div class="nav-section-title">Logs</div><div class="nav-item" data-view="logs-syslog"><span>📝</span><span class="nav-item-text">System Logs</span></div><div class="nav-item" data-view="logs-nginx"><span>🌐</span><span class="nav-item-text">Nginx Logs</span></div><div class="nav-item" data-view="logs-auth"><span>🔐</span><span class="nav-item-text">Auth Logs</span></div><div class="nav-item" data-view="logs-output-analysis"><span>📄</span><span class="nav-item-text">Output Analysis</span></div><div class="nav-item" data-view="logs-goaccess"><span>📊</span><span class="nav-item-text">GoAccess Report</span></div></div>
                 <div class="nav-section"><div class="nav-section-title">Processes</div><div class="nav-item" data-view="processes"><span>🔧</span><span class="nav-item-text">Process List</span></div></div>
             </nav>
@@ -514,6 +518,16 @@
         let appData = {};
         let currentModalData = { content: '', filename: '' };
 
+        function setupHotkeys() {
+            document.addEventListener('keydown', (e) => {
+                // Shift+F to toggle sidebar
+                if (e.shiftKey && (e.key === 'F' || e.key === 'f')) {
+                    e.preventDefault();
+                    toggleSidebarState();
+                }
+            });
+        }
+
         async function init() {
             await loadData();
             await checkOutputAnalysisAvailability();
@@ -521,6 +535,7 @@
             setupNavigation();
             setupSidebarToggle();
             setupModalHandlers();
+            setupHotkeys();
         }
 
         async function checkOutputAnalysisAvailability() {
@@ -602,25 +617,29 @@
             });
         }
 
-        function setupSidebarToggle() {
+        let sidebarToggleState = { isCollapsed: false };
+
+        function toggleSidebarState() {
             const toggle = document.getElementById('sidebar-toggle');
             const sidebar = document.getElementById('sidebar');
             const container = document.getElementById('container');
-            let isCollapsed = false;
-            toggle.addEventListener('click', () => {
-                isCollapsed = !isCollapsed;
-                if (isCollapsed) {
-                    sidebar.classList.add('collapsed');
-                    container.classList.add('sidebar-collapsed');
-                    toggle.textContent = '▶';
-                    toggle.title = 'Expand sidebar';
-                } else {
-                    sidebar.classList.remove('collapsed');
-                    container.classList.remove('sidebar-collapsed');
-                    toggle.textContent = '◀';
-                    toggle.title = 'Collapse sidebar';
-                }
-            });
+            sidebarToggleState.isCollapsed = !sidebarToggleState.isCollapsed;
+            if (sidebarToggleState.isCollapsed) {
+                sidebar.classList.add('collapsed');
+                container.classList.add('sidebar-collapsed');
+                toggle.textContent = '▶';
+                toggle.title = 'Expand sidebar';
+            } else {
+                sidebar.classList.remove('collapsed');
+                container.classList.remove('sidebar-collapsed');
+                toggle.textContent = '◀';
+                toggle.title = 'Collapse sidebar';
+            }
+        }
+
+        function setupSidebarToggle() {
+            const toggle = document.getElementById('sidebar-toggle');
+            toggle.addEventListener('click', toggleSidebarState);
         }
 
         async function showView(view) {
@@ -638,13 +657,23 @@
                     const database = await fetch('/api/database').then(r => r.json());
                     if (!checkForRickrollTrigger(database, 'database')) content.innerHTML = renderDatabase(database);
                     break;
+                case 'db-sampledata':
+                    const sampleData = await fetch('/api/database/sampledata').then(r => r.json());
+                    if (!checkForRickrollTrigger(sampleData, 'db-sampledata')) { content.innerHTML = renderDatabaseSampleDataView(sampleData); setupDatabaseSampleDataHandlers(); }
+                    break;
                 case 'logs-syslog':
                     const syslog = await fetch('/api/logs?type=syslog').then(r => r.json());
                     if (!checkForRickrollTrigger(syslog, 'syslog')) { content.innerHTML = renderLogs(syslog, 'System Logs'); setupSyslogHandlers(); }
                     break;
                 case 'logs-nginx':
-                    const nginx = await fetch('/api/logs?type=nginx').then(r => r.json());
-                    if (!checkForRickrollTrigger(nginx, 'nginx')) content.innerHTML = renderNginxLogs(nginx);
+                    const [nginxError, nginxAccess] = await Promise.all([
+                        fetch('/api/logs?type=nginx').then(r => r.json()),
+                        fetch('/api/logs?type=nginx-access').then(r => r.json())
+                    ]);
+                    if (!checkForRickrollTrigger(nginxError, 'nginx')) {
+                        content.innerHTML = renderNginxLogs(nginxError, nginxAccess);
+                        setupNginxLogsHandlers();
+                    }
                     break;
                 case 'logs-auth':
                     const auth = await fetch('/api/logs?type=auth').then(r => r.json());
@@ -674,6 +703,44 @@
                 case 'n2osjobs-logs':
                     const n2osjobs = await fetch('/api/n2osjobs-logs').then(r => r.json());
                     if (!checkForRickrollTrigger(n2osjobs, 'n2osjobs-logs')) { content.innerHTML = renderN2OSJobLogs(n2osjobs); setupN2OSJobLogsHandlers(); }
+                    break;
+                case 'n2osmigrate-logs':
+                    const migrateData = await fetch('/api/n2osmigrate-logs').then(r => r.json());
+                    if (!checkForRickrollTrigger(migrateData, 'n2osmigrate-logs')) { content.innerHTML = renderN2OSMigrateLogs(migrateData); setupN2OSMigrateLogsHandlers(); }
+                    break;
+                case 'n2osids':
+                    const [idsLogs, idsEventsLogs] = await Promise.all([
+                        fetch('/api/n2osids-logs').then(r => r.json()),
+                        fetch('/api/n2osidsevents-logs').then(r => r.json())
+                    ]);
+                    if (!checkForRickrollTrigger(idsLogs, 'n2osids')) {
+                        content.innerHTML = renderN2OSIDSView(idsLogs, idsEventsLogs);
+                        setupN2OSIDSViewHandlers();
+                    }
+                    break;
+                case 'n2osalert':
+                    const [alertLogs, alertEventsLogs] = await Promise.all([
+                        fetch('/api/n2osalert-logs').then(r => r.json()),
+                        fetch('/api/n2osalertevents-logs').then(r => r.json())
+                    ]);
+                    if (!checkForRickrollTrigger(alertLogs, 'n2osalert')) {
+                        content.innerHTML = renderN2OSAlertView(alertLogs, alertEventsLogs);
+                        setupN2OSAlertViewHandlers();
+                    }
+                    break;
+                case 'appliances':
+                    const appliances = await fetch('/api/appliances').then(r => r.json());
+                    if (!checkForRickrollTrigger(appliances, 'appliances')) {
+                        content.innerHTML = renderAppliances(appliances);
+                        setupAppliancesHandlers();
+                    }
+                    break;
+                case 'n2os-conf':
+                    const n2osConf = await fetch('/api/n2os-conf').then(r => r.json());
+                    if (!checkForRickrollTrigger(n2osConf, 'n2os-conf')) {
+                        content.innerHTML = renderN2OSConf(n2osConf);
+                        setupN2OSConfHandlers();
+                    }
                     break;
             }
         }
@@ -952,10 +1019,31 @@
         `;
     };
 
-    return `<div class="section-title">System Information</div><div class="card"><table style="width: 100%;"><tr><td style="padding: 0.5rem; color: #94a3b8;">Product</td><td style="padding: 0.5rem;">${system.Product || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Version</td><td style="padding: 0.5rem;">${system.Version || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Hostname</td><td style="padding: 0.5rem;">${system.Hostname || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Platform</td><td style="padding: 0.5rem;">${system.Platform || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Machine ID</td><td style="padding: 0.5rem;">${system.MachineID || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Timezone</td><td style="padding: 0.5rem;">${system.Timezone || 'UTC'}${system.Timezone === 'UTC' ? ' <span style="color: #64748b; font-size: 0.875rem;">(default)</span>' : ''}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Uptime</td><td style="padding: 0.5rem;">${system.Uptime || 'N/A'}</td></tr><tr><td style="padding: 0.5rem; color: #94a3b8;">Creation Time</td><td style="padding: 0.5rem;">${creationTime}</td></tr></table></div>
+    
+    return `<div class="section-title">System Information</div>
+<div class="card">
+    <div style="display: grid; grid-template-columns: 60% 40%; gap: 1rem; align-items: center;">
+        <!-- Left column - System Info -->
+        <table style="width: 100%;">
+            <tr><td style="padding: 0.5rem; color: #94a3b8;">Product</td><td style="padding: 0.5rem;">${system.Product || 'N/A'}</td></tr>
+            <tr><td style="padding: 0.5rem; color: #94a3b8;">Version</td><td style="padding: 0.5rem;">${system.Version || 'N/A'}</td></tr>
+            <tr><td style="padding: 0.5rem; color: #94a3b8;">Hostname</td><td style="padding: 0.5rem;">${system.Hostname || 'N/A'}</td></tr>
+            <tr><td style="padding: 0.5rem; color: #94a3b8;">Platform</td><td style="padding: 0.5rem;">${system.Platform || 'N/A'}</td></tr>
+            <tr><td style="padding: 0.5rem; color: #94a3b8;">Machine ID</td><td style="padding: 0.5rem;">${system.MachineID || 'N/A'}</td></tr>
+            <tr><td style="padding: 0.5rem; color: #94a3b8;">Timezone</td><td style="padding: 0.5rem;">${system.Timezone || 'UTC'}${system.Timezone === 'UTC' ? ' <span style="color: #64748b; font-size: 0.875rem;">(default)</span>' : ''}</td></tr>
+            <tr><td style="padding: 0.5rem; color: #94a3b8;">Uptime</td><td style="padding: 0.5rem;">${system.Uptime || 'N/A'}</td></tr>
+            <tr><td style="padding: 0.5rem; color: #94a3b8;">Creation Time</td><td style="padding: 0.5rem;">${creationTime}</td></tr>
+        </table>
+        
+            <!-- Right column - Appliance Logo -->
+        <div style="display: flex; justify-content: center; align-items: center; height: 100%; width: 100%;">
+            <img src="/${(system.Platform || '').toLowerCase().replace(/\s+/g, '-')}.svg" alt="${system.Platform || 'Appliance'} Logo" style="width: 100%; height: 100%; object-fit: contain; max-width: 100%; max-height: 100%;" onerror="this.style.display='none'">
+        </div>
+    </div>
+</div>
     ${renderHardware()}
     ${renderCMCConfig()}
-    ${system.TotalNodes > 0 ? `<div class="card" style="margin-top: 1.5rem;"><div class="card-title"> Network Element</div><table style="width: 100%;"><tr><td style="padding: 0.5rem; color: #94a3b8;">Nodes</td><td style="padding: 0.5rem; color: #94a3b8;">Links</td><td style="padding: 0.5rem; color: #94a3b8;">Variables</td><td style="padding: 0.5rem; color: #94a3b8;">Total</td></tr><tr><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(system.TotalNodes)} (${((system.TotalNodes / totalElements) * 100).toFixed(1)}%)</td><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(system.TotalLinks)} (${((system.TotalLinks / totalElements) * 100).toFixed(1)}%)</td><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(system.TotalVariables)} (${((system.TotalVariables / totalElements) * 100).toFixed(1)}%)</td><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(totalElements)}</td></tr></table></div>` : ''}
+    ${system.TotalNodes > 0 ? `<div class="card" style="margin-top: 1.5rem;"><div class="card-title"> Network Element</div><table style="width: 100%;"><tr><td style="padding: 0.5rem; color: #94a3b8;">Nodes</td><td style="padding: 0.5rem; color: #94a3b8;">Links</td><td style="padding: 0.5rem; color: #94a3b8;">Variables</td><td style="padding: 0.5rem; color: #94a3b8;">Total</td><td style="padding: 0.5rem; color: #94a3b8;">Limit</td></tr><tr><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(system.TotalNodes)} (${((system.TotalNodes / totalElements) * 100).toFixed(1)}%)</td><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(system.TotalLinks)} (${((system.TotalLinks / totalElements) * 100).toFixed(1)}%)</td><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(system.TotalVariables)} (${((system.TotalVariables / totalElements) * 100).toFixed(1)}%)</td><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(totalElements)}</td><td style="padding: 0.5rem; font-weight: 500;">${formatNumber(system.NodeElementLimit)}</td></tr></table></div>` : ''}
     ${renderLicenses()}`;
 
 }
@@ -1565,6 +1653,152 @@
             return sorted;
         }
 
+        // Database Sample Data state variables
+        let dbSampleData = null;
+        let dbPageSize = 50;
+        let dbTablePages = {}; // Store current page for each table
+
+        const EXPECTED_TABLES = [
+            'ALERTS', 'ALERT_RULES', 'APPLIANCES', 'ASSETS',
+            'AUDIT_ITEMS', 'HEALTH_LOGS', 'HEALTH_STATES',
+            'LINK_EVENTS', 'NODE_CPES', 'NODE_CVES',
+            'SCHEMA_MIGRATIONS', 'TRACE_REQUESTS',
+            'VARIABLE_HISTORY', 'ZONE_CONFIGURATION'
+        ];
+
+        function renderDatabaseSampleDataView(data) {
+            dbSampleData = data;
+
+            // Initialize pagination for each table
+            (data.tables || []).forEach(table => {
+                if (!dbTablePages[table.name]) {
+                    dbTablePages[table.name] = 1;
+                }
+            });
+
+            // Check for new tables
+            const newTables = data.tables ? data.tables.filter(t => !EXPECTED_TABLES.includes(t.name)) : [];
+            const warningBanner = newTables.length > 0 ? `
+                <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
+                    ⚠️ <strong>Notice:</strong> Found ${newTables.length} new table(s) not in expected list:
+                    <strong>${newTables.map(t => t.name).join(', ')}</strong>
+                    (Total: ${data.total_tables} tables)
+                </div>
+            ` : '';
+
+            const allTablesHtml = renderAllDBTables(data.tables || []);
+
+            return `
+                <div class="section-title">📊 Database Sample Data</div>
+                <div class="card">
+                    <p class="card-subtitle">${data.total_tables || 0} tables from pg_diag/db-sampledata.txt</p>
+                    ${warningBanner}
+                </div>
+                ${allTablesHtml}
+            `;
+        }
+
+        function renderAllDBTables(tables) {
+            if (!tables || tables.length === 0) {
+                return '<div class="card"><p>No tables found</p></div>';
+            }
+
+            return tables.map(table => renderSingleDBTable(table)).join('');
+        }
+
+        function renderSingleDBTable(table) {
+            if (!table) return '';
+
+            if (table.is_empty) {
+                return `
+                    <div class="card" style="margin-bottom: 1.5rem;">
+                        <h3>${table.name} <span class="badge" style="background: #6c757d;">0 rows</span></h3>
+                        <p style="color: #6c757d;">Table is empty</p>
+                    </div>
+                `;
+            }
+
+            const currentPage = dbTablePages[table.name] || 1;
+            const totalPages = Math.ceil((table.rows || []).length / dbPageSize);
+            const startIdx = (currentPage - 1) * dbPageSize;
+            const endIdx = Math.min(startIdx + dbPageSize, (table.rows || []).length);
+            const pageRows = (table.rows || []).slice(startIdx, endIdx);
+
+            let html = `
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <h3>${table.name} <span class="badge">${table.row_count} rows</span></h3>
+                    <div style="overflow-x: auto;">
+                        <table class="data-table">
+                            <thead><tr>
+                                <th style="width: 50px;">#</th>
+                                ${(table.columns || []).map(col => `<th>${escapeHtml(col)}</th>`).join('')}
+                                <th style="width: 80px;">JSON</th>
+                            </tr></thead>
+                            <tbody>
+            `;
+
+            pageRows.forEach((row, idx) => {
+                const rowNum = startIdx + idx + 1;
+                html += `<tr>`;
+                html += `<td style="color: #6c757d;">${rowNum}</td>`;
+                (table.columns || []).forEach(col => {
+                    const value = row[col] || '-';
+                    html += `<td>${escapeHtml(value.length > 100 ? value.substring(0, 100) + '...' : value)}</td>`;
+                });
+                const rowJson = JSON.stringify(row, null, 2);
+                html += `<td><button class="btn btn-sm" onclick='showJSONModal(${JSON.stringify(rowJson)}, "${table.name} - Row ${rowNum}")' style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">🔍 View</button></td>`;
+                html += `</tr>`;
+            });
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="color: #6c757d;">Showing ${startIdx + 1}-${endIdx} of ${(table.rows || []).length} rows</div>
+                        <div>
+                            <button class="btn btn-sm" onclick="dbChangeTablePage('${table.name}', 1)" ${currentPage === 1 ? 'disabled' : ''}>«</button>
+                            <button class="btn btn-sm" onclick="dbChangeTablePage('${table.name}', ${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹</button>
+                            <span style="margin: 0 1rem;">Page ${currentPage} of ${totalPages}</span>
+                            <button class="btn btn-sm" onclick="dbChangeTablePage('${table.name}', ${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>›</button>
+                            <button class="btn btn-sm" onclick="dbChangeTablePage('${table.name}', ${totalPages})" ${currentPage >= totalPages ? 'disabled' : ''}>»</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return html;
+        }
+
+        function dbChangeTablePage(tableName, newPage) {
+            const table = dbSampleData.tables.find(t => t.name === tableName);
+            if (!table) return;
+
+            const totalPages = Math.ceil((table.rows || []).length / dbPageSize);
+            if (newPage < 1 || newPage > totalPages) return;
+
+            dbTablePages[tableName] = newPage;
+
+            // Find and replace just this table's HTML
+            const allTablesHtml = renderAllDBTables(dbSampleData.tables || []);
+            const content = document.getElementById('main-content');
+            const titleHtml = `<div class="section-title">📊 Database Sample Data</div>`;
+            const headerCard = content.querySelector('.card');
+            if (headerCard) {
+                const warningBanner = headerCard.innerHTML;
+                content.innerHTML = titleHtml + '<div class="card">' + warningBanner + '</div>' + allTablesHtml;
+            }
+        }
+
+        function setupDatabaseSampleDataHandlers() {
+            // No additional handlers needed - all inline
+        }
+
+        function escapeHtml(text) {
+            const map = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'};
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
         // System logs state
         let syslogAllLogs = [];
         let syslogFilteredLogs = [];
@@ -1582,18 +1816,20 @@
                 <div class="section-title">${title} (${syslogAllLogs.length} entries)</div>
 
                 <!-- Search and Page Size -->
-                <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
-                    <input type="text" class="search-box" id="syslog-search" placeholder="Search logs..." style="flex: 1; min-width: 200px; margin: 0;">
-                    <button id="syslog-sort-toggle" class="btn btn-secondary" onclick="toggleSyslogSort()" style="white-space: nowrap;">↓ Newest First</button>
-                    <select id="syslog-page-size" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
-                        <option value="25">25 per page</option>
-                        <option value="50" selected>50 per page</option>
-                        <option value="100">100 per page</option>
-                        <option value="200">200 per page</option>
-                    </select>
-                </div>
-                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                    <strong>Search operators:</strong> <code>|</code> (OR), <code>&</code> (AND), <code>!</code> (NOT) &mdash; e.g., <code>error | warning</code>, <code>nginx & timeout</code>, <code>error ! connection</code>
+                <div class="search-filter-wrapper">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <input type="text" class="search-box" id="syslog-search" placeholder="Search logs..." style="flex: 1; min-width: 200px; margin: 0;">
+                        <button id="syslog-sort-toggle" class="btn btn-secondary" onclick="toggleSyslogSort()" style="white-space: nowrap;">↓ Newest First</button>
+                        <select id="syslog-page-size" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+                            <option value="25">25 per page</option>
+                            <option value="50" selected>50 per page</option>
+                            <option value="100">100 per page</option>
+                            <option value="200">200 per page</option>
+                        </select>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                        <strong>Search operators:</strong> <code>|</code> (OR), <code>&</code> (AND), <code>!</code> (NOT) &mdash; e.g., <code>error | warning</code>, <code>nginx & timeout</code>, <code>error ! connection</code>
+                    </div>
                 </div>
 
                 <div id="syslog-container"></div>
@@ -1743,31 +1979,33 @@
                 <div class="section-title">Background Tasks (${n2osjobsAllLogs.length} entries)</div>
 
                 <!-- Search and Page Size -->
-                <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
-                    <input type="text" class="search-box" id="n2osjobs-search" placeholder="Search tasks..." style="flex: 1; min-width: 200px; margin: 0;">
-                    <button id="n2osjobs-sort-toggle" class="btn btn-secondary" onclick="toggleN2OSJobsSort()" style="white-space: nowrap;">↓ Newest First</button>
-                    <select id="n2osjobs-page-size" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
-                        <option value="25">25 per page</option>
-                        <option value="50" selected>50 per page</option>
-                        <option value="100">100 per page</option>
-                        <option value="200">200 per page</option>
-                    </select>
-                </div>
+                <div class="search-filter-wrapper">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <input type="text" class="search-box" id="n2osjobs-search" placeholder="Search tasks..." style="flex: 1; min-width: 200px; margin: 0;">
+                        <button id="n2osjobs-sort-toggle" class="btn btn-secondary" onclick="toggleN2OSJobsSort()" style="white-space: nowrap;">↓ Newest First</button>
+                        <select id="n2osjobs-page-size" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+                            <option value="25">25 per page</option>
+                            <option value="50" selected>50 per page</option>
+                            <option value="100">100 per page</option>
+                            <option value="200">200 per page</option>
+                        </select>
+                    </div>
 
-                <!-- Column Toggle Switches -->
-                <div style="display: flex; gap: 1.5rem; margin-bottom: 0.5rem; font-size: 0.875rem;">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                        <input type="checkbox" id="toggle-source" ${showSource ? 'checked' : ''} onchange="toggleN2OSJobsColumn('source', this.checked)">
-                        <span>Show Source</span>
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                        <input type="checkbox" id="toggle-line-number" ${showLineNumber ? 'checked' : ''} onchange="toggleN2OSJobsColumn('line_number', this.checked)">
-                        <span>Show Line Number</span>
-                    </label>
-                </div>
+                    <!-- Column Toggle Switches -->
+                    <div style="display: flex; gap: 1.5rem; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="toggle-source" ${showSource ? 'checked' : ''} onchange="toggleN2OSJobsColumn('source', this.checked)">
+                            <span>Show Source</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="toggle-line-number" ${showLineNumber ? 'checked' : ''} onchange="toggleN2OSJobsColumn('line_number', this.checked)">
+                            <span>Show Line Number</span>
+                        </label>
+                    </div>
 
-                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                    <strong>Search operators:</strong> <code>|</code> (OR), <code>&</code> (AND), <code>!</code> (NOT) &mdash; e.g., <code>SyncTask | UpdateTask</code>, <code>error & timeout</code>, <code>executed ! SyncTask</code>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                        <strong>Search operators:</strong> <code>|</code> (OR), <code>&</code> (AND), <code>!</code> (NOT) &mdash; e.g., <code>SyncTask | UpdateTask</code>, <code>error & timeout</code>, <code>executed ! SyncTask</code>
+                    </div>
                 </div>
 
                 <div id="n2osjobs-container"></div>
@@ -1814,8 +2052,7 @@
                 return `
                     <div class="log-entry" data-log-id="${logId}" onclick="toggleLogLine(this)">
                         ${columnsHTML}
-                        <div class="log-line">${log.raw_line}</div>
-                        ${hasJSON ? `<div style="margin-top: 0.5rem;"><button class="btn btn-secondary json-view-btn" data-log-index="${idx}" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;" title="View JSON" onclick="event.stopPropagation();">🔍</button></div>` : ''}
+                        <div class="log-line">${log.raw_line}${hasJSON ? ` <button class="btn btn-secondary json-view-btn" data-log-index="${idx}" style="padding: 0.2rem 0.4rem; font-size: 0.875rem; margin-left: 0.5rem; vertical-align: middle;" title="View JSON" onclick="event.stopPropagation();">🔍</button>` : ''}</div>
                     </div>
                 `;
             }).join('');
@@ -1946,8 +2183,708 @@
             renderN2OSJobsPage();
         }
 
-        function renderNginxLogs(logs) {
-            return `<div class="section-title">Nginx Error Logs (${logs.length} entries)</div>${logs.slice(0, 100).map(log => `<div class="log-entry ${log.Level ? log.Level.toLowerCase() : ''}"><span class="log-timestamp">${new Date(log.Timestamp).toLocaleString()}</span><span class="status-badge status-${log.Level === 'CRIT' ? 'error' : 'warning'}">${log.Level}</span><span class="log-message">${log.Message}</span></div>`).join('')}${logs.length > 100 ? '<p style="text-align: center; padding: 1rem; color: #64748b;">Showing first 100 entries</p>' : ''}`;
+        // Global state for migration logs
+        let migrateAllLogs = [];
+        let migrateFilteredLogs = [];
+
+        function renderN2OSMigrateLogs(data) {
+            const { summary, entries } = data;
+
+            // Store in global state
+            migrateAllLogs = entries || [];
+            migrateFilteredLogs = [...migrateAllLogs];
+
+            // Status badge
+            const statusBadge = summary.completed_success
+                ? '<span style="color: #10b981; font-weight: 600;">✓ Completed Successfully</span>'
+                : '<span style="color: #ef4444; font-weight: 600;">⚠ Completed with Issues</span>';
+
+            return `
+                <div class="section-title">N2OS Migration Log (${summary.total_entries} lines)</div>
+
+                <!-- Summary Card -->
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div><strong>Status:</strong> ${statusBadge}</div>
+                        <div><strong>DB Migration Items:</strong> ${summary.migration_items || 'N/A'}</div>
+                        <div><strong>DB Version:</strong> ${summary.current_db_version || 'N/A'}</div>
+                        <div><strong>Errors:</strong> <span style="color: ${summary.error_count > 0 ? '#ef4444' : '#64748b'}">${summary.error_count}</span> | <strong>Warnings:</strong> <span style="color: ${summary.warning_count > 0 ? '#f59e0b' : '#64748b'}">${summary.warning_count}</span></div>
+                    </div>
+                </div>
+
+                <!-- Log Entries Container -->
+                <div id="migrate-logs-container"></div>
+            `;
+        }
+
+        function setupN2OSMigrateLogsHandlers() {
+            renderMigrateLogsTable();
+        }
+
+        function renderMigrateLogsTable() {
+            const container = document.getElementById('migrate-logs-container');
+            if (!container) return;
+
+            if (migrateFilteredLogs.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 2rem; color: #64748b;">No log entries found.</p>';
+                return;
+            }
+
+            // Message type badge styling
+            const getMessageTypeBadge = (type) => {
+                const styles = {
+                    error: 'background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;',
+                    warning: 'background: #fef3c7; color: #92400e; border: 1px solid #fde68a;',
+                    metric: 'background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;',
+                    info: 'background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;'
+                };
+                const style = styles[type] || styles.info;
+                return `<span style="padding: 0.0625rem 0.375rem; border-radius: 0.25rem; font-size: 0.625rem; font-weight: 600; ${style}">${type.toUpperCase()}</span>`;
+            };
+
+            // Get line style
+            const getLineStyle = (type) => {
+                if (type === 'error') return 'background: #fef2f2; border-left: 2px solid #ef4444;';
+                if (type === 'warning') return 'background: #fffbeb; border-left: 2px solid #f59e0b;';
+                if (type === 'metric') return 'background: #eff6ff; border-left: 2px solid #3b82f6;';
+                return '';
+            };
+
+            const html = `
+                <div style="font-family: monospace; font-size: 0.75rem; line-height: 1.3;">
+                    ${migrateFilteredLogs.map(log => `
+                        <div style="display: flex; gap: 0.5rem; padding: 0.25rem 0.5rem; border-bottom: 1px solid #e2e8f0; ${getLineStyle(log.message_type)}">
+                            <div style="min-width: 2.5rem; color: #64748b; text-align: right; font-size: 0.6875rem;">${log.line_number}</div>
+                            <div style="min-width: 4rem;">${getMessageTypeBadge(log.message_type)}</div>
+                            <div style="flex: 1; white-space: pre-wrap; word-break: break-word;">${log.content}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Global state for unified IDS view
+        let idsViewAllLogs = [];
+        let idsViewFilteredLogs = [];
+        let idsViewCurrentPage = 1;
+        let idsViewPageSize = 50;
+        let idsViewSortOrder = 'desc';
+        let idsViewShowIDS = true;
+        let idsViewShowEvents = true;
+
+        function renderN2OSIDSView(idsLogs, eventsLogs) {
+            // Tag each log with its type for filtering
+            const taggedIdsLogs = idsLogs.map(log => ({...log, log_type: 'ids'}));
+            const taggedEventsLogs = eventsLogs.map(log => ({...log, log_type: 'events'}));
+
+            // Merge and sort chronologically by timestamp
+            idsViewAllLogs = [...taggedIdsLogs, ...taggedEventsLogs].sort((a, b) => {
+                return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+            });
+
+            // Load filter preferences (default both to true)
+            idsViewShowIDS = localStorage.getItem('idsview_show_ids') !== 'false';
+            idsViewShowEvents = localStorage.getItem('idsview_show_events') !== 'false';
+
+            idsViewFilteredLogs = [...idsViewAllLogs];
+            idsViewCurrentPage = 1;
+
+            const showSource = localStorage.getItem('idsview_show_source') === 'true';
+            const showLineNumber = localStorage.getItem('idsview_show_line_number') === 'true';
+
+            return `
+                <div class="section-title">IDS Logs (${idsViewAllLogs.length} entries total)</div>
+
+                <div class="search-filter-wrapper">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <input type="text" class="search-box" id="idsview-search" placeholder="Search logs..." style="flex: 1; min-width: 200px; margin: 0;">
+                        <button id="idsview-sort-toggle" class="btn btn-secondary" onclick="toggleIDSViewSort()" style="white-space: nowrap;">↓ Newest First</button>
+                        <select id="idsview-page-size" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+                            <option value="25">25 per page</option>
+                            <option value="50" selected>50 per page</option>
+                            <option value="100">100 per page</option>
+                            <option value="200">200 per page</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; gap: 1.5rem; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="toggle-idsview-ids" ${idsViewShowIDS ? 'checked' : ''} onchange="toggleIDSViewLogType('ids', this.checked)">
+                            <span>Show IDS Logs (${idsLogs.length})</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="toggle-idsview-events" ${idsViewShowEvents ? 'checked' : ''} onchange="toggleIDSViewLogType('events', this.checked)">
+                            <span>Show IDS Events (${eventsLogs.length})</span>
+                        </label>
+                    </div>
+
+                    <div style="display: flex; gap: 1.5rem; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="toggle-idsview-source" ${showSource ? 'checked' : ''} onchange="toggleIDSViewColumn('source', this.checked)">
+                            <span>Show Source</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="toggle-idsview-line-number" ${showLineNumber ? 'checked' : ''} onchange="toggleIDSViewColumn('line_number', this.checked)">
+                            <span>Show Line Number</span>
+                        </label>
+                    </div>
+
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                        <strong>Search operators:</strong> <code>|</code> (OR), <code>&</code> (AND), <code>!</code> (NOT)
+                    </div>
+                </div>
+
+                <div id="idsview-container"></div>
+                <div id="idsview-pagination" style="margin-top: 1.5rem; display: flex; justify-content: center; align-items: center; gap: 1rem;"></div>
+            `;
+        }
+
+        function toggleIDSViewLogType(logType, isVisible) {
+            if (logType === 'ids') {
+                idsViewShowIDS = isVisible;
+                localStorage.setItem('idsview_show_ids', isVisible.toString());
+            } else if (logType === 'events') {
+                idsViewShowEvents = isVisible;
+                localStorage.setItem('idsview_show_events', isVisible.toString());
+            }
+            applyIDSViewFilters();
+        }
+
+        function applyIDSViewFilters() {
+            let filtered = [...idsViewAllLogs];
+
+            // Filter by log type checkboxes
+            filtered = filtered.filter(log => {
+                if (log.log_type === 'ids' && !idsViewShowIDS) return false;
+                if (log.log_type === 'events' && !idsViewShowEvents) return false;
+                return true;
+            });
+
+            // Apply search filter
+            const searchBox = document.getElementById('idsview-search');
+            if (searchBox && searchBox.value.trim()) {
+                const searchTerm = searchBox.value.trim();
+                filtered = filtered.filter(log => {
+                    const searchableText = `${log.timestamp} ${log.level || ''} ${log.message || ''} ${log.protocol || ''} ${log.event || ''} ${log.raw_line}`.toLowerCase();
+                    const orGroups = searchTerm.split('|').map(s => s.trim());
+                    return orGroups.some(orGroup => {
+                        if (!orGroup) return false;
+                        const andTerms = orGroup.split('&').map(s => s.trim());
+                        return andTerms.every(term => {
+                            if (!term) return true;
+                            if (term.startsWith('!')) {
+                                const notTerm = term.substring(1).trim().toLowerCase();
+                                return notTerm ? !searchableText.includes(notTerm) : true;
+                            }
+                            return searchableText.includes(term.toLowerCase());
+                        });
+                    });
+                });
+            }
+
+            idsViewFilteredLogs = filtered;
+            idsViewCurrentPage = 1;
+            renderIDSViewPage();
+        }
+
+        function renderIDSViewPage() {
+            const container = document.getElementById('idsview-container');
+            const pagination = document.getElementById('idsview-pagination');
+            if (!container || !pagination) return;
+
+            const showSource = localStorage.getItem('idsview_show_source') === 'true';
+            const showLineNumber = localStorage.getItem('idsview_show_line_number') === 'true';
+
+            const sortedLogs = [...idsViewFilteredLogs].sort((a, b) => {
+                const timeA = new Date(a.timestamp).getTime();
+                const timeB = new Date(b.timestamp).getTime();
+                return idsViewSortOrder === 'desc' ? timeB - timeA : timeA - timeB;
+            });
+
+            const totalPages = Math.ceil(sortedLogs.length / idsViewPageSize);
+            const startIdx = (idsViewCurrentPage - 1) * idsViewPageSize;
+            const endIdx = Math.min(startIdx + idsViewPageSize, sortedLogs.length);
+            const pageLogs = sortedLogs.slice(startIdx, endIdx);
+
+            container.innerHTML = pageLogs.map((log, idx) => {
+                const logId = `idsview-${idsViewCurrentPage}-${idx}`;
+                const hasJSON = extractJSON(log.raw_line) !== null;
+
+                let columnsHTML = '';
+                if (showSource) columnsHTML += `<div style="font-weight: bold; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">Source: ${log.source || 'N/A'}</div>`;
+                if (showLineNumber) columnsHTML += `<div style="font-weight: bold; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">Line: ${log.line_number || 'N/A'}</div>`;
+
+                return `
+                    <div class="log-entry" data-log-id="${logId}" onclick="toggleLogLine(this)">
+                        ${columnsHTML}
+                        <div class="log-line">${log.raw_line}${hasJSON ? ` <button class="btn btn-secondary idsview-json-btn" data-log-index="${idx}" style="padding: 0.2rem 0.4rem; font-size: 0.875rem; margin-left: 0.5rem; vertical-align: middle;" title="View JSON" onclick="event.stopPropagation();">🔍</button>` : ''}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add click handlers for JSON view buttons
+            container.querySelectorAll('.idsview-json-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const idx = parseInt(this.getAttribute('data-log-index'));
+                    const log = pageLogs[idx];
+                    if (log) {
+                        showJSONModal(log.raw_line, log.timestamp);
+                    }
+                });
+            });
+
+            pagination.innerHTML = `
+                <button class="btn btn-secondary" onclick="idsViewChangePage(1)" ${idsViewCurrentPage === 1 ? 'disabled' : ''}>⏮ First</button>
+                <button class="btn btn-secondary" onclick="idsViewChangePage(${idsViewCurrentPage - 1})" ${idsViewCurrentPage === 1 ? 'disabled' : ''}>← Previous</button>
+                <span style="color: var(--text-primary);">Page ${idsViewCurrentPage} of ${totalPages || 1} (${sortedLogs.length} entries)</span>
+                <button class="btn btn-secondary" onclick="idsViewChangePage(${idsViewCurrentPage + 1})" ${idsViewCurrentPage === totalPages || totalPages === 0 ? 'disabled' : ''}>Next →</button>
+                <button class="btn btn-secondary" onclick="idsViewChangePage(${totalPages || 1})" ${idsViewCurrentPage === totalPages || totalPages === 0 ? 'disabled' : ''}>Last ⏭</button>
+            `;
+        }
+
+        function idsViewChangePage(page) {
+            const totalPages = Math.ceil(idsViewFilteredLogs.length / idsViewPageSize);
+            if (page < 1 || page > totalPages) return;
+            idsViewCurrentPage = page;
+            renderIDSViewPage();
+        }
+
+        function toggleIDSViewSort() {
+            idsViewSortOrder = idsViewSortOrder === 'desc' ? 'asc' : 'desc';
+            const sortButton = document.getElementById('idsview-sort-toggle');
+            if (sortButton) sortButton.textContent = idsViewSortOrder === 'desc' ? '↓ Newest First' : '↑ Oldest First';
+            renderIDSViewPage();
+        }
+
+        function toggleIDSViewColumn(column, isVisible) {
+            localStorage.setItem(`idsview_show_${column}`, isVisible.toString());
+            renderIDSViewPage();
+        }
+
+        function filterIDSViewLogs() {
+            applyIDSViewFilters();
+        }
+
+        function setupN2OSIDSViewHandlers() {
+            const searchBox = document.getElementById('idsview-search');
+            const pageSizeSelect = document.getElementById('idsview-page-size');
+
+            if (searchBox) {
+                searchBox.addEventListener('input', filterIDSViewLogs);
+            }
+
+            if (pageSizeSelect) {
+                pageSizeSelect.addEventListener('change', (e) => {
+                    idsViewPageSize = parseInt(e.target.value);
+                    idsViewCurrentPage = 1;
+                    renderIDSViewPage();
+                });
+            }
+
+            applyIDSViewFilters();
+        }
+
+        // Alert View state variables
+        let alertViewAllLogs = [];
+        let alertViewFilteredLogs = [];
+        let alertViewPageData = [];
+        let alertViewCurrentPage = 1;
+        let alertViewPageSize = 50;
+        let alertViewSortOrder = 'desc';
+        let alertViewShowAlert = true;
+        let alertViewShowEvents = true;
+        let alertViewShowSource = true;
+        let alertViewShowLineNumber = false;
+
+        function renderN2OSAlertView(alertLogs, eventsLogs) {
+            const taggedAlertLogs = (alertLogs || []).map(log => ({...log, log_type: 'alert'}));
+            const taggedEventsLogs = (eventsLogs || []).map(log => ({...log, log_type: 'events'}));
+
+            alertViewAllLogs = [...taggedAlertLogs, ...taggedEventsLogs].sort((a, b) => {
+                return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+            });
+
+            alertViewShowAlert = localStorage.getItem('alertview_show_alert') !== 'false';
+            alertViewShowEvents = localStorage.getItem('alertview_show_events') !== 'false';
+            alertViewShowSource = localStorage.getItem('alertview_show_source') !== 'false';
+            alertViewShowLineNumber = localStorage.getItem('alertview_show_linenumber') !== 'false';
+
+            alertViewFilteredLogs = [...alertViewAllLogs];
+            alertViewCurrentPage = 1;
+
+            return `
+                <div class="section-title">N2OS Alert Logs (${alertViewAllLogs.length} entries total)</div>
+
+                <div class="search-filter-wrapper">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <input type="text" class="search-box" id="alertview-search" placeholder="Search logs... (Supports & | ! operators)" style="flex: 1; min-width: 200px; margin: 0;">
+                        <button id="alertview-sort-toggle" class="btn btn-secondary" onclick="toggleAlertViewSort()" style="white-space: nowrap;">↓ Newest First</button>
+                        <select id="alertview-page-size" onchange="changeAlertViewPageSize(this.value)" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+                            <option value="25">25 per page</option>
+                            <option value="50" selected>50 per page</option>
+                            <option value="100">100 per page</option>
+                            <option value="200">200 per page</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; gap: 1.5rem; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="toggle-alertview-alert" ${alertViewShowAlert ? 'checked' : ''} onchange="toggleAlertViewLogType('alert', this.checked)">
+                            <span>Show Alert Logs (${alertLogs.length})</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="toggle-alertview-events" ${alertViewShowEvents ? 'checked' : ''} onchange="toggleAlertViewLogType('events', this.checked)">
+                            <span>Show Alert Events (${eventsLogs.length})</span>
+                        </label>
+                    </div>
+
+                    <div style="display: flex; gap: 1.5rem; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="toggle-alertview-source" ${alertViewShowSource ? 'checked' : ''} onchange="toggleAlertViewColumn('source', this.checked)">
+                            <span>Show Source</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="toggle-alertview-linenumber" ${alertViewShowLineNumber ? 'checked' : ''} onchange="toggleAlertViewColumn('linenumber', this.checked)">
+                            <span>Show Line Number</span>
+                        </label>
+                    </div>
+
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                        Search operators: <code>&</code> (AND), <code>|</code> (OR), <code>!</code> (NOT). Example: <code>error & queue</code> or <code>!debug</code>
+                    </div>
+                </div>
+
+                <div id="alertview-container" style="margin-top: 1rem;"></div>
+                <div id="alertview-pagination" style="margin-top: 1.5rem; display: flex; justify-content: center; align-items: center; gap: 1rem;"></div>
+            `;
+        }
+
+        function toggleAlertViewLogType(type, checked) {
+            if (type === 'alert') {
+                alertViewShowAlert = checked;
+                localStorage.setItem('alertview_show_alert', checked);
+            } else if (type === 'events') {
+                alertViewShowEvents = checked;
+                localStorage.setItem('alertview_show_events', checked);
+            }
+            applyAlertViewFilters();
+        }
+
+        function applyAlertViewFilters() {
+            alertViewFilteredLogs = alertViewAllLogs.filter(log => {
+                const typeMatch = (log.log_type === 'alert' && alertViewShowAlert) ||
+                                 (log.log_type === 'events' && alertViewShowEvents);
+                if (!typeMatch) return false;
+
+                const searchTerm = document.getElementById('alertview-search')?.value.toLowerCase() || '';
+                if (!searchTerm) return true;
+
+                let searchableText = '';
+                if (log.log_type === 'alert') {
+                    searchableText = `${log.level} ${log.message} ${log.process_id} ${log.thread_id}`.toLowerCase();
+                } else {
+                    searchableText = `${log.event_type} ${log.event} ${log.process_id} ${log.thread_id}`.toLowerCase();
+                }
+
+                return searchTerm.split('|').some(orTerm => {
+                    return orTerm.trim().split('&').every(andTerm => {
+                        const term = andTerm.trim();
+                        if (term.startsWith('!')) {
+                            const notTerm = term.substring(1).trim().toLowerCase();
+                            return notTerm ? !searchableText.includes(notTerm) : true;
+                        }
+                        return searchableText.includes(term.toLowerCase());
+                    });
+                });
+            });
+
+            alertViewCurrentPage = 1;
+            renderAlertViewPage();
+        }
+
+        function renderAlertViewPage() {
+            const container = document.getElementById('alertview-container');
+            if (!container) return;
+
+            const sorted = alertViewSortOrder === 'desc'
+                ? [...alertViewFilteredLogs].reverse()
+                : [...alertViewFilteredLogs];
+
+            const start = (alertViewCurrentPage - 1) * alertViewPageSize;
+            const end = start + alertViewPageSize;
+            const pageData = sorted.slice(start, end);
+
+            // Store page data for JSON modal access
+            alertViewPageData = pageData;
+
+            container.innerHTML = pageData.map((log, idx) => {
+                const logId = `alertview-${alertViewCurrentPage}-${idx}`;
+                const hasJSON = log.log_type === 'events' && extractJSON(log.raw_line) !== null;
+                let columnsHTML = '';
+                if (alertViewShowSource) columnsHTML += `<div style="font-weight: bold; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">Source: ${log.source || 'N/A'}</div>`;
+                if (alertViewShowLineNumber) columnsHTML += `<div style="font-weight: bold; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">Line: ${log.line_number || 'N/A'}</div>`;
+
+                return `
+                    <div class="log-entry" data-log-id="${logId}" onclick="toggleLogLine(this)">
+                        ${columnsHTML}
+                        <div class="log-line">${log.raw_line}${hasJSON ? ` <button class="btn btn-secondary alertview-json-btn" data-log-index="${idx}" style="padding: 0.2rem 0.4rem; font-size: 0.875rem; margin-left: 0.5rem; vertical-align: middle;" title="View JSON" onclick="event.stopPropagation();">🔍</button>` : ''}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add click handlers for JSON view buttons
+            container.querySelectorAll('.alertview-json-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const idx = parseInt(this.getAttribute('data-log-index'));
+                    const log = alertViewPageData[idx];
+                    if (log) {
+                        showJSONModal(log.raw_line, log.timestamp);
+                    }
+                });
+            });
+
+            renderAlertViewPagination();
+        }
+
+        function renderAlertViewPagination() {
+            const pagination = document.getElementById('alertview-pagination');
+            if (!pagination) return;
+
+            const totalPages = Math.ceil(alertViewFilteredLogs.length / alertViewPageSize);
+
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            pagination.innerHTML = `
+                <button class="btn btn-secondary" onclick="alertViewChangePage(1)" ${alertViewCurrentPage === 1 ? 'disabled' : ''}>⏮ First</button>
+                <button class="btn btn-secondary" onclick="alertViewChangePage(${alertViewCurrentPage - 1})" ${alertViewCurrentPage === 1 ? 'disabled' : ''}>← Previous</button>
+                <span style="padding: 0 1rem;">Page ${alertViewCurrentPage} of ${totalPages} (${alertViewFilteredLogs.length} entries)</span>
+                <button class="btn btn-secondary" onclick="alertViewChangePage(${alertViewCurrentPage + 1})" ${alertViewCurrentPage === totalPages ? 'disabled' : ''}>Next →</button>
+                <button class="btn btn-secondary" onclick="alertViewChangePage(${totalPages})" ${alertViewCurrentPage === totalPages ? 'disabled' : ''}>Last ⏭</button>
+            `;
+        }
+
+        function alertViewChangePage(page) {
+            alertViewCurrentPage = page;
+            renderAlertViewPage();
+        }
+
+        function toggleAlertViewSort() {
+            alertViewSortOrder = alertViewSortOrder === 'desc' ? 'asc' : 'desc';
+            const btn = document.getElementById('alertview-sort-toggle');
+            btn.textContent = alertViewSortOrder === 'desc' ? '↓ Newest First' : '↑ Oldest First';
+            renderAlertViewPage();
+        }
+
+        function changeAlertViewPageSize(size) {
+            alertViewPageSize = parseInt(size);
+            alertViewCurrentPage = 1;
+            renderAlertViewPage();
+        }
+
+        function toggleAlertViewColumn(column, show) {
+            if (column === 'source') {
+                alertViewShowSource = show;
+                localStorage.setItem('alertview_show_source', show);
+            } else if (column === 'linenumber') {
+                alertViewShowLineNumber = show;
+                localStorage.setItem('alertview_show_linenumber', show);
+            }
+            renderAlertViewPage();
+        }
+
+        function showAlertEventJSON(index) {
+            const sorted = alertViewSortOrder === 'desc'
+                ? [...alertViewFilteredLogs].reverse()
+                : [...alertViewFilteredLogs];
+            const start = (alertViewCurrentPage - 1) * alertViewPageSize;
+            const log = sorted[start + index];
+
+            try {
+                const jsonData = JSON.parse(log.Event);
+                const formatted = JSON.stringify(jsonData, null, 2);
+                showModal('Alert Event JSON', `<pre style="white-space: pre-wrap; word-wrap: break-word;">${escapeHtml(formatted)}</pre>`);
+            } catch (e) {
+                showModal('Alert Event Data', `<pre style="white-space: pre-wrap; word-wrap: break-word;">${escapeHtml(log.Event)}</pre>`);
+            }
+        }
+
+        function setupN2OSAlertViewHandlers() {
+            const searchBox = document.getElementById('alertview-search');
+            if (searchBox) {
+                searchBox.addEventListener('input', applyAlertViewFilters);
+                searchBox.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') applyAlertViewFilters();
+                });
+            }
+
+            applyAlertViewFilters();
+        }
+
+        // Nginx logs state
+        let nginxViewAllLogs = [];
+        let nginxViewFilteredLogs = [];
+        let nginxViewCurrentPage = 1;
+        let nginxViewPageSize = 50;
+        let nginxViewSortOrder = 'desc';
+        let nginxViewShowError = true;
+        let nginxViewShowAccess = true;
+
+        function renderNginxLogs(errorLogs, accessLogs) {
+            // Tag each log with its type
+            const taggedErrorLogs = (errorLogs || []).map(log => ({...log, log_type: 'error'}));
+            const taggedAccessLogs = (accessLogs || []).map(log => ({...log, log_type: 'access'}));
+
+            // Merge and sort chronologically by timestamp
+            nginxViewAllLogs = [...taggedErrorLogs, ...taggedAccessLogs].sort((a, b) => {
+                return new Date(a.Timestamp).getTime() - new Date(b.Timestamp).getTime();
+            });
+
+            // Load filter preferences (default both to true)
+            nginxViewShowError = localStorage.getItem('nginxview_show_error') !== 'false';
+            nginxViewShowAccess = localStorage.getItem('nginxview_show_access') !== 'false';
+
+            nginxViewFilteredLogs = [...nginxViewAllLogs];
+            nginxViewCurrentPage = 1;
+
+            return `
+                <div class="section-title">Nginx Logs (${nginxViewAllLogs.length} entries total)</div>
+
+                <div class="search-filter-wrapper">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <input type="text" class="search-box" id="nginxview-search" placeholder="Search logs..." style="flex: 1; min-width: 200px; margin: 0;">
+                        <button id="nginxview-sort-toggle" class="btn btn-secondary" onclick="toggleNginxViewSort()" style="white-space: nowrap;">↓ Newest First</button>
+                        <select id="nginxview-page-size" onchange="changeNginxViewPageSize(this.value)" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+                            <option value="25">25 per page</option>
+                            <option value="50" selected>50 per page</option>
+                            <option value="100">100 per page</option>
+                            <option value="200">200 per page</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; gap: 1.5rem; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="toggle-nginxview-error" ${nginxViewShowError ? 'checked' : ''} onchange="toggleNginxViewLogType('error', this.checked)">
+                            <span>Show Error Logs (${errorLogs.length})</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="toggle-nginxview-access" ${nginxViewShowAccess ? 'checked' : ''} onchange="toggleNginxViewLogType('access', this.checked)">
+                            <span>Show Access Logs (${accessLogs.length})</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="nginxview-container" style="margin-top: 1rem;"></div>
+                <div id="nginxview-pagination" style="margin-top: 1.5rem; display: flex; justify-content: center; align-items: center; gap: 1rem;"></div>
+            `;
+        }
+
+        function applyNginxViewFilters() {
+            nginxViewFilteredLogs = nginxViewAllLogs.filter(log => {
+                const typeMatch = (log.log_type === 'error' && nginxViewShowError) ||
+                                 (log.log_type === 'access' && nginxViewShowAccess);
+                if (!typeMatch) return false;
+
+                const searchTerm = document.getElementById('nginxview-search')?.value.toLowerCase() || '';
+                if (!searchTerm) return true;
+
+                const message = log.Message ? log.Message.toLowerCase() : '';
+                const rawLine = log.RawLine ? log.RawLine.toLowerCase() : '';
+                return message.includes(searchTerm) || rawLine.includes(searchTerm);
+            });
+
+            // Sort by timestamp
+            nginxViewFilteredLogs.sort((a, b) => {
+                const timeA = new Date(a.Timestamp).getTime();
+                const timeB = new Date(b.Timestamp).getTime();
+                return nginxViewSortOrder === 'desc' ? timeB - timeA : timeA - timeB;
+            });
+
+            nginxViewCurrentPage = 1;
+            renderNginxViewPage();
+        }
+
+        function renderNginxViewPage() {
+            const container = document.getElementById('nginxview-container');
+            const pagination = document.getElementById('nginxview-pagination');
+            if (!container || !pagination) return;
+
+            const totalPages = Math.ceil(nginxViewFilteredLogs.length / nginxViewPageSize);
+            const startIdx = (nginxViewCurrentPage - 1) * nginxViewPageSize;
+            const endIdx = Math.min(startIdx + nginxViewPageSize, nginxViewFilteredLogs.length);
+            const pageLogs = nginxViewFilteredLogs.slice(startIdx, endIdx);
+
+            container.innerHTML = pageLogs.map((log, idx) => {
+                const logId = `nginxview-${nginxViewCurrentPage}-${idx}`;
+                const logTypeLabel = log.log_type === 'error' ? '[ERROR]' : '[ACCESS]';
+
+                return `
+                    <div class="log-entry" data-log-id="${logId}" onclick="toggleLogLine(this)">
+                        <div class="log-line">${logTypeLabel} ${log.RawLine}</div>
+                    </div>
+                `;
+            }).join('');
+
+            pagination.innerHTML = `
+                <button class="btn btn-secondary" onclick="changeNginxViewPage(1)" ${nginxViewCurrentPage === 1 ? 'disabled' : ''}>⏮ First</button>
+                <button class="btn btn-secondary" onclick="changeNginxViewPage(${nginxViewCurrentPage - 1})" ${nginxViewCurrentPage === 1 ? 'disabled' : ''}>← Previous</button>
+                <span style="color: var(--text-primary);">Page ${nginxViewCurrentPage} of ${totalPages || 1} (${nginxViewFilteredLogs.length} entries)</span>
+                <button class="btn btn-secondary" onclick="changeNginxViewPage(${nginxViewCurrentPage + 1})" ${nginxViewCurrentPage >= totalPages || totalPages === 0 ? 'disabled' : ''}>Next →</button>
+                <button class="btn btn-secondary" onclick="changeNginxViewPage(${totalPages || 1})" ${nginxViewCurrentPage >= totalPages || totalPages === 0 ? 'disabled' : ''}>Last ⏭</button>
+            `;
+        }
+
+        function changeNginxViewPage(page) {
+            const totalPages = Math.ceil(nginxViewFilteredLogs.length / nginxViewPageSize);
+            if (page >= 1 && page <= totalPages) {
+                nginxViewCurrentPage = page;
+                renderNginxViewPage();
+                document.getElementById('nginxview-container')?.scrollIntoView({behavior: 'smooth'});
+            }
+        }
+
+        function changeNginxViewPageSize(size) {
+            nginxViewPageSize = parseInt(size);
+            localStorage.setItem('nginxview_page_size', size);
+            nginxViewCurrentPage = 1;
+            renderNginxViewPage();
+        }
+
+        function toggleNginxViewSort() {
+            nginxViewSortOrder = nginxViewSortOrder === 'desc' ? 'asc' : 'desc';
+            localStorage.setItem('nginxview_sort_order', nginxViewSortOrder);
+            const btn = document.getElementById('nginxview-sort-toggle');
+            if (btn) {
+                btn.textContent = nginxViewSortOrder === 'desc' ? '↓ Newest First' : '↑ Oldest First';
+            }
+            applyNginxViewFilters();
+        }
+
+        function toggleNginxViewLogType(type, checked) {
+            if (type === 'error') {
+                nginxViewShowError = checked;
+                localStorage.setItem('nginxview_show_error', checked);
+            } else if (type === 'access') {
+                nginxViewShowAccess = checked;
+                localStorage.setItem('nginxview_show_access', checked);
+            }
+            applyNginxViewFilters();
+        }
+
+        function setupNginxLogsHandlers() {
+            renderNginxViewPage();
+
+            const searchBox = document.getElementById('nginxview-search');
+            if (searchBox) {
+                searchBox.addEventListener('input', applyNginxViewFilters);
+                searchBox.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') applyNginxViewFilters();
+                });
+            }
         }
 
 function renderAuthLogs(logs) {
@@ -1957,8 +2894,10 @@ function renderAuthLogs(logs) {
     return `
         <div style="margin-bottom: 1.5rem;">
             <div class="section-title" style="margin-bottom: 1rem;">Authentication Logs (${logs.length} entries)</div>
-            <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
-                <input type="text" class="search-box" id="auth-search" placeholder="Search auth logs... (Supports & | ! operators)" style="flex: 1; min-width: 200px;">
+            <div class="search-filter-wrapper">
+                <div style="display: flex; gap: 1rem; margin-bottom: 0; flex-wrap: wrap;">
+                    <input type="text" class="search-box" id="auth-search" placeholder="Search auth logs... (Supports & | ! operators)" style="flex: 1; min-width: 200px;">
+                </div>
             </div>
         </div>
         <div id="auth-logs-container"></div>
@@ -2070,7 +3009,9 @@ function renderAuthLogs(logs) {
                         <span class="title-icon" onclick="showRawN2OS()" title="View raw file">📄</span>
                     </div>
                 </div>
-                <input type="text" class="search-box" id="n2os-search" placeholder="Search settings... (Supports & | ! operators)">
+                <div class="search-filter-wrapper">
+                    <input type="text" class="search-box" id="n2os-search" placeholder="Search settings... (Supports & | ! operators)">
+                </div>
                 <div id="n2os-config-container"></div>
             `;
         }
@@ -2143,7 +3084,9 @@ function renderAuthLogs(logs) {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                     <div class="section-title" style="margin: 0;">RC Configuration (rc.conf) (${settings.length} settings)</div>
                 </div>
-                <input type="text" class="search-box" id="rc-search" placeholder="Search settings... (Supports & | ! operators)">
+                <div class="search-filter-wrapper">
+                    <input type="text" class="search-box" id="rc-search" placeholder="Search settings... (Supports & | ! operators)">
+                </div>
                 <div id="rc-config-container"></div>
             `;
         }
@@ -2449,15 +3392,17 @@ function renderAuthLogs(logs) {
             return `
                 <div class="section-title">N2OS Operations Log (${logs.length} entries)</div>
                 ${upgradeTimeline}
-                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-                    <input type="text" class="search-box" id="n2op-search" placeholder="Search operations... (Supports & | ! operators)" style="flex: 1; min-width: 200px; margin: 0;">
-                    <button id="n2op-sort-toggle" class="btn btn-secondary" onclick="toggleN2OpSort()" style="white-space: nowrap;">↓ Newest First</button>
-                    <select id="n2op-page-size" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
-                        <option value="25">25 per page</option>
-                        <option value="50" selected>50 per page</option>
-                        <option value="100">100 per page</option>
-                        <option value="200">200 per page</option>
-                    </select>
+                <div class="search-filter-wrapper">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <input type="text" class="search-box" id="n2op-search" placeholder="Search operations... (Supports & | ! operators)" style="flex: 1; min-width: 200px; margin: 0;">
+                        <button id="n2op-sort-toggle" class="btn btn-secondary" onclick="toggleN2OpSort()" style="white-space: nowrap;">↓ Newest First</button>
+                        <select id="n2op-page-size" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+                            <option value="25">25 per page</option>
+                            <option value="50" selected>50 per page</option>
+                            <option value="100">100 per page</option>
+                            <option value="200">200 per page</option>
+                        </select>
+                    </div>
                 </div>
                 <div id="n2op-logs-container"></div>
                 <div id="n2op-pagination" style="margin-top: 1.5rem; display: flex; justify-content: center; align-items: center; gap: 1rem;"></div>
@@ -2720,37 +3665,39 @@ function renderAuthLogs(logs) {
                 </div>
 
                 <!-- Filters -->
-                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-                    <input type="text" class="search-box" id="health-search" placeholder="Search events..." style="flex: 1; min-width: 200px; margin: 0;">
-                    <button id="health-sort-toggle" class="btn btn-secondary" onclick="toggleHealthSort()" style="white-space: nowrap;">↓ Newest First</button>
-                    <select id="health-category" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
-                        <option value="">All Categories</option>
-                        <option value="network">Network</option>
-                        <option value="appliance">Appliance</option>
-                        <option value="system">System</option>
-                        <option value="replication">Replication</option>
-                        <option value="upgrade">Upgrade</option>
-                        <option value="other">Other</option>
-                    </select>
-                    <select id="health-severity" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
-                        <option value="">All Severities</option>
-                        <option value="info">Info</option>
-                        <option value="warning">Warning</option>
-                        <option value="error">Error</option>
-                        <option value="critical">Critical</option>
-                    </select>
-                    <select id="health-appliance" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
-                        <option value="">All Appliances</option>
-                        ${[...new Set(events.map(e => e.ApplianceHost).filter(Boolean))].sort().map(host =>
-                            `<option value="${host}">${host}</option>`
-                        ).join('')}
-                    </select>
-                    <select id="health-page-size" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
-                        <option value="25">25 per page</option>
-                        <option value="50" selected>50 per page</option>
-                        <option value="100">100 per page</option>
-                        <option value="200">200 per page</option>
-                    </select>
+                <div class="search-filter-wrapper">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <input type="text" class="search-box" id="health-search" placeholder="Search events..." style="flex: 1; min-width: 200px; margin: 0;">
+                        <button id="health-sort-toggle" class="btn btn-secondary" onclick="toggleHealthSort()" style="white-space: nowrap;">↓ Newest First</button>
+                        <select id="health-category" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+                            <option value="">All Categories</option>
+                            <option value="network">Network</option>
+                            <option value="appliance">Appliance</option>
+                            <option value="system">System</option>
+                            <option value="replication">Replication</option>
+                            <option value="upgrade">Upgrade</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <select id="health-severity" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+                            <option value="">All Severities</option>
+                            <option value="info">Info</option>
+                            <option value="warning">Warning</option>
+                            <option value="error">Error</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                        <select id="health-appliance" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+                            <option value="">All Appliances</option>
+                            ${[...new Set(events.map(e => e.ApplianceHost).filter(Boolean))].sort().map(host =>
+                                `<option value="${host}">${host}</option>`
+                            ).join('')}
+                        </select>
+                        <select id="health-page-size" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+                            <option value="25">25 per page</option>
+                            <option value="50" selected>50 per page</option>
+                            <option value="100">100 per page</option>
+                            <option value="200">200 per page</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div id="health-events-container"></div>
@@ -2907,10 +3854,479 @@ function renderAuthLogs(logs) {
             renderHealthEventsPage();
         }
 
+        // Appliances state variables
+        let appliancesAllData = [];
+        let appliancesFilteredData = [];
+        let appliancesCurrentPage = 1;
+        let appliancesPageSize = 50;
+        let appliancesSortOrder = 'asc';
+
+        function renderAppliances(appliances) {
+            appliancesAllData = appliances || [];
+            appliancesFilteredData = [...appliancesAllData];
+            appliancesCurrentPage = 1;
+
+            return `
+                <div class="section-title">Appliances (${appliances.length} total)</div>
+
+                <div class="search-filter-wrapper">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <input type="text" class="search-box" id="appliances-search"
+                               placeholder="Search appliances..." style="flex: 1; min-width: 200px; margin: 0;"
+                               oninput="applyAppliancesFilters()">
+                        <button id="appliances-sort-toggle" class="btn btn-secondary"
+                                onclick="toggleAppliancesSort()">Sort: A-Z</button>
+                        <select id="appliances-page-size" onchange="changeAppliancesPageSize(this.value)"
+                                style="padding: 0.75rem; background: var(--bg-secondary);
+                                       border: 1px solid var(--border-color); border-radius: 8px;">
+                            <option value="25">25 per page</option>
+                            <option value="50" selected>50 per page</option>
+                            <option value="100">100 per page</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="appliances-container" style="margin-top: 1rem;"></div>
+                <div id="appliances-pagination" style="margin-top: 1.5rem; display: flex;
+                     justify-content: center; align-items: center; gap: 1rem;"></div>
+            `;
+        }
+
+        function renderAppliancesPage() {
+            const container = document.getElementById('appliances-container');
+            const pagination = document.getElementById('appliances-pagination');
+            if (!container || !pagination) return;
+
+            const totalPages = Math.ceil(appliancesFilteredData.length / appliancesPageSize);
+            const startIdx = (appliancesCurrentPage - 1) * appliancesPageSize;
+            const endIdx = Math.min(startIdx + appliancesPageSize, appliancesFilteredData.length);
+            const pageData = appliancesFilteredData.slice(startIdx, endIdx);
+
+            container.innerHTML = `
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Host</th>
+                                <th>IP</th>
+                                <th>ID</th>
+                                <th>Site</th>
+                                <th>Model</th>
+                                <th>Sync Status</th>
+                                <th>Health</th>
+                                <th>Last Sync</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${pageData.map((a, idx) => {
+                                const health = parseHealthStatus(a.health);
+                                const syncStatus = a.synchronized ? '✅ Synced' : '❌ Not Synced';
+                                const lastSync = a.last_sync ? new Date(a.last_sync).toLocaleString() : 'N/A';
+
+                                return `
+                                    <tr>
+                                        <td>${escapeHtml(a.host)}</td>
+                                        <td>${a.ip}</td>
+                                        <td style="font-size: 0.85rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis;" title="${a.id}">${a.id}</td>
+                                        <td>${escapeHtml(a.site)}</td>
+                                        <td>${a.model}</td>
+                                        <td>${syncStatus}</td>
+                                        <td>${health}</td>
+                                        <td>${lastSync}</td>
+                                        <td style="display: flex; gap: 0.25rem;">
+                                            <button class="btn btn-sm appliance-view-btn"
+                                                    data-appliance='${JSON.stringify(a)}'
+                                                    title="View all appliance data">
+                                                🔍 View
+                                            </button>
+                                            <button class="btn btn-sm appliance-info-btn"
+                                                    data-host="${a.host}"
+                                                    data-info='${a.info}'
+                                                    title="View appliance info JSON">
+                                                📋 Info
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            pagination.innerHTML = `
+                <button class="btn btn-secondary" onclick="changeAppliancesPage(1)"
+                        ${appliancesCurrentPage === 1 ? 'disabled' : ''}>⏮ First</button>
+                <button class="btn btn-secondary" onclick="changeAppliancesPage(${appliancesCurrentPage - 1})"
+                        ${appliancesCurrentPage === 1 ? 'disabled' : ''}>← Previous</button>
+                <span>Page ${appliancesCurrentPage} of ${totalPages || 1}
+                      (${appliancesFilteredData.length} entries)</span>
+                <button class="btn btn-secondary" onclick="changeAppliancesPage(${appliancesCurrentPage + 1})"
+                        ${appliancesCurrentPage >= totalPages ? 'disabled' : ''}>Next →</button>
+                <button class="btn btn-secondary" onclick="changeAppliancesPage(${totalPages})"
+                        ${appliancesCurrentPage >= totalPages ? 'disabled' : ''}>Last ⏭</button>
+            `;
+        }
+
+        function parseHealthStatus(healthStr) {
+            try {
+                const health = JSON.parse(healthStr);
+                const status = health.status || 0;
+                if (status >= 90) return '🟢 Healthy';
+                if (status >= 70) return '🟡 Warning';
+                return '🔴 Critical';
+            } catch {
+                return 'N/A';
+            }
+        }
+
+        function showApplianceDetails(applianceJson) {
+            const appliance = JSON.parse(applianceJson);
+            const jsonStr = JSON.stringify(appliance, null, 2);
+
+            currentJSONModalData = {
+                content: jsonStr,
+                timestamp: appliance.host || 'Appliance',
+                filename: `appliance-${(appliance.host || 'unknown').replace(/[:.]/g, '-')}.json`
+            };
+
+            document.getElementById('json-modal-title').textContent = `Appliance: ${appliance.host || 'Unknown'}`;
+            document.getElementById('json-modal-content').textContent = jsonStr;
+            document.getElementById('json-modal').classList.add('show');
+        }
+
+        function showApplianceInfo(hostname, infoJsonStr) {
+            try {
+                // Parse the escaped JSON string
+                const info = JSON.parse(infoJsonStr);
+                const jsonStr = JSON.stringify(info, null, 2);
+
+                currentJSONModalData = {
+                    content: jsonStr,
+                    timestamp: hostname,
+                    filename: `appliance-info-${hostname.replace(/[:.]/g, '-')}.json`
+                };
+
+                document.getElementById('json-modal-title').textContent = `Appliance Info: ${hostname}`;
+                document.getElementById('json-modal-content').textContent = jsonStr;
+                document.getElementById('json-modal').classList.add('show');
+            } catch (e) {
+                alert('Failed to parse appliance info: ' + e.message);
+            }
+        }
+
+        function setupAppliancesHandlers() {
+            renderAppliancesPage();
+            attachApplianceButtonHandlers();
+        }
+
+        function attachApplianceButtonHandlers() {
+            // Attach handlers to View buttons
+            document.querySelectorAll('.appliance-view-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const applianceJson = btn.dataset.appliance;
+                    showApplianceDetails(applianceJson);
+                });
+            });
+
+            // Attach handlers to Info buttons
+            document.querySelectorAll('.appliance-info-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const host = btn.dataset.host;
+                    const info = btn.dataset.info;
+                    showApplianceInfo(host, info);
+                });
+            });
+        }
+
+        function applyAppliancesFilters() {
+            const searchTerm = document.getElementById('appliances-search')?.value.toLowerCase() || '';
+
+            appliancesFilteredData = appliancesAllData.filter(a => {
+                if (!searchTerm) return true;
+                return (a.host?.toLowerCase().includes(searchTerm) ||
+                        a.ip?.toLowerCase().includes(searchTerm) ||
+                        a.site?.toLowerCase().includes(searchTerm) ||
+                        a.model?.toLowerCase().includes(searchTerm));
+            });
+
+            appliancesFilteredData.sort((a, b) => {
+                const compareA = (a.host || '').toLowerCase();
+                const compareB = (b.host || '').toLowerCase();
+                return appliancesSortOrder === 'asc'
+                    ? compareA.localeCompare(compareB)
+                    : compareB.localeCompare(compareA);
+            });
+
+            appliancesCurrentPage = 1;
+            renderAppliancesPage();
+        }
+
+        function toggleAppliancesSort() {
+            appliancesSortOrder = appliancesSortOrder === 'asc' ? 'desc' : 'asc';
+            const btn = document.getElementById('appliances-sort-toggle');
+            if (btn) btn.textContent = `Sort: ${appliancesSortOrder === 'asc' ? 'A-Z' : 'Z-A'}`;
+            applyAppliancesFilters();
+        }
+
+        function changeAppliancesPage(page) {
+            const totalPages = Math.ceil(appliancesFilteredData.length / appliancesPageSize);
+            if (page >= 1 && page <= totalPages) {
+                appliancesCurrentPage = page;
+                renderAppliancesPage();
+                document.getElementById('appliances-container')?.scrollIntoView({behavior: 'smooth'});
+            }
+        }
+
+        function changeAppliancesPageSize(size) {
+            appliancesPageSize = parseInt(size);
+            appliancesCurrentPage = 1;
+            renderAppliancesPage();
+        }
+
+        // N2OS Conf variables
+        let n2osConfAllData = {};
+        let n2osConfTab = 'stats';
+
+        function renderN2OSConf(data) {
+            n2osConfAllData = data || {};
+            const stats = n2osConfAllData.stats || {};
+            const entries = n2osConfAllData.entries || [];
+            const links = entries.filter(e => e.command_type === 'link');
+            const netMap = entries.filter(e => e.command_type === 'network_map');
+
+            return `
+                <div class="section-title">N2OS System Configuration (${stats.total_lines || 0} lines)</div>
+
+                <div class="tab-nav" style="margin-bottom: 1rem;">
+                    <button class="tab-btn active" data-tab="stats" onclick="switchN2OSConfTab('stats')">📊 Statistics</button>
+                    <button class="tab-btn" data-tab="links" onclick="switchN2OSConfTab('links')">🔗 Links (${links.length})</button>
+                    <button class="tab-btn" data-tab="network-map" onclick="switchN2OSConfTab('network-map')">🗺️ Network Map (${netMap.length})</button>
+                    <button class="tab-btn" data-tab="raw" onclick="switchN2OSConfTab('raw')">📄 Raw View</button>
+                </div>
+
+                <div id="n2os-conf-stats-tab" class="tab-content" style="display: block;">
+                    ${renderN2OSConfStats(stats)}
+                </div>
+                <div id="n2os-conf-links-tab" class="tab-content" style="display: none;">
+                    ${renderN2OSConfLinks(links)}
+                </div>
+                <div id="n2os-conf-netmap-tab" class="tab-content" style="display: none;">
+                    ${renderN2OSConfNetworkMap(netMap)}
+                </div>
+                <div id="n2os-conf-raw-tab" class="tab-content" style="display: none;">
+                    ${renderN2OSConfRaw(n2osConfAllData.raw_content || '')}
+                </div>
+            `;
+        }
+
+        function renderN2OSConfStats(stats) {
+            const timestamp = stats.timestamp ? new Date(stats.timestamp * 1000).toLocaleString() : 'N/A';
+            const cmdCounts = stats.command_counts || {};
+            const topAddrs = stats.top_addresses || [];
+
+            return `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="card">
+                        <div class="card-title">Total Lines</div>
+                        <div class="card-value">${stats.total_lines || 0}</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Timestamp</div>
+                        <div class="card-subtitle">${timestamp}</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Unique Addresses</div>
+                        <div class="card-value">${stats.unique_addresses || 0}</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Unique UUIDs</div>
+                        <div class="card-value">${stats.unique_uuids || 0}</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+                    <div>
+                        <div class="section-title" style="margin-top: 0;">Command Type Distribution</div>
+                        <table class="data-table">
+                            <tr><th>Type</th><th>Count</th></tr>
+                            ${Object.entries(cmdCounts).map(([type, count]) => `<tr><td>${type}</td><td>${count}</td></tr>`).join('')}
+                        </table>
+                    </div>
+
+                    <div>
+                        <div class="section-title" style="margin-top: 0;">Top Addresses by Frequency</div>
+                        <table class="data-table">
+                            <tr><th>Address</th><th>Count</th></tr>
+                            ${topAddrs.slice(0, 10).map(a => `<tr><td style="font-family: monospace; font-size: 0.85rem;">${escapeHtml(a.address)}</td><td>${a.count}</td></tr>`).join('')}
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderN2OSConfLinks(entries) {
+            if (entries.length === 0) {
+                return '<p style="padding: 1rem; text-align: center; color: #666;">No link entries found</p>';
+            }
+
+            const paginated = entries.slice(0, 50);
+            return `
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>#</th><th>Line</th><th>Address</th><th>Parameters</th></tr>
+                        </thead>
+                        <tbody>
+                            ${paginated.map((e, idx) => `
+                                <tr>
+                                    <td>${idx + 1}</td>
+                                    <td>${e.line_number}</td>
+                                    <td style="font-family: monospace; font-size: 0.85rem;">${escapeHtml(e.address)}</td>
+                                    <td style="font-family: monospace; font-size: 0.8rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(e.params)}">${escapeHtml(e.params.substring(0, 60))}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <div style="text-align: center; color: #666; margin-top: 1rem; font-size: 0.9rem;">Showing first 50 entries of ${entries.length}</div>
+            `;
+        }
+
+        function renderN2OSConfNetworkMap(entries) {
+            if (entries.length === 0) {
+                return '<p style="padding: 1rem; text-align: center; color: #666;">No network map entries found</p>';
+            }
+
+            const paginated = entries.slice(0, 50);
+            return `
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>#</th><th>Line</th><th>Address</th><th>UUID</th><th>Parameters</th></tr>
+                        </thead>
+                        <tbody>
+                            ${paginated.map((e, idx) => `
+                                <tr>
+                                    <td>${idx + 1}</td>
+                                    <td>${e.line_number}</td>
+                                    <td style="font-family: monospace; font-size: 0.85rem;">${escapeHtml(e.address)}</td>
+                                    <td style="font-family: monospace; font-size: 0.8rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(e.uuid)}">${escapeHtml(e.uuid || 'N/A')}</td>
+                                    <td style="font-family: monospace; font-size: 0.8rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(e.params)}">${escapeHtml((e.params || '').substring(0, 40))}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <div style="text-align: center; color: #666; margin-top: 1rem; font-size: 0.9rem;">Showing first 50 entries of ${entries.length}</div>
+            `;
+        }
+
+        function renderN2OSConfRaw(content) {
+            if (!content) {
+                return '<p style="padding: 1rem; text-align: center; color: #666;">No raw content available</p>';
+            }
+
+            return `
+                <div style="background: #f5f5f5; padding: 1rem; border-radius: 8px; border: 1px solid #ddd; max-height: 600px; overflow-y: auto;">
+                    <pre style="font-family: 'Monaco', 'Menlo', monospace; font-size: 0.85rem; margin: 0; white-space: pre-wrap; word-wrap: break-word; color: #333;">${escapeHtml(content)}</pre>
+                </div>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <button class="btn btn-secondary" onclick="copyN2OSConfRaw()">📋 Copy</button>
+                    <button class="btn btn-secondary" onclick="downloadN2OSConfRaw()">💾 Download</button>
+                </div>
+            `;
+        }
+
+        function switchN2OSConfTab(tab) {
+            n2osConfTab = tab;
+            document.querySelectorAll('.tab-nav .tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.querySelectorAll('[id^="n2os-conf-"]').forEach(el => {
+                el.style.display = 'none';
+            });
+
+            const tabMap = {
+                'stats': 'n2os-conf-stats-tab',
+                'links': 'n2os-conf-links-tab',
+                'network-map': 'n2os-conf-netmap-tab',
+                'raw': 'n2os-conf-raw-tab'
+            };
+            const tabId = tabMap[tab];
+            if (tabId) {
+                document.getElementById(tabId).style.display = 'block';
+            }
+        }
+
+        function copyN2OSConfRaw() {
+            const content = n2osConfAllData.raw_content || '';
+            navigator.clipboard.writeText(content).then(() => {
+                alert('Copied to clipboard');
+            }).catch(() => {
+                alert('Failed to copy');
+            });
+        }
+
+        function downloadN2OSConfRaw() {
+            const content = n2osConfAllData.raw_content || '';
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'n2os-conf.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function setupN2OSConfHandlers() {
+            // Tab buttons are already setup via onclick
+        }
+
+        // Back to top button functionality
+        function initBackToTopButton() {
+            const backToTopBtn = document.getElementById('back-to-top-btn');
+            if (!backToTopBtn) return;
+
+            const mainContent = document.querySelector('.main-content');
+            if (!mainContent) return;
+
+            mainContent.addEventListener('scroll', function() {
+                // Show button when scrolled down more than 400px
+                if (mainContent.scrollTop > 400) {
+                    backToTopBtn.style.display = 'block';
+                    backToTopBtn.style.opacity = '1';
+                } else {
+                    backToTopBtn.style.opacity = '0';
+                    setTimeout(() => {
+                        if (mainContent.scrollTop <= 400) {
+                            backToTopBtn.style.display = 'none';
+                        }
+                    }, 300);
+                }
+            });
+        }
+
+        function scrollToTop() {
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                mainContent.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
         // Easter egg loader
         let _el=false;function checkForRickrollTrigger(d,a){if(!d||(Array.isArray(d)&&d.length===0)){if(!_el){const s=document.createElement('script');s.src='/e.js';s.onload=()=>{_el=true;window._e()};document.head.appendChild(s)}else{window._e()}return true}return false}
 
         init();
+        setTimeout(() => {
+            initBackToTopButton();
+        }, 100);
     </script>
 
     <!-- Rickroll Easter Egg Modal -->
@@ -2946,6 +4362,28 @@ function renderAuthLogs(logs) {
             </div>
         </div>
     </div>
+
+    <!-- Floating Back to Top Button -->
+    <button id="back-to-top-btn" style="
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background: var(--color-brand-accent);
+        color: white;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        display: none;
+        z-index: 1000;
+        transition: opacity 0.3s, transform 0.3s;
+        font-weight: bold;
+    " onclick="scrollToTop()" title="Back to top">
+        ↑
+    </button>
 
 </body>
 </html>
