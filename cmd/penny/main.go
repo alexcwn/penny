@@ -231,8 +231,8 @@ func validateSupportArchive(dir string) error {
 	requiredFiles := []string{
 		filepath.Join("data", "cfg", "n2os.conf.gz"),
 		filepath.Join("data", "cfg", "n2os.conf.user"),
-		filepath.Join("data", "log", "n2os_ids.log"),
-		filepath.Join("data", "log", "n2osjobs.log"),
+		filepath.Join("data", "log", "n2os", "n2os_ids.log"),
+		filepath.Join("data", "log", "n2os", "n2osjobs.log"),
 		filepath.Join("data", "log", "messages"),
 	}
 
@@ -269,80 +269,80 @@ func parseArchive(dir string) (*models.ArchiveData, error) {
 	fmt.Printf("  %s system information...", parser.GetRandomVerb())
 	err := parser.ParseSystemInfo(dir, data)
 	if err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 		log.Printf("Warning: Error parsing system info: %v", err)
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse logs
 	fmt.Printf("  %s log files...", parser.GetRandomVerb())
 	err = parser.ParseLogs(dir, data)
 	if err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 		log.Printf("Warning: Error parsing logs: %v", err)
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse process list
 	fmt.Printf("  %s process list...", parser.GetRandomVerb())
 	err = parser.ParseProcessList(dir, data)
 	if err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 		log.Printf("Warning: Error parsing process list: %v", err)
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse network config
 	fmt.Printf("  %s network configuration...", parser.GetRandomVerb())
 	err = parser.ParseNetworkConfig(dir, data)
 	if err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 		log.Printf("Warning: Error parsing network config: %v", err)
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse BPF statistics
 	fmt.Printf("  %s BPF statistics...", parser.GetRandomVerb())
 	err = parser.ParseBPFStats(dir, data)
 	if err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 		log.Printf("Warning: Error parsing BPF stats: %v", err)
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse storage info
 	fmt.Printf("  %s storage information...", parser.GetRandomVerb())
 	err = parser.ParseStorage(dir, data)
 	if err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 		log.Printf("Warning: Error parsing storage info: %v", err)
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse N2OS config
 	fmt.Printf("  %s N2OS configuration...", parser.GetRandomVerb())
 	err = parser.ParseN2OSConfig(dir, data)
 	if err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 		log.Printf("Warning: Error parsing N2OS config: %v", err)
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse N2Op logs for upgrade history
 	fmt.Printf("  %s N2Op upgrade logs...", parser.GetRandomVerb())
 	err = parser.ParseN2OpLogs(dir, data)
 	if err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 		log.Printf("Warning: Error parsing N2Op logs: %v", err)
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	return data, nil

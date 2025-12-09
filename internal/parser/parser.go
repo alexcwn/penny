@@ -34,9 +34,9 @@ func ParseLogs(dir string, data *models.ArchiveData) error {
 	fmt.Printf("    %s syslog messages...", GetRandomVerb())
 	messages, err := ParseMessagesLog(dir)
 	if err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 		data.Logs.Messages = messages
 	}
 
@@ -44,9 +44,9 @@ func ParseLogs(dir string, data *models.ArchiveData) error {
 	fmt.Printf("    %s nginx error logs...", GetRandomVerb())
 	nginxErrors, err := ParseNginxErrorLogs(dir)
 	if err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 		data.Logs.NginxErrors = nginxErrors
 	}
 
@@ -54,9 +54,9 @@ func ParseLogs(dir string, data *models.ArchiveData) error {
 	fmt.Printf("    %s nginx access logs...", GetRandomVerb())
 	nginxAccess, err := ParseNginxAccessLogs(dir)
 	if err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 		data.Logs.NginxAccess = nginxAccess
 	}
 
@@ -64,106 +64,106 @@ func ParseLogs(dir string, data *models.ArchiveData) error {
 	fmt.Printf("    %s authentication logs...", GetRandomVerb())
 	authLogs, err := ParseAuthLog(dir)
 	if err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 		data.Logs.AuthLog = authLogs
 	}
 
 	// Parse N2OS operation logs
 	fmt.Printf("    %s N2OS operation logs...", GetRandomVerb())
 	if err := ParseN2OpLogs(dir, data); err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse health check logs
 	fmt.Printf("    %s health check logs...", GetRandomVerb())
 	if err := ParseHealthLogs(dir, data); err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse database diagnostics
 	fmt.Printf("    %s database diagnostics...", GetRandomVerb())
 	if err := ParseDatabaseDiagnostics(dir, data); err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse N2OS system configuration (must be before production logs to extract timezone)
 	fmt.Printf("    %s N2OS configuration...", GetRandomVerb())
 	if err := ParseN2OSConf(dir, data); err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse N2OS job logs
 	fmt.Printf("    %s N2OS job logs...", GetRandomVerb())
 	if err := ParseN2OSJobLogs(dir, data); err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse N2OS production logs
 	fmt.Printf("    %s N2OS production logs...", GetRandomVerb())
 	if err := ParseN2OSProductionLogs(dir, data); err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse N2OS migration logs
 	fmt.Printf("    %s N2OS migration logs...", GetRandomVerb())
 	if err := ParseN2OSMigrateLogs(dir, data); err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse N2OS IDS logs
 	fmt.Printf("    %s N2OS IDS logs...", GetRandomVerb())
 	if err := ParseN2OSIDSLogs(dir, data); err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse N2OS IDS events logs
 	fmt.Printf("    %s N2OS IDS events logs...", GetRandomVerb())
 	if err := ParseN2OSIDSEventsLogs(dir, data); err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse N2OS Alert logs (both alert.log and alert_events.log)
 	fmt.Printf("    %s N2OS alert logs...", GetRandomVerb())
 	if err := ParseN2OSAlertLogs(dir, data); err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse database sample data
 	fmt.Printf("    %s database sample data...", GetRandomVerb())
 	if err := ParseDatabaseSampleData(dir, data); err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	// Parse appliances
 	fmt.Printf("    %s appliances...", GetRandomVerb())
 	if err := ParseAppliances(dir, data); err != nil {
-		fmt.Printf(" ✗\n")
+		fmt.Printf(" ❌\n")
 	} else {
-		fmt.Printf(" ✓\n")
+		fmt.Printf(" ✅\n")
 	}
 
 	return nil

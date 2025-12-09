@@ -13,6 +13,32 @@ import (
 	"time"
 )
 
+// compareJobSources returns true if sourceA should come before sourceB
+// Order: jobs.4 < jobs.3 < jobs.2 < jobs.1 < jobs.0 < jobs
+// (older rotated logs first in chronological order)
+func compareJobSources(sourceA, sourceB string) bool {
+	// Extract rotation number if present
+	extractNum := func(s string) int {
+		if s == "jobs" {
+			return -1 // Current log comes last
+		}
+		// Parse "jobs.N" -> N (e.g., "jobs.0" -> 0)
+		parts := strings.Split(s, ".")
+		if len(parts) == 2 {
+			if num, err := strconv.Atoi(parts[1]); err == nil {
+				return num
+			}
+		}
+		return -1
+	}
+
+	numA := extractNum(sourceA)
+	numB := extractNum(sourceB)
+
+	// Higher rotation numbers (older files) come first in chronological order
+	return numA > numB
+}
+
 // ParseN2OSJobLogs parses all n2osjobs.log files (including rotated logs)
 func ParseN2OSJobLogs(baseDir string, data *models.ArchiveData) error {
 	logDir := filepath.Join(baseDir, "data", "log", "n2os")
@@ -34,9 +60,20 @@ func ParseN2OSJobLogs(baseDir string, data *models.ArchiveData) error {
 		allEntries = append(allEntries, entries...)
 	}
 
-	// Sort all entries by timestamp to ensure chronological order
+	// Sort all entries by timestamp, then source file, then line number for stable chronological order
 	sort.Slice(allEntries, func(i, j int) bool {
-		return allEntries[i].Timestamp.Before(allEntries[j].Timestamp)
+		// Primary: Sort by timestamp
+		if !allEntries[i].Timestamp.Equal(allEntries[j].Timestamp) {
+			return allEntries[i].Timestamp.Before(allEntries[j].Timestamp)
+		}
+
+		// Secondary: Sort by source file (older rotated logs first)
+		if allEntries[i].Source != allEntries[j].Source {
+			return compareJobSources(allEntries[i].Source, allEntries[j].Source)
+		}
+
+		// Tertiary: Sort by line number within same file
+		return allEntries[i].LineNumber < allEntries[j].LineNumber
 	})
 
 	data.N2OSJobLogs = allEntries
