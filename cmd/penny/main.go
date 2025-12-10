@@ -276,13 +276,13 @@ func parseArchive(dir string) (*models.ArchiveData, error) {
 	}
 
 	// Parse logs
-	fmt.Printf("  %s log files...", parser.GetRandomVerb())
+	fmt.Printf("  %s log files...\n", parser.GetRandomVerb())
 	err = parser.ParseLogs(dir, data)
 	if err != nil {
-		fmt.Printf(" ❌\n")
+		fmt.Printf("  ❌\n")
 		log.Printf("Warning: Error parsing logs: %v", err)
 	} else {
-		fmt.Printf(" ✅\n")
+		fmt.Printf("  ✅\n")
 	}
 
 	// Parse process list

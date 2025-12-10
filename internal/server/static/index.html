@@ -2408,7 +2408,7 @@
                 return `
                     <div class="log-entry log-selected-${isSelected} ${log.Level ? log.Level.toLowerCase() : ''}" style="display: flex; gap: 0.75rem; align-items: flex-start;">
                         <input type="checkbox" class="log-checkbox" data-log-id="${uniqueId}" ${isSelected ? 'checked' : ''} onclick="toggleSyslogLogSelection(event, '${uniqueId}')" style="cursor: pointer; margin: 0; margin-top: 0.25rem; flex-shrink: 0;">
-                        <div style="flex: 1;">${rawLine}</div>
+                        <div style="flex: 1; min-width: 0;">${rawLine}</div>
                     </div>
                 `;
             }).join('');
@@ -2627,9 +2627,8 @@
             n2osjobsFilteredLogs = [...n2osjobsAllLogs];
             n2osjobsCurrentPage = 1;
 
-            // Load column visibility preferences from localStorage (default to hidden/off)
-            const showSource = localStorage.getItem('n2osjobs_show_source') === 'true';
-            const showLineNumber = localStorage.getItem('n2osjobs_show_line_number') === 'true';
+            // Load debug info visibility preference from localStorage (default to hidden/off)
+            const showDebugInfo = localStorage.getItem('n2osjobs_show_debug_info') === 'true';
 
             return `
                 <div class="section-title">Background Tasks (${n2osjobsAllLogs.length} entries)</div>
@@ -2647,15 +2646,11 @@
                         </select>
                     </div>
 
-                    <!-- Column Toggle Switches -->
+                    <!-- Debug Info Toggle -->
                     <div style="display: flex; gap: 1.5rem; margin-bottom: 0.5rem; font-size: var(--font-size-small);">
                         <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                            <input type="checkbox" id="toggle-source" ${showSource ? 'checked' : ''} onchange="toggleN2OSJobsColumn('source', this.checked)">
-                            <span>Show Source</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                            <input type="checkbox" id="toggle-line-number" ${showLineNumber ? 'checked' : ''} onchange="toggleN2OSJobsColumn('line_number', this.checked)">
-                            <span>Show Line Number</span>
+                            <input type="checkbox" id="toggle-debug-info" ${showDebugInfo ? 'checked' : ''} onchange="toggleN2OSJobsDebugInfo(this.checked)">
+                            <span>Show Debug Info</span>
                         </label>
                     </div>
 
@@ -2678,16 +2673,9 @@
                         <input type="datetime-local" id="n2osjobs-datetime-start" style="padding: 0.5rem; background: var(--color-bg-secondary); border: 1px solid var(--color-border-primary); border-radius: 6px; color: var(--text-primary); font-size: var(--font-size-small);">
                         <label style="font-size: var(--font-size-small); color: var(--text-secondary); white-space: nowrap;">To:</label>
                         <input type="datetime-local" id="n2osjobs-datetime-end" style="padding: 0.5rem; background: var(--color-bg-secondary); border: 1px solid var(--color-border-primary); border-radius: 6px; color: var(--text-primary); font-size: var(--font-size-small);">
-                        <select id="n2osjobs-timezone-selector" style="padding: 0.4rem 0.6rem; background: var(--color-bg-secondary); border: 1px solid var(--color-border-primary); border-radius: 6px; color: var(--text-primary); font-size: var(--font-size-small); cursor: pointer;">
-                            <option value="original" selected>Original</option>
-                            <option value="utc">UTC</option>
-                        </select>
                         <button class="btn btn-secondary" onclick="resetN2OSJobsDatetimeFilter()" style="white-space: nowrap;">Reset Dates</button>
                     </div>
 
-                    <div style="font-size: var(--font-size-x-small); color: var(--text-secondary);">
-                        <strong>Search operators:</strong> <code>|</code> (OR), <code>&</code> (AND), <code>!</code> (NOT) &mdash; e.g., <code>SyncTask | UpdateTask</code>, <code>error & timeout</code>, <code>executed ! SyncTask</code>
-                    </div>
                 </div>
 
                 <div id="n2osjobs-container"></div>
@@ -2721,9 +2709,8 @@
             const searchBox = document.getElementById('n2osjobs-search');
             const searchTerms = extractSearchTerms(searchBox ? searchBox.value : '');
 
-            // Check column visibility from localStorage
-            const showSource = localStorage.getItem('n2osjobs_show_source') === 'true';
-            const showLineNumber = localStorage.getItem('n2osjobs_show_line_number') === 'true';
+            // Check debug info visibility from localStorage
+            const showDebugInfo = localStorage.getItem('n2osjobs_show_debug_info') === 'true';
 
             // Sort logs based on current sort order (multi-key: timestamp -> source -> line number)
             const sortedLogs = [...n2osjobsFilteredLogs].sort((a, b) => {
@@ -2785,20 +2772,18 @@
                 const selectedClass = isSelected ? 'log-selected' : '';
                 const highlightedLine = highlightSearchTerms(log.raw_line, searchTerms);
 
-                // Build the columns HTML (source and line number)
-                let columnsHTML = '';
-                if (showSource) {
-                    columnsHTML += `<div style="font-weight: bold; color: var(--text-secondary); font-size: var(--font-size-small); margin-right: 0.75rem;">Source: ${log.source || 'N/A'}</div>`;
-                }
-                if (showLineNumber) {
-                    columnsHTML += `<div style="font-weight: bold; color: var(--text-secondary); font-size: var(--font-size-small);">Line: ${log.line_number || 'N/A'}</div>`;
+                // Build the debug info HTML (source, line number, and timestamps) on one line
+                let debugHTML = '';
+                if (showDebugInfo) {
+                    const utc = new Date(log.timestamp).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '');
+                    debugHTML = `<div style="font-weight: bold; color: var(--text-secondary); font-size: var(--font-size-small); margin-bottom: 0.25rem;">Source: ${log.source || 'N/A'} | Line: ${log.line_number || 'N/A'} | Original: ${log.timestamp || 'N/A'} | UTC: ${utc}</div>`;
                 }
 
                 return `
                     <div class="log-entry ${selectedClass}" data-log-id="${uniqueId}" onclick="handleLogEntryClick(event, this)" style="display: flex; gap: 0.75rem; align-items: flex-start;">
                         <input type="checkbox" class="log-checkbox" data-log-id="${uniqueId}" ${isSelected ? 'checked' : ''} onclick="toggleN2OSJobLogSelection(event, '${uniqueId}')" style="cursor: pointer; margin: 0; margin-top: 0.25rem; flex-shrink: 0;">
                         <div style="flex: 1; min-width: 0;">
-                            ${columnsHTML ? `<div style="display: flex; gap: 0.75rem; margin-bottom: 0.25rem;">${columnsHTML}</div>` : ''}
+                            ${debugHTML ? `<div>${debugHTML}</div>` : ''}
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
                                 <div class="log-line" style="flex: 1; min-width: 0;">${highlightedLine}</div>
                                 ${hasJSON ? `<button class="btn btn-secondary json-view-btn" data-log-index="${idx}" style="padding: 0.2rem 0.4rem; font-size: var(--font-size-small); flex-shrink: 0;" title="View JSON" onclick="event.stopPropagation();">🔍</button>` : ''}
@@ -2894,15 +2879,11 @@
             renderN2OSJobsPage();
         }
 
-        function toggleN2OSJobsColumn(column, isVisible) {
+        function toggleN2OSJobsDebugInfo(isVisible) {
             // Save preference to localStorage
-            if (column === 'source') {
-                localStorage.setItem('n2osjobs_show_source', isVisible.toString());
-            } else if (column === 'line_number') {
-                localStorage.setItem('n2osjobs_show_line_number', isVisible.toString());
-            }
+            localStorage.setItem('n2osjobs_show_debug_info', isVisible.toString());
 
-            // Re-render to show/hide column
+            // Re-render to show/hide debug info
             renderN2OSJobsPage();
         }
 
@@ -2995,8 +2976,8 @@
             const endInput = document.getElementById('n2osjobs-datetime-end');
 
             const searchTerm = searchBox ? searchBox.value.trim() : '';
-            const startTime = parseDatetimeInput(startInput?.value, globalTimezone) ?? -Infinity;
-            let endTime = parseDatetimeInput(endInput?.value, globalTimezone) ?? Infinity;
+            const startTime = parseDatetimeInput(startInput?.value) ?? -Infinity;
+            let endTime = parseDatetimeInput(endInput?.value) ?? Infinity;
 
             // datetime-local has minute precision, so add 59.999 seconds to endTime to include
             // all logs within that minute (e.g., 00:40:00 through 00:40:59.999)
@@ -3055,15 +3036,15 @@
 
             if (timestamps.length === 0) return;
 
-            const minTime = new Date(Math.min(...timestamps.map(d => d.getTime())));
-            const maxTime = new Date(Math.max(...timestamps.map(d => d.getTime())));
+            const minTime = Math.min(...timestamps.map(d => d.getTime()));
+            const maxTime = Math.max(...timestamps.map(d => d.getTime()));
 
             const startInput = document.getElementById('n2osjobs-datetime-start');
             const endInput = document.getElementById('n2osjobs-datetime-end');
 
             if (startInput && endInput) {
-                startInput.value = formatDatetimeInputValue(minTime, globalTimezone);
-                endInput.value = formatDatetimeInputValue(maxTime, globalTimezone);
+                startInput.value = formatDatetimeInputValue(minTime);
+                endInput.value = formatDatetimeInputValue(maxTime);
                 startInput.dataset.default = startInput.value;
                 endInput.dataset.default = endInput.value;
             }
@@ -3372,8 +3353,7 @@
             idsViewFilteredLogs = [...idsViewAllLogs];
             idsViewCurrentPage = 1;
 
-            const showSource = localStorage.getItem('idsview_show_source') === 'true';
-            const showLineNumber = localStorage.getItem('idsview_show_line_number') === 'true';
+            const showDebugInfo = localStorage.getItem('idsview_show_debug_info') === 'true';
 
             return `
                 <div class="section-title">IDS Logs (${idsViewAllLogs.length} entries total)</div>
@@ -3403,12 +3383,8 @@
 
                     <div style="display: flex; gap: 1.5rem; margin-bottom: 0.5rem; font-size: var(--font-size-small);">
                         <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                            <input type="checkbox" id="toggle-idsview-source" ${showSource ? 'checked' : ''} onchange="toggleIDSViewColumn('source', this.checked)">
-                            <span>Show Source</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                            <input type="checkbox" id="toggle-idsview-line-number" ${showLineNumber ? 'checked' : ''} onchange="toggleIDSViewColumn('line_number', this.checked)">
-                            <span>Show Line Number</span>
+                            <input type="checkbox" id="toggle-idsview-debug-info" ${showDebugInfo ? 'checked' : ''} onchange="toggleIDSViewDebugInfo(this.checked)">
+                            <span>Show Debug Info</span>
                         </label>
                     </div>
 
@@ -3518,8 +3494,7 @@
             const searchBox = document.getElementById('idsview-search');
             const searchTerms = extractSearchTerms(searchBox ? searchBox.value : '');
 
-            const showSource = localStorage.getItem('idsview_show_source') === 'true';
-            const showLineNumber = localStorage.getItem('idsview_show_line_number') === 'true';
+            const showDebugInfo = localStorage.getItem('idsview_show_debug_info') === 'true';
 
             const sortedLogs = [...idsViewFilteredLogs].sort((a, b) => {
                 const timeA = new Date(a.timestamp).getTime();
@@ -3554,16 +3529,21 @@
                 const hasJSON = extractJSON(log.raw_line) !== null;
                 const highlightedLine = highlightSearchTerms(log.raw_line, searchTerms);
 
-                let columnsHTML = '';
-                if (showSource) columnsHTML += `<div style="font-weight: bold; color: var(--text-secondary); font-size: var(--font-size-small); margin-bottom: 0.25rem;">Source: ${log.source || 'N/A'}</div>`;
-                if (showLineNumber) columnsHTML += `<div style="font-weight: bold; color: var(--text-secondary); font-size: var(--font-size-small); margin-bottom: 0.25rem;">Line: ${log.line_number || 'N/A'}</div>`;
+                let debugHTML = '';
+                if (showDebugInfo) {
+                    const utc = new Date(log.timestamp).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '');
+                    debugHTML = `<div style="font-weight: bold; color: var(--text-secondary); font-size: var(--font-size-small); margin-bottom: 0.25rem;">Source: ${log.source || 'N/A'} | Line: ${log.line_number || 'N/A'} | Original: ${log.timestamp || 'N/A'} | UTC: ${utc}</div>`;
+                }
 
                 return `
                     <div class="log-entry log-selected-${isSelected}" data-log-id="${uniqueId}" onclick="toggleLogLine(this)" style="display: flex; gap: 0.75rem; align-items: flex-start;">
                         <input type="checkbox" class="log-checkbox" data-log-id="${uniqueId}" ${isSelected ? 'checked' : ''} onclick="toggleIDSViewLogSelection(event, '${uniqueId}')" style="cursor: pointer; margin: 0; margin-top: 0.25rem; flex-shrink: 0;">
-                        <div style="flex: 1;">
-                            ${columnsHTML ? `<div style="display: flex; gap: 0.75rem; margin-bottom: 0.25rem;">${columnsHTML}</div>` : ''}
-                            <div class="log-line">${highlightedLine}${hasJSON ? ` <button class="btn btn-secondary idsview-json-btn" data-log-index="${idx}" style="padding: 0.2rem 0.4rem; font-size: var(--font-size-small); margin-left: 0.5rem; vertical-align: middle;" title="View JSON" onclick="event.stopPropagation();">🔍</button>` : ''}</div>
+                        <div style="flex: 1; min-width: 0;">
+                            ${debugHTML ? `<div>${debugHTML}</div>` : ''}
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <div class="log-line" style="flex: 1; min-width: 0;">${highlightedLine}</div>
+                                ${hasJSON ? `<button class="btn btn-secondary idsview-json-btn" data-log-index="${idx}" style="padding: 0.2rem 0.4rem; font-size: var(--font-size-small); flex-shrink: 0;" title="View JSON" onclick="event.stopPropagation();">🔍</button>` : ''}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -3610,8 +3590,8 @@
             renderIDSViewPage();
         }
 
-        function toggleIDSViewColumn(column, isVisible) {
-            localStorage.setItem(`idsview_show_${column}`, isVisible.toString());
+        function toggleIDSViewDebugInfo(isVisible) {
+            localStorage.setItem('idsview_show_debug_info', isVisible.toString());
             renderIDSViewPage();
         }
 
@@ -3697,8 +3677,7 @@
         let alertViewSortOrder = 'desc';
         let alertViewShowAlert = true;
         let alertViewShowEvents = true;
-        let alertViewShowSource = true;
-        let alertViewShowLineNumber = false;
+        let alertViewShowDebugInfo = false;
         let alertViewSelectedLogs = new Set(); // Multi-select state
 
         // Helper to generate stable unique ID for Alert log entry
@@ -3828,8 +3807,7 @@
 
             alertViewShowAlert = localStorage.getItem('alertview_show_alert') !== 'false';
             alertViewShowEvents = localStorage.getItem('alertview_show_events') !== 'false';
-            alertViewShowSource = localStorage.getItem('alertview_show_source') !== 'false';
-            alertViewShowLineNumber = localStorage.getItem('alertview_show_linenumber') !== 'false';
+            alertViewShowDebugInfo = localStorage.getItem('alertview_show_debug_info') === 'true';
 
             alertViewFilteredLogs = [...alertViewAllLogs];
             alertViewCurrentPage = 1;
@@ -3862,12 +3840,8 @@
 
                     <div style="display: flex; gap: 1.5rem; margin-bottom: 0.5rem; font-size: var(--font-size-small); color: var(--text-secondary);">
                         <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                            <input type="checkbox" id="toggle-alertview-source" ${alertViewShowSource ? 'checked' : ''} onchange="toggleAlertViewColumn('source', this.checked)">
-                            <span>Show Source</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                            <input type="checkbox" id="toggle-alertview-linenumber" ${alertViewShowLineNumber ? 'checked' : ''} onchange="toggleAlertViewColumn('linenumber', this.checked)">
-                            <span>Show Line Number</span>
+                            <input type="checkbox" id="toggle-alertview-debug-info" ${alertViewShowDebugInfo ? 'checked' : ''} onchange="toggleAlertViewDebugInfo(this.checked)">
+                            <span>Show Debug Info</span>
                         </label>
                     </div>
 
@@ -3998,16 +3972,21 @@
                 const isSelected = alertViewSelectedLogs.has(uniqueId);
                 const hasJSON = log.log_type === 'events' && extractJSON(log.raw_line) !== null;
                 const highlightedLine = highlightSearchTerms(log.raw_line, searchTerms);
-                let columnsHTML = '';
-                if (alertViewShowSource) columnsHTML += `<div style="font-weight: bold; color: var(--text-secondary); font-size: var(--font-size-small); margin-bottom: 0.25rem;">Source: ${log.source || 'N/A'}</div>`;
-                if (alertViewShowLineNumber) columnsHTML += `<div style="font-weight: bold; color: var(--text-secondary); font-size: var(--font-size-small); margin-bottom: 0.25rem;">Line: ${log.line_number || 'N/A'}</div>`;
+                let debugHTML = '';
+                if (alertViewShowDebugInfo) {
+                    const utc = new Date(log.timestamp).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '');
+                    debugHTML = `<div style="font-weight: bold; color: var(--text-secondary); font-size: var(--font-size-small); margin-bottom: 0.25rem;">Source: ${log.source || 'N/A'} | Line: ${log.line_number || 'N/A'} | Original: ${log.timestamp || 'N/A'} | UTC: ${utc}</div>`;
+                }
 
                 return `
                     <div class="log-entry log-selected-${isSelected}" data-log-id="${uniqueId}" onclick="toggleLogLine(this)" style="display: flex; gap: 0.75rem; align-items: flex-start;">
                         <input type="checkbox" class="log-checkbox" data-log-id="${uniqueId}" ${isSelected ? 'checked' : ''} onclick="toggleAlertViewLogSelection(event, '${uniqueId}')" style="cursor: pointer; margin: 0; margin-top: 0.25rem; flex-shrink: 0;">
-                        <div style="flex: 1;">
-                            ${columnsHTML ? `<div style="display: flex; gap: 0.75rem; margin-bottom: 0.25rem;">${columnsHTML}</div>` : ''}
-                            <div class="log-line">${highlightedLine}${hasJSON ? ` <button class="btn btn-secondary alertview-json-btn" data-log-index="${idx}" style="padding: 0.2rem 0.4rem; font-size: var(--font-size-small); margin-left: 0.5rem; vertical-align: middle;" title="View JSON" onclick="event.stopPropagation();">🔍</button>` : ''}</div>
+                        <div style="flex: 1; min-width: 0;">
+                            ${debugHTML ? `<div>${debugHTML}</div>` : ''}
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <div class="log-line" style="flex: 1; min-width: 0;">${highlightedLine}</div>
+                                ${hasJSON ? `<button class="btn btn-secondary alertview-json-btn" data-log-index="${idx}" style="padding: 0.2rem 0.4rem; font-size: var(--font-size-small); flex-shrink: 0;" title="View JSON" onclick="event.stopPropagation();">🔍</button>` : ''}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -4077,14 +4056,9 @@
             renderAlertViewPage();
         }
 
-        function toggleAlertViewColumn(column, show) {
-            if (column === 'source') {
-                alertViewShowSource = show;
-                localStorage.setItem('alertview_show_source', show);
-            } else if (column === 'linenumber') {
-                alertViewShowLineNumber = show;
-                localStorage.setItem('alertview_show_linenumber', show);
-            }
+        function toggleAlertViewDebugInfo(isVisible) {
+            alertViewShowDebugInfo = isVisible;
+            localStorage.setItem('alertview_show_debug_info', isVisible.toString());
             renderAlertViewPage();
         }
 
@@ -4362,8 +4336,8 @@
             const startInput = document.getElementById('productionview-datetime-start');
             const endInput = document.getElementById('productionview-datetime-end');
 
-            const startTime = startInput && startInput.value ? new Date(startInput.value).getTime() : -Infinity;
-            const endTime = endInput && endInput.value ? new Date(endInput.value).getTime() : Infinity;
+            const startTime = parseDatetimeInput(startInput?.value, globalTimezone) ?? -Infinity;
+            const endTime = parseDatetimeInput(endInput?.value, globalTimezone) ?? Infinity;
 
             productionViewFilteredLogs = productionViewAllLogs.filter(log => {
                 const logTime = new Date(log.timestamp).getTime();
@@ -4442,9 +4416,9 @@
                 // Use log-entry with log-line for collapse/expand functionality (click to toggle)
                 html += `<div class="log-entry log-selected-${isSelected}" onclick="toggleLogLine(this)" style="display: flex; gap: 0.75rem; align-items: flex-start;">`;
                 html += `<input type="checkbox" class="log-checkbox" data-log-id="${uniqueId}" ${isSelected ? 'checked' : ''} onclick="toggleProductionViewLogSelection(event, '${uniqueId}')" style="cursor: pointer; margin: 0; margin-top: 0.25rem; flex-shrink: 0;">`;
-                html += `<div style="flex: 1;">`;
+                html += `<div style="flex: 1; min-width: 0;">`;
                 if (meta) html += `<div style="font-weight: bold; color: var(--text-secondary); font-size: var(--font-size-small); margin-bottom: 0.25rem;">${meta}</div>`;
-                html += `<div class="log-line">${highlightedLine}</div>`;
+                html += `<div class="log-line" style="min-width: 0;">${highlightedLine}</div>`;
                 html += `</div></div>`;
             });
 
@@ -4498,8 +4472,8 @@
             const minTime = Math.min(...timestamps);
             const maxTime = Math.max(...timestamps);
 
-            startInput.value = formatDatetimeLocal(new Date(minTime));
-            endInput.value = formatDatetimeLocal(new Date(maxTime));
+            startInput.value = formatDatetimeInputValue(minTime, globalTimezone);
+            endInput.value = formatDatetimeInputValue(maxTime, globalTimezone);
         }
 
         function resetProductionViewDatetimeFilter() {
@@ -4508,8 +4482,10 @@
 
             if (startInput && endInput && productionViewAllLogs.length > 0) {
                 const timestamps = productionViewAllLogs.map(log => new Date(log.timestamp).getTime());
-                startInput.value = formatDatetimeLocal(new Date(Math.min(...timestamps)));
-                endInput.value = formatDatetimeLocal(new Date(Math.max(...timestamps)));
+                const minTime = Math.min(...timestamps);
+                const maxTime = Math.max(...timestamps);
+                startInput.value = formatDatetimeInputValue(minTime, globalTimezone);
+                endInput.value = formatDatetimeInputValue(maxTime, globalTimezone);
                 applyProductionViewFilters();
             }
         }
@@ -4851,7 +4827,7 @@
                 return `
                     <div class="log-entry log-selected-${isSelected}" data-log-id="${uniqueId}" onclick="toggleLogLine(this)" style="display: flex; gap: 0.75rem; align-items: flex-start;">
                         <input type="checkbox" class="log-checkbox" data-log-id="${uniqueId}" ${isSelected ? 'checked' : ''} onclick="toggleNginxViewLogSelection(event, '${uniqueId}')" style="cursor: pointer; margin: 0; margin-top: 0.25rem; flex-shrink: 0;">
-                        <div class="log-line" style="flex: 1;">${logTypeLabel} ${highlightedLine}</div>
+                        <div class="log-line" style="flex: 1; min-width: 0;">${logTypeLabel} ${highlightedLine}</div>
                     </div>
                 `;
             }).join('');
@@ -5189,7 +5165,7 @@ function renderAuthLogs(logs) {
                 }
                 return `<div class="log-entry log-selected-${isSelected}" data-log-id="${uniqueId}" onclick="toggleLogLine(this)" style="display: flex; gap: 0.75rem; align-items: flex-start;">
                     <input type="checkbox" class="log-checkbox" data-log-id="${uniqueId}" ${isSelected ? 'checked' : ''} onclick="toggleAuthLogSelection(event, '${uniqueId}')" style="cursor: pointer; margin: 0; margin-top: 0.25rem; flex-shrink: 0;">
-                    <div class="log-line" style="flex: 1;">${rawLine}</div>
+                    <div class="log-line" style="flex: 1; min-width: 0;">${rawLine}</div>
                 </div>`;
             }).join('');
 
@@ -5673,7 +5649,6 @@ function renderAuthLogs(logs) {
             // Wire up timezone selectors for each view
             const viewSelectors = [
                 'syslog-timezone-selector',
-                'n2osjobs-timezone-selector',
                 'idsview-timezone-selector',
                 'alertview-timezone-selector',
                 'nginxview-timezone-selector',
@@ -5721,43 +5696,24 @@ function renderAuthLogs(logs) {
             }
         }
 
-        // Helper function to convert datetime-local input to correct timezone
-        function parseDatetimeInput(inputValue, timezone) {
+        // Helper function to convert datetime-local input to timestamp
+        // Treats the datetime-local input as representing the actual time (no timezone conversion)
+        function parseDatetimeInput(inputValue) {
             if (!inputValue) return null;
-
-            if (timezone === 'local') {
-                // datetime-local naturally gives local time
-                return new Date(inputValue).getTime();
-            } else if (timezone === 'utc' || timezone === 'original') {
-                // User entered UTC time in datetime-local, but browser interprets as local
-                // Need to adjust for timezone offset
-                const localDate = new Date(inputValue);
-                const offset = localDate.getTimezoneOffset() * 60 * 1000;
-                return localDate.getTime() - offset;
-            }
+            return new Date(inputValue).getTime();
         }
 
-        // Helper function to format date for datetime-local input based on selected timezone
-        function formatDatetimeInputValue(timestamp, timezone) {
+        // Helper function to format date for datetime-local input
+        // Always displays in local time (what the user sees in their browser)
+        function formatDatetimeInputValue(timestamp) {
             const date = new Date(timestamp);
             if (isNaN(date.getTime())) return '';
 
-            let year, month, day, hours, minutes;
-
-            if (timezone === 'local') {
-                year = date.getFullYear();
-                month = String(date.getMonth() + 1).padStart(2, '0');
-                day = String(date.getDate()).padStart(2, '0');
-                hours = String(date.getHours()).padStart(2, '0');
-                minutes = String(date.getMinutes()).padStart(2, '0');
-            } else if (timezone === 'utc' || timezone === 'original') {
-                // Show UTC values in the input
-                year = date.getUTCFullYear();
-                month = String(date.getUTCMonth() + 1).padStart(2, '0');
-                day = String(date.getUTCDate()).padStart(2, '0');
-                hours = String(date.getUTCHours()).padStart(2, '0');
-                minutes = String(date.getUTCMinutes()).padStart(2, '0');
-            }
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
 
             return `${year}-${month}-${day}T${hours}:${minutes}`;
         }

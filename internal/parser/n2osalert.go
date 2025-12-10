@@ -168,18 +168,16 @@ func parseN2OSAlertEventsLogFile(baseDir string, data *models.ArchiveData) error
 // parseN2OSAlertTimestamp parses timestamp from alert log format
 // Format: 2024-08-28T14:42:16.523 +0000
 func parseN2OSAlertTimestamp(timestampStr string) time.Time {
-	// Remove timezone suffix if present
-	parts := strings.Fields(timestampStr)
-	if len(parts) > 0 {
-		timestampStr = parts[0]
-	}
-
-	// Try to parse ISO format with milliseconds
+	// Try to parse with timezone offset first to preserve timezone information
 	formats := []string{
-		"2006-01-02T15:04:05.000",
-		"2006-01-02T15:04:05",
-		"2006-01-02 15:04:05.000",
-		"2006-01-02 15:04:05",
+		"2006-01-02T15:04:05.000 -0700", // With timezone
+		"2006-01-02T15:04:05 -0700",      // With timezone, no milliseconds
+		"2006-01-02T15:04:05.000",        // Without timezone
+		"2006-01-02T15:04:05",            // Without timezone, no milliseconds
+		"2006-01-02 15:04:05.000 -0700",  // Space-separated with timezone
+		"2006-01-02 15:04:05 -0700",      // Space-separated with timezone, no milliseconds
+		"2006-01-02 15:04:05.000",        // Space-separated without timezone
+		"2006-01-02 15:04:05",            // Space-separated without timezone, no milliseconds
 	}
 
 	for _, format := range formats {
