@@ -227,7 +227,7 @@
         .search-box:focus { outline: none; border-color: var(--color-brand-primary); }
         body.dark-mode .search-box { background: #0f172a; border: 1px solid #334155; }
         body.dark-mode .search-box:focus { border-color: #3b82f6; }
-        .search-filter-wrapper { position: sticky; top: 0; z-index: 50; background: var(--color-bg-body); padding: 1.5rem 0; margin-bottom: 0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .search-filter-wrapper { position: sticky; top: 0; z-index: 50; background: var(--color-bg-primary); padding: 1rem 1.5rem; margin-bottom: 1rem; border: 1px solid var(--color-border-secondary); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .flags-toggle { color: var(--color-brand-primary); cursor: pointer; text-decoration: underline; font-size: var(--font-size-small); }
         .flags-toggle:hover { color: var(--color-brand-accent); }
         body.dark-mode .flags-toggle { color: #3b82f6; }
@@ -2646,34 +2646,36 @@
                         </select>
                     </div>
 
-                    <!-- Debug Info Toggle -->
-                    <div style="display: flex; gap: 1.5rem; margin-bottom: 0.5rem; font-size: var(--font-size-small);">
-                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                            <input type="checkbox" id="toggle-debug-info" ${showDebugInfo ? 'checked' : ''} onchange="toggleN2OSJobsDebugInfo(this.checked)">
-                            <span>Show Debug Info</span>
-                        </label>
-                    </div>
-
-                    <!-- Selection Controls -->
-                    <div style="display: flex; gap: 1rem; align-items: center; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--color-border-secondary); flex-wrap: wrap;">
-                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: var(--font-size-small);">
-                            <input type="checkbox" id="n2osjobs-select-all" onchange="toggleN2OSJobsSelectAll(this.checked)">
-                            <span>Select All on Page</span>
-                        </label>
-                        <button class="btn btn-secondary" onclick="clearN2OSJobsSelections()" style="font-size: var(--font-size-small);">
-                            Clear All Selections (<span id="n2osjobs-selection-count">0</span>)
-                        </button>
-                        <span style="font-size: var(--font-size-x-small); color: var(--text-muted);">
-                            💡 Selections persist across pages
+                    <!-- Collapsible Advanced Filters Header -->
+                    <div style="padding: 0.5rem 1rem; cursor: pointer; text-align: center; background: rgba(59, 130, 246, 0.05); border-radius: 6px; margin-bottom: 0.5rem;" onclick="toggleN2OSJobsAdvancedFilters()">
+                        <span style="font-size: var(--font-size-x-small); color: #3b82f6;">
+                            ⚙️ Advanced Filters (Click to expand)
                         </span>
                     </div>
 
-                    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.5rem;">
-                        <label style="font-size: var(--font-size-small); color: var(--text-secondary); white-space: nowrap;">From:</label>
-                        <input type="datetime-local" id="n2osjobs-datetime-start" style="padding: 0.5rem; background: var(--color-bg-secondary); border: 1px solid var(--color-border-primary); border-radius: 6px; color: var(--text-primary); font-size: var(--font-size-small);">
-                        <label style="font-size: var(--font-size-small); color: var(--text-secondary); white-space: nowrap;">To:</label>
-                        <input type="datetime-local" id="n2osjobs-datetime-end" style="padding: 0.5rem; background: var(--color-bg-secondary); border: 1px solid var(--color-border-primary); border-radius: 6px; color: var(--text-primary); font-size: var(--font-size-small);">
-                        <button class="btn btn-secondary" onclick="resetN2OSJobsDatetimeFilter()" style="white-space: nowrap;">Reset Dates</button>
+                    <!-- Collapsible Content -->
+                    <div id="n2osjobs-advanced-filters" style="display: none; padding: 1rem; border: 1px solid var(--color-border-secondary); border-radius: 6px; margin-bottom: 0.5rem;">
+
+                        <!-- Debug Info Toggle and Clear Selections on same row -->
+                        <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: var(--font-size-small);">
+                                <input type="checkbox" id="toggle-debug-info" ${showDebugInfo ? 'checked' : ''} onchange="toggleN2OSJobsDebugInfo(this.checked)">
+                                <span>Show Debug Info</span>
+                            </label>
+                            <button class="btn btn-secondary" onclick="clearN2OSJobsSelections()" style="font-size: var(--font-size-small);">
+                                Clear All Selections (<span id="n2osjobs-selection-count">0</span>)
+                            </button>
+                        </div>
+
+                        <!-- Time Filter -->
+                        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-top: 0.75rem;">
+                            <label style="font-size: var(--font-size-small); color: var(--text-secondary); white-space: nowrap;">From:</label>
+                            <input type="datetime-local" id="n2osjobs-datetime-start" style="padding: 0.5rem; background: var(--color-bg-secondary); border: 1px solid var(--color-border-primary); border-radius: 6px; color: var(--text-primary); font-size: var(--font-size-small);">
+                            <label style="font-size: var(--font-size-small); color: var(--text-secondary); white-space: nowrap;">To:</label>
+                            <input type="datetime-local" id="n2osjobs-datetime-end" style="padding: 0.5rem; background: var(--color-bg-secondary); border: 1px solid var(--color-border-primary); border-radius: 6px; color: var(--text-primary); font-size: var(--font-size-small);">
+                            <button class="btn btn-secondary" onclick="resetN2OSJobsDatetimeFilter()" style="white-space: nowrap;">Reset Dates</button>
+                        </div>
+
                     </div>
 
                 </div>
@@ -2829,41 +2831,6 @@
             if (page < 1 || page > totalPages) return;
             n2osjobsCurrentPage = page;
             renderN2OSJobsPage();
-            updateSelectAllCheckbox();
-        }
-
-        // Helper to update "Select All" checkbox state based on current page
-        function updateSelectAllCheckbox() {
-            const selectAllCheckbox = document.getElementById('n2osjobs-select-all');
-            if (!selectAllCheckbox) return;
-
-            // Get current page non-selected logs (pagination applies only to these)
-            const sortedLogs = [...n2osjobsFilteredLogs].sort((a, b) => {
-                const timeA = new Date(a.timestamp).getTime();
-                const timeB = new Date(b.timestamp).getTime();
-                return n2osjobsSortOrder === 'desc' ? timeB - timeA : timeA - timeB;
-            });
-
-            const nonSelectedLogs = sortedLogs.filter(log =>
-                !n2osjobsSelectedLogs.has(getN2OSJobLogId(log))
-            );
-
-            const startIdx = (n2osjobsCurrentPage - 1) * n2osjobsPageSize;
-            const endIdx = Math.min(startIdx + n2osjobsPageSize, nonSelectedLogs.length);
-            const pageData = nonSelectedLogs.slice(startIdx, endIdx);
-
-            // Check if all logs on current page are selected
-            const allSelected = pageData.length > 0 && pageData.every(log =>
-                n2osjobsSelectedLogs.has(getN2OSJobLogId(log))
-            );
-
-            // Check if some are selected (for indeterminate state)
-            const someSelected = pageData.some(log =>
-                n2osjobsSelectedLogs.has(getN2OSJobLogId(log))
-            );
-
-            selectAllCheckbox.checked = allSelected;
-            selectAllCheckbox.indeterminate = !allSelected && someSelected;
         }
 
         function toggleN2OSJobsSort() {
@@ -2885,6 +2852,17 @@
 
             // Re-render to show/hide debug info
             renderN2OSJobsPage();
+        }
+
+        function toggleN2OSJobsAdvancedFilters() {
+            const filtersDiv = document.getElementById('n2osjobs-advanced-filters');
+            if (filtersDiv) {
+                if (filtersDiv.style.display === 'none' || filtersDiv.style.display === '') {
+                    filtersDiv.style.display = 'block';
+                } else {
+                    filtersDiv.style.display = 'none';
+                }
+            }
         }
 
         function toggleLogLine(logEntry) {
@@ -2912,40 +2890,6 @@
             if (logEntry) {
                 logEntry.classList.toggle('log-selected', n2osjobsSelectedLogs.has(uniqueId));
             }
-
-            // Update "Select All" checkbox state
-            updateSelectAllCheckbox();
-        }
-
-        // Select/deselect all logs on current page
-        function toggleN2OSJobsSelectAll(checked) {
-            const sortedLogs = [...n2osjobsFilteredLogs].sort((a, b) => {
-                const timeA = new Date(a.timestamp).getTime();
-                const timeB = new Date(b.timestamp).getTime();
-                return n2osjobsSortOrder === 'desc' ? timeB - timeA : timeA - timeB;
-            });
-
-            // Get only non-selected logs on current page
-            const nonSelectedLogs = sortedLogs.filter(log =>
-                !n2osjobsSelectedLogs.has(getN2OSJobLogId(log))
-            );
-
-            const startIdx = (n2osjobsCurrentPage - 1) * n2osjobsPageSize;
-            const endIdx = Math.min(startIdx + n2osjobsPageSize, nonSelectedLogs.length);
-            const pageData = nonSelectedLogs.slice(startIdx, endIdx);
-
-            pageData.forEach(log => {
-                const uniqueId = getN2OSJobLogId(log);
-                if (checked) {
-                    n2osjobsSelectedLogs.add(uniqueId);
-                } else {
-                    n2osjobsSelectedLogs.delete(uniqueId);
-                }
-            });
-
-            saveN2OSJobsSelections();
-            renderN2OSJobsPage(); // Full re-render to update all checkboxes
-            updateN2OSJobsSelectionCount();
         }
 
         // Update selection count display
@@ -3095,7 +3039,6 @@
 
             // Initialize selection count display
             updateN2OSJobsSelectionCount();
-            updateSelectAllCheckbox();
 
             // Initial render
             renderN2OSJobsPage();
