@@ -452,13 +452,15 @@ type Logs struct {
 
 // LogEntry represents a parsed syslog entry
 type LogEntry struct {
-	Timestamp time.Time
-	Hostname  string
-	Process   string
-	PID       string
-	Message   string
-	Level     string
-	RawLine   string
+	Timestamp  time.Time
+	Hostname   string
+	Process    string
+	PID        string
+	Message    string
+	Level      string
+	RawLine    string
+	Source     string // Source file (e.g., "nginx-access.log")
+	LineNumber int    // Line number in source file
 }
 
 // NginxLogEntry represents a parsed nginx error log entry
@@ -476,6 +478,8 @@ type NginxLogEntry struct {
 	Host         string
 	Referrer     string
 	RawLine      string
+	Source       string // Source file (e.g., "nginx-error.log")
+	LineNumber   int    // Line number in source file
 }
 
 // Process represents a running process from ps output

@@ -189,6 +189,16 @@
         .log-checkbox { width: 16px; height: 16px; accent-color: var(--color-info, #2196f3); cursor: pointer; }
         /* Selection count badge */
         #n2osjobs-selection-count { font-weight: 600; color: var(--color-info, #2196f3); }
+        /* Log type label styling */
+        .log-type-label { display: inline-block; font-size: var(--font-size-x-small); font-weight: 600; padding: 0.1rem 0.4rem; margin-right: 0.5rem; border-radius: 3px; vertical-align: middle; }
+        .log-type-jobs { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .log-type-prod { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .log-type-n-err { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .log-type-n-acc { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+        body.dark-mode .log-type-jobs { color: #60a5fa; }
+        body.dark-mode .log-type-prod { color: #4ade80; }
+        body.dark-mode .log-type-n-err { color: #fca5a5; }
+        body.dark-mode .log-type-n-acc { color: #c084fc; }
         .log-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
         .log-line.expanded { white-space: pre-wrap; word-break: break-all; }
         .log-timestamp { color: var(--text-muted); margin-right: 1rem; }
@@ -771,7 +781,7 @@
                 <div class="nav-section"><div class="nav-section-title">Overview</div><div class="nav-item active" data-view="dashboard"><span>📊</span><span class="nav-item-text">Dashboard</span></div><div class="nav-item" data-view="issues"><span>⚠️</span><span class="nav-item-text">Issues</span></div></div>
                 <div class="nav-section"><div class="nav-section-title">System</div><div class="nav-item" data-view="system"><span>💻</span><span class="nav-item-text">System Info</span></div><div class="nav-item" data-view="network"><span>🌐</span><span class="nav-item-text">Network</span></div><div class="nav-item" data-view="storage"><span>💾</span><span class="nav-item-text">Storage</span></div><div class="nav-item" data-view="database"><span>🗄️</span><span class="nav-item-text">Database</span></div><div class="nav-item" data-view="db-sampledata"><span>📊</span><span class="nav-item-text">DB Sample Data</span></div></div>
                 <div class="nav-section"><div class="nav-section-title">N2OS</div><div class="nav-item" data-view="n2os-config"><span>⚙️</span><span class="nav-item-text">N2OS User Conf</span></div><div class="nav-item" data-view="rc-conf"><span>🔧</span><span class="nav-item-text">RC Config</span></div><div class="nav-item" data-view="n2op-logs"><span>📋</span><span class="nav-item-text">Operations</span></div><div class="nav-item" data-view="health-events"><span>💊</span><span class="nav-item-text">Health Events</span></div><div class="nav-item" data-view="n2osjobs-logs"><span>⏱️</span><span class="nav-item-text">Background Tasks</span></div><div class="nav-item" data-view="n2osmigrate-logs"><span>🔄</span><span class="nav-item-text">Migration Log</span></div><div class="nav-item" data-view="n2osids"><span>🔍</span><span class="nav-item-text">IDS Logs</span></div><div class="nav-item" data-view="n2osalert"><span>🚨</span><span class="nav-item-text">Alert Logs</span></div><div class="nav-item" data-view="n2osproduction"><span>📦</span><span class="nav-item-text">Production Logs</span></div><div class="nav-item" data-view="appliances"><span>🖥️</span><span class="nav-item-text">Appliances</span></div><div class="nav-item" data-view="n2os-conf"><span>📜</span><span class="nav-item-text">System Config</span></div></div>
-                <div class="nav-section"><div class="nav-section-title">Logs</div><div class="nav-item" data-view="logs-syslog"><span>📝</span><span class="nav-item-text">System Logs</span></div><div class="nav-item" data-view="logs-nginx"><span>🌐</span><span class="nav-item-text">Nginx Logs</span></div><div class="nav-item" data-view="logs-auth"><span>🔐</span><span class="nav-item-text">Auth Logs</span></div><div class="nav-item" data-view="logs-output-analysis"><span>📄</span><span class="nav-item-text">Output Analysis</span></div><div class="nav-item" data-view="logs-goaccess"><span>📊</span><span class="nav-item-text">GoAccess Report</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">Logs</div><div class="nav-item" data-view="logs-all"><span>📚</span><span class="nav-item-text">All Your Logs</span></div><div class="nav-item" data-view="logs-syslog"><span>📝</span><span class="nav-item-text">System Logs</span></div><div class="nav-item" data-view="logs-nginx"><span>🌐</span><span class="nav-item-text">Nginx Logs</span></div><div class="nav-item" data-view="logs-auth"><span>🔐</span><span class="nav-item-text">Auth Logs</span></div><div class="nav-item" data-view="logs-output-analysis"><span>📄</span><span class="nav-item-text">Output Analysis</span></div><div class="nav-item" data-view="logs-goaccess"><span>📊</span><span class="nav-item-text">GoAccess Report</span></div></div>
                 <div class="nav-section"><div class="nav-section-title">Processes</div><div class="nav-item" data-view="processes"><span>🔧</span><span class="nav-item-text">Process List</span></div></div>
             </nav>
         </aside>
@@ -1003,6 +1013,15 @@
                     if (!checkForRickrollTrigger(productionLogs, 'n2osproduction')) {
                         content.innerHTML = renderN2OSProductionView(productionLogs);
                         setupN2OSProductionViewHandlers();
+                    }
+                    break;
+                case 'logs-all':
+                    const allLogsData = await fetchAllLogsData();
+                    if (!checkForRickrollTrigger(allLogsData, 'logs-all')) {
+                        allLogsAllLogs = allLogsData;
+                        allLogsFilteredLogs = [...allLogsAllLogs];
+                        content.innerHTML = renderAllLogs();
+                        setupAllLogsHandlers();
                     }
                     break;
                 case 'appliances':
@@ -2617,6 +2636,20 @@
             updateN2OSJobsSelectionCount();
             renderN2OSJobsPage();
         }
+
+        // ==================== All Logs View State ====================
+        let allLogsAllLogs = [];
+        let allLogsFilteredLogs = [];
+        let allLogsCurrentPage = 1;
+        let allLogsPageSize = 50;
+        let allLogsSortOrder = 'desc';
+        let allLogsSelectedLogs = new Set();
+        let allLogsEnabledTypes = {
+            jobs: true,
+            prod: true,
+            nginx_err: true,
+            nginx_acc: true
+        };
 
         function renderN2OSJobLogs(logs) {
             // Load selections from localStorage
@@ -5533,7 +5566,7 @@ function renderAuthLogs(logs) {
             return null;
         }
 
-        function showJSONModal(rawLine, timestamp) {
+        function showJSONModal(rawLine, timestamp, context = 'n2osjobs') {
             const jsonContent = extractJSON(rawLine);
             if (!jsonContent) {
                 alert('No valid JSON found in this log entry');
@@ -5543,7 +5576,7 @@ function renderAuthLogs(logs) {
             currentJSONModalData = {
                 content: jsonContent,
                 timestamp: timestamp,
-                filename: `n2osjobs-${timestamp.replace(/[:.]/g, '-')}.json`
+                filename: `${context}-${timestamp.replace(/[:.]/g, '-')}.json`
             };
 
             document.getElementById('json-modal-title').textContent = `JSON Content - ${timestamp}`;
@@ -7065,6 +7098,471 @@ function renderAuthLogs(logs) {
                 notesOriginalContent = '';
                 updateNotesSaveStatus();
             });
+        }
+
+        // ==================== All Logs View Functions ====================
+
+        // Main render function
+        function renderAllLogs() {
+            loadAllLogsSelections();
+            const showDebugInfo = localStorage.getItem('alllogs_show_debug_info') === 'true';
+
+            return `
+                <div class="section-title">All Your Logs (${allLogsAllLogs.length} entries)</div>
+
+                <!-- Search and Controls -->
+                <div class="search-filter-wrapper">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <input type="text" class="search-box" id="alllogs-search" placeholder="Search logs..." style="flex: 1; min-width: 200px; margin: 0;">
+                        <button id="alllogs-sort-toggle" class="btn btn-secondary" onclick="toggleAllLogsSort()" style="white-space: nowrap;">↓ Newest First</button>
+                        <select id="alllogs-page-size" style="padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);">
+                            <option value="25">25 per page</option>
+                            <option value="50" selected>50 per page</option>
+                            <option value="100">100 per page</option>
+                            <option value="200">200 per page</option>
+                        </select>
+                    </div>
+
+                    <!-- Log Type Checkboxes -->
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; padding: 0.5rem 0; border-top: 1px solid var(--color-border-secondary); border-bottom: 1px solid var(--color-border-secondary); margin-bottom: 0.5rem;">
+                        <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+                            <input type="checkbox" id="alllogs-enable-jobs" ${allLogsEnabledTypes.jobs ? 'checked' : ''} onchange="toggleAllLogsType('jobs', this.checked)">
+                            <span class="log-type-label log-type-jobs">jobs</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+                            <input type="checkbox" id="alllogs-enable-prod" ${allLogsEnabledTypes.prod ? 'checked' : ''} onchange="toggleAllLogsType('prod', this.checked)">
+                            <span class="log-type-label log-type-prod">prod</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+                            <input type="checkbox" id="alllogs-enable-nerr" ${allLogsEnabledTypes.nginx_err ? 'checked' : ''} onchange="toggleAllLogsType('nginx_err', this.checked)">
+                            <span class="log-type-label log-type-n-err">n-err</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+                            <input type="checkbox" id="alllogs-enable-nacc" ${allLogsEnabledTypes.nginx_acc ? 'checked' : ''} onchange="toggleAllLogsType('nginx_acc', this.checked)">
+                            <span class="log-type-label log-type-n-acc">n-acc</span>
+                        </label>
+                        <span style="font-size: var(--font-size-x-small); color: var(--text-muted); margin-left: auto;">💡 Uncheck to reduce load</span>
+                    </div>
+
+                    <!-- Collapsible Advanced Filters -->
+                    <div style="padding: 0.5rem 1rem; cursor: pointer; text-align: center; background: rgba(59, 130, 246, 0.05); border-radius: 6px; margin-bottom: 0.5rem;" onclick="toggleAllLogsAdvancedFilters()">
+                        <span style="font-size: var(--font-size-x-small); color: #3b82f6;">⚙️ Advanced Filters (Click to expand)</span>
+                    </div>
+
+                    <!-- Advanced Filters Content -->
+                    <div id="alllogs-advanced-filters" style="display: none; padding: 1rem; border: 1px solid var(--color-border-secondary); border-radius: 6px; margin-bottom: 0.5rem;">
+                        <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: var(--font-size-small);">
+                                <input type="checkbox" id="alllogs-toggle-debug-info" ${showDebugInfo ? 'checked' : ''} onchange="toggleAllLogsDebugInfo(this.checked)">
+                                <span>Show Debug Info</span>
+                            </label>
+                            <button class="btn btn-secondary" onclick="clearAllLogsSelections()" style="font-size: var(--font-size-x-small); padding: 0.4rem 0.8rem;">Clear All Selections</button>
+                            <span style="color: var(--text-muted); font-size: var(--font-size-x-small);">Selected: <span id="alllogs-selection-count">0</span></span>
+                        </div>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <label style="display: block; font-size: var(--font-size-x-small); margin-bottom: 0.5rem;">From:</label>
+                                <input type="datetime-local" id="alllogs-datetime-start" style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-border-primary); border-radius: 4px;">
+                            </div>
+                            <div style="flex: 1; min-width: 200px;">
+                                <label style="display: block; font-size: var(--font-size-x-small); margin-bottom: 0.5rem;">To:</label>
+                                <input type="datetime-local" id="alllogs-datetime-end" style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-border-primary); border-radius: 4px;">
+                            </div>
+                            <div style="display: flex; align-items: flex-end; gap: 0.5rem;">
+                                <button class="btn btn-secondary" onclick="resetAllLogsDatetimeFilter()" style="font-size: var(--font-size-x-small); padding: 0.4rem 0.8rem;">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logs Container -->
+                <div id="alllogs-container"></div>
+
+                <!-- Pagination -->
+                <div id="alllogs-pagination"></div>
+            `;
+        }
+
+        // Render current page of logs
+        function renderAllLogsPage() {
+            const container = document.getElementById('alllogs-container');
+            const searchBox = document.getElementById('alllogs-search');
+            const showDebugInfo = localStorage.getItem('alllogs_show_debug_info') === 'true';
+
+            if (!container || !searchBox) return;
+
+            const searchTerms = extractSearchTerms(searchBox.value.trim());
+
+            // Sort logs by timestamp (desc/asc), then source, then line_number
+            const sortedLogs = [...allLogsFilteredLogs].sort((a, b) => {
+                const timeA = new Date(a.timestamp).getTime();
+                const timeB = new Date(b.timestamp).getTime();
+                const timeCompare = allLogsSortOrder === 'desc' ? timeB - timeA : timeA - timeB;
+                if (timeCompare !== 0) return timeCompare;
+
+                const sourceCompare = a.source.localeCompare(b.source);
+                if (sourceCompare !== 0) return sourceCompare;
+
+                return a.line_number - b.line_number;
+            });
+
+            // Separate selected and non-selected logs
+            const selectedLogs = sortedLogs.filter(log => allLogsSelectedLogs.has(getAllLogsLogId(log)));
+            const nonSelectedLogs = sortedLogs.filter(log => !allLogsSelectedLogs.has(getAllLogsLogId(log)));
+
+            // Paginate non-selected logs
+            const startIndex = (allLogsCurrentPage - 1) * allLogsPageSize;
+            const endIndex = startIndex + allLogsPageSize;
+            const paginatedNonSelected = nonSelectedLogs.slice(startIndex, endIndex);
+
+            // Merge: selected logs always at top, then paginated non-selected
+            const displayLogs = [...selectedLogs, ...paginatedNonSelected];
+
+            // Render logs
+            let html = '';
+            displayLogs.forEach(log => {
+                const logId = getAllLogsLogId(log);
+                const isSelected = allLogsSelectedLogs.has(logId);
+                const selectedClass = isSelected ? 'log-selected' : '';
+
+                const debugHTML = showDebugInfo ? `<div style="font-size: var(--font-size-2x-small); color: var(--text-muted); margin-bottom: 0.2rem;">📍 ${log.source}:${log.line_number}</div>` : '';
+                const highlightedLine = highlightSearchTerms(log.raw_line, searchTerms);
+                const hasJSON = extractJSON(log.raw_line) !== null;
+
+                html += `
+                    <div class="log-entry ${selectedClass}" data-log-id="${logId}">
+                        <div style="display: flex; align-items: flex-start; gap: 0.5rem; width: 100%;">
+                            <input type="checkbox" class="log-checkbox" data-log-id="${logId}" ${isSelected ? 'checked' : ''}>
+                            <span class="log-type-label log-type-${log.log_type}">${log.log_type}</span>
+                            <div style="flex: 1;">
+                                ${debugHTML}
+                                <div class="log-line">${highlightedLine}</div>
+                            </div>
+                            ${hasJSON ? `<button class="json-view-btn" onclick="showAllLogsJSON('${log.raw_line.replace(/'/g, "\\'")}', '${log.timestamp.toISOString()}', '${log.log_type}')">🔍</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // Attach event delegation for checkboxes
+            container.addEventListener('change', (e) => {
+                if (e.target.classList.contains('log-checkbox')) {
+                    const logId = e.target.dataset.logId;
+                    if (logId) {
+                        toggleAllLogsLogSelection(logId);
+                        renderAllLogsPage();
+                    }
+                }
+            });
+
+            // Render pagination
+            const totalPages = Math.ceil(nonSelectedLogs.length / allLogsPageSize);
+            const paginationDiv = document.getElementById('alllogs-pagination');
+
+            let paginationHTML = '';
+            if (totalPages > 1) {
+                paginationHTML = `
+                    <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="allLogsChangePage(1)" style="padding: 0.4rem 0.8rem;">⏮ First</button>
+                        <button class="btn btn-secondary" onclick="allLogsChangePage(${allLogsCurrentPage - 1})" ${allLogsCurrentPage === 1 ? 'disabled' : ''} style="padding: 0.4rem 0.8rem;">← Previous</button>
+                        <span style="padding: 0.4rem 0.8rem; color: var(--text-muted);">Page ${allLogsCurrentPage} of ${totalPages}</span>
+                        <button class="btn btn-secondary" onclick="allLogsChangePage(${allLogsCurrentPage + 1})" ${allLogsCurrentPage === totalPages ? 'disabled' : ''} style="padding: 0.4rem 0.8rem;">Next →</button>
+                        <button class="btn btn-secondary" onclick="allLogsChangePage(${totalPages})" style="padding: 0.4rem 0.8rem;">Last ⏭</button>
+                    </div>
+                `;
+            }
+
+            paginationDiv.innerHTML = paginationHTML;
+            updateAllLogsSelectionCount();
+        }
+
+        // Helper: Normalize log entry from different log types
+        function normalizeLogEntry(log, logType) {
+            let rawLine;
+            switch(logType) {
+                case 'jobs':
+                    rawLine = log.raw_line || log.RawLine;
+                    break;
+                case 'prod':
+                    rawLine = log.raw_line || log.RawLine;
+                    break;
+                case 'n-err':
+                case 'n-acc':
+                    rawLine = log.RawLine || log.raw_line;
+                    break;
+            }
+            return {
+                log_type: logType === 'nginx_err' ? 'n-err' : logType === 'nginx_acc' ? 'n-acc' : logType,
+                timestamp: new Date(log.timestamp || log.Timestamp),
+                raw_line: rawLine,
+                source: log.Source || log.source || 'unknown',
+                line_number: log.LineNumber || log.line_number || 0,
+                original: log
+            };
+        }
+
+        // Fetch all enabled log types
+        async function fetchAllLogsData() {
+            const promises = [];
+            const enabledTypes = allLogsEnabledTypes;
+
+            if (enabledTypes.jobs) {
+                promises.push(
+                    fetch('/api/n2osjobs-logs')
+                        .then(r => r.json())
+                        .then(logs => logs.map(log => normalizeLogEntry(log, 'jobs')))
+                        .catch(() => [])
+                );
+            }
+
+            if (enabledTypes.prod) {
+                promises.push(
+                    fetch('/api/n2osproduction-logs')
+                        .then(r => r.json())
+                        .then(logs => logs.map(log => normalizeLogEntry(log, 'prod')))
+                        .catch(() => [])
+                );
+            }
+
+            if (enabledTypes.nginx_err) {
+                promises.push(
+                    fetch('/api/logs?type=nginx')
+                        .then(r => r.json())
+                        .then(logs => logs.map(log => normalizeLogEntry(log, 'n-err')))
+                        .catch(() => [])
+                );
+            }
+
+            if (enabledTypes.nginx_acc) {
+                promises.push(
+                    fetch('/api/logs?type=nginx-access')
+                        .then(r => r.json())
+                        .then(logs => logs.map(log => normalizeLogEntry(log, 'n-acc')))
+                        .catch(() => [])
+                );
+            }
+
+            const results = await Promise.all(promises);
+            return results.flat();
+        }
+
+        // Helper: Generate unique log ID
+        function getAllLogsLogId(log) {
+            return `${log.log_type}:${log.source}:${log.line_number}:${log.timestamp.getTime()}`;
+        }
+
+        // Load selections from localStorage
+        function loadAllLogsSelections() {
+            const saved = localStorage.getItem('alllogs_selected_logs');
+            if (saved) {
+                try {
+                    allLogsSelectedLogs = new Set(JSON.parse(saved));
+                } catch (e) {
+                    allLogsSelectedLogs = new Set();
+                }
+            }
+
+            const savedTypes = localStorage.getItem('alllogs_enabled_types');
+            if (savedTypes) {
+                try {
+                    allLogsEnabledTypes = JSON.parse(savedTypes);
+                } catch (e) {}
+            }
+        }
+
+        // Save selections to localStorage
+        function saveAllLogsSelections() {
+            localStorage.setItem('alllogs_selected_logs', JSON.stringify([...allLogsSelectedLogs]));
+        }
+
+        // Clear all selections
+        function clearAllLogsSelections() {
+            allLogsSelectedLogs.clear();
+            saveAllLogsSelections();
+            updateAllLogsSelectionCount();
+            renderAllLogsPage();
+        }
+
+        // Update selection count display
+        function updateAllLogsSelectionCount() {
+            const countElem = document.getElementById('alllogs-selection-count');
+            if (countElem) {
+                countElem.textContent = allLogsSelectedLogs.size;
+            }
+        }
+
+        // Toggle individual log selection
+        function toggleAllLogsLogSelection(logId) {
+            if (allLogsSelectedLogs.has(logId)) {
+                allLogsSelectedLogs.delete(logId);
+            } else {
+                allLogsSelectedLogs.add(logId);
+            }
+            saveAllLogsSelections();
+            updateAllLogsSelectionCount();
+        }
+
+        // Filter logs by search and date range
+        function filterAllLogs() {
+            const searchBox = document.getElementById('alllogs-search');
+            const startInput = document.getElementById('alllogs-datetime-start');
+            const endInput = document.getElementById('alllogs-datetime-end');
+
+            const searchTerm = searchBox ? searchBox.value.trim() : '';
+            const startTime = parseDatetimeInput(startInput?.value) ?? -Infinity;
+            let endTime = parseDatetimeInput(endInput?.value) ?? Infinity;
+            if (endInput?.value && endTime !== Infinity) {
+                endTime += 59999;
+            }
+
+            allLogsFilteredLogs = allLogsAllLogs.filter(log => {
+                const logTime = new Date(log.timestamp).getTime();
+                if (isNaN(logTime) || logTime < startTime || logTime > endTime) {
+                    return false;
+                }
+
+                if (!searchTerm) return true;
+
+                const searchableText = `${log.timestamp} ${log.log_type} ${log.raw_line}`.toLowerCase();
+                const orGroups = searchTerm.split('|').map(s => s.trim());
+
+                return orGroups.some(orGroup => {
+                    if (!orGroup) return false;
+                    const andTerms = orGroup.split('&').map(s => s.trim());
+                    return andTerms.every(term => {
+                        if (!term) return true;
+                        if (term.startsWith('!')) {
+                            const notTerm = term.substring(1).trim().toLowerCase();
+                            return notTerm ? !searchableText.includes(notTerm) : true;
+                        }
+                        return searchableText.includes(term.toLowerCase());
+                    });
+                });
+            });
+
+            allLogsCurrentPage = 1;
+            renderAllLogsPage();
+        }
+
+        // Toggle log type enabled/disabled
+        function toggleAllLogsType(logType, enabled) {
+            // Check if at least one type will remain enabled
+            const enabledCount = Object.values(allLogsEnabledTypes).filter(v => v).length;
+
+            if (!enabled && enabledCount === 1) {
+                // Trying to uncheck the last enabled type - prevent it
+                alert('At least one log type must be enabled');
+                // Re-check the checkbox
+                const checkboxId = logType === 'nginx_err' ? 'alllogs-enable-nerr' :
+                                  logType === 'nginx_acc' ? 'alllogs-enable-nacc' :
+                                  `alllogs-enable-${logType}`;
+                const checkbox = document.getElementById(checkboxId);
+                if (checkbox) checkbox.checked = true;
+                return;
+            }
+
+            allLogsEnabledTypes[logType] = enabled;
+            localStorage.setItem('alllogs_enabled_types', JSON.stringify(allLogsEnabledTypes));
+            document.getElementById('main-content').innerHTML = '<div class="loading">Reloading logs...</div>';
+            showView('logs-all');
+        }
+
+        // Toggle sort order
+        function toggleAllLogsSort() {
+            allLogsSortOrder = allLogsSortOrder === 'desc' ? 'asc' : 'desc';
+            const btn = document.getElementById('alllogs-sort-toggle');
+            if (btn) {
+                btn.textContent = allLogsSortOrder === 'desc' ? '↓ Newest First' : '↑ Oldest First';
+            }
+            renderAllLogsPage();
+        }
+
+        // Initialize datetime range
+        function initializeAllLogsDatetimeRange() {
+            const startInput = document.getElementById('alllogs-datetime-start');
+            const endInput = document.getElementById('alllogs-datetime-end');
+
+            if (!startInput || !endInput || allLogsFilteredLogs.length === 0) return;
+
+            const timestamps = allLogsFilteredLogs.map(log => new Date(log.timestamp).getTime());
+            const minTime = Math.min(...timestamps);
+            const maxTime = Math.max(...timestamps);
+
+            startInput.value = new Date(minTime).toISOString().slice(0, 16);
+            endInput.value = new Date(maxTime).toISOString().slice(0, 16);
+        }
+
+        // Reset datetime filter
+        function resetAllLogsDatetimeFilter() {
+            const startInput = document.getElementById('alllogs-datetime-start');
+            const endInput = document.getElementById('alllogs-datetime-end');
+
+            if (startInput) startInput.value = '';
+            if (endInput) endInput.value = '';
+
+            filterAllLogs();
+        }
+
+        // Toggle debug info
+        function toggleAllLogsDebugInfo(checked) {
+            localStorage.setItem('alllogs_show_debug_info', checked ? 'true' : 'false');
+            renderAllLogsPage();
+        }
+
+        // Toggle advanced filters
+        function toggleAllLogsAdvancedFilters() {
+            const filters = document.getElementById('alllogs-advanced-filters');
+            if (filters) {
+                filters.style.display = filters.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        // Pagination handler
+        function allLogsChangePage(page) {
+            const totalPages = Math.ceil(allLogsFilteredLogs.filter(log => !allLogsSelectedLogs.has(getAllLogsLogId(log))).length / allLogsPageSize);
+            if (page >= 1 && page <= totalPages) {
+                allLogsCurrentPage = page;
+                renderAllLogsPage();
+            }
+        }
+
+        // Show JSON modal
+        function showAllLogsJSON(rawLine, timestamp, logType) {
+            showJSONModal(rawLine, timestamp, `alllogs-${logType}`);
+        }
+
+        // Setup event handlers
+        function setupAllLogsHandlers() {
+            const searchBox = document.getElementById('alllogs-search');
+            const startInput = document.getElementById('alllogs-datetime-start');
+            const endInput = document.getElementById('alllogs-datetime-end');
+            const pageSizeSelect = document.getElementById('alllogs-page-size');
+
+            initializeAllLogsDatetimeRange();
+
+            if (searchBox) {
+                searchBox.addEventListener('input', filterAllLogs);
+            }
+
+            if (startInput) {
+                startInput.addEventListener('change', filterAllLogs);
+            }
+
+            if (endInput) {
+                endInput.addEventListener('change', filterAllLogs);
+            }
+
+            if (pageSizeSelect) {
+                pageSizeSelect.addEventListener('change', (e) => {
+                    allLogsPageSize = parseInt(e.target.value);
+                    allLogsCurrentPage = 1;
+                    renderAllLogsPage();
+                });
+            }
+
+            renderAllLogsPage();
         }
 
         init();
