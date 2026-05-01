@@ -1,6 +1,6 @@
 penny
+penny_intel
 *.md
 *template
 index_alpine.html
-/bin/bash: s: command not found
 .claude
