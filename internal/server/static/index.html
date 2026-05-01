@@ -553,210 +553,50 @@
             color: #cbd5e1;
         }
 
-        /* Rickroll Easter Egg Styles */
-        #rickroll-modal {
+        /* Space Invaders Easter Egg Overlay */
+
+        #space-invaders-overlay {
             display: none;
             position: fixed;
-            z-index: 10000;
-            left: 0;
             top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(10px);
-        }
-        #rickroll-modal.show {
-            display: flex;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 10000;
             align-items: center;
             justify-content: center;
             flex-direction: column;
-        }
-        #rickroll-container {
-            text-align: center;
-            position: relative;
-        }
-        #rickroll-close {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            z-index: 10001;
-        }
-        #rickroll-close:hover {
-            background: #dc2626;
-        }
-        .rickroll-message {
-            color: #ff6b6b;
-            font-family: 'Arial', sans-serif;
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 30px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.05); }
-        }
-        #ascii-container {
             font-family: 'Courier New', monospace;
-            white-space: pre;
-            line-height: 1.2;
-            font-size: 12px;
-            color: #0f0;
-            padding: 20px;
-            display: none;
         }
-        #ascii-container.show {
-            display: block;
-        }
-        .css-dancer {
-            position: relative;
-            width: 200px;
-            height: 300px;
-            margin: 0 auto;
-            display: none;
-        }
-        .css-dancer.show {
-            display: block;
-        }
-        .dancer-head {
-            width: 60px;
-            height: 60px;
-            background: #ffc9a8;
-            border-radius: 50%;
-            position: absolute;
-            top: 0;
-            left: 70px;
-            animation: headBob 1s ease-in-out infinite;
+
+        #space-invaders-overlay.active {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
         }
-        @keyframes headBob {
-            0%, 100% { transform: rotate(-5deg); }
-            50% { transform: rotate(5deg); }
+
+        #space-invaders-canvas {
+            border: 1px solid #334155;
+            border-radius: 4px;
+            display: block;
+            image-rendering: pixelated;
         }
-        .dancer-body {
-            width: 80px;
-            height: 100px;
-            background: #4ecdc4;
-            position: absolute;
-            top: 70px;
-            left: 60px;
-            border-radius: 10px;
-            animation: bodyGroove 1s ease-in-out infinite;
+
+        #space-invaders-hint {
+            margin-top: 0.75rem;
+            font-size: 0.7rem;
+            color: rgba(148, 163, 184, 0.5);
+            letter-spacing: 0.08em;
+            pointer-events: none;
+            user-select: none;
         }
-        @keyframes bodyGroove {
-            0%, 100% { transform: scaleX(1) scaleY(1); }
-            25% { transform: scaleX(1.1) scaleY(0.95); }
-            75% { transform: scaleX(0.95) scaleY(1.05); }
-        }
-        .dancer-arm-left {
-            width: 15px;
-            height: 70px;
-            background: #ffc9a8;
-            position: absolute;
-            top: 80px;
-            left: 40px;
-            border-radius: 10px;
-            transform-origin: top center;
-            animation: armLeft 1s ease-in-out infinite;
-        }
-        @keyframes armLeft {
-            0%, 100% { transform: rotate(-45deg); }
-            50% { transform: rotate(-135deg); }
-        }
-        .dancer-arm-right {
-            width: 15px;
-            height: 70px;
-            background: #ffc9a8;
-            position: absolute;
-            top: 80px;
-            right: 40px;
-            border-radius: 10px;
-            transform-origin: top center;
-            animation: armRight 1s ease-in-out infinite;
-        }
-        @keyframes armRight {
-            0%, 100% { transform: rotate(45deg); }
-            50% { transform: rotate(135deg); }
-        }
-        .dancer-leg-left {
-            width: 20px;
-            height: 80px;
-            background: #2d3561;
-            position: absolute;
-            top: 170px;
-            left: 65px;
-            border-radius: 10px;
-            transform-origin: top center;
-            animation: legLeft 1s ease-in-out infinite;
-        }
-        @keyframes legLeft {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-20deg); }
-            75% { transform: rotate(20deg); }
-        }
-        .dancer-leg-right {
-            width: 20px;
-            height: 80px;
-            background: #2d3561;
-            position: absolute;
-            top: 170px;
-            right: 65px;
-            border-radius: 10px;
-            transform-origin: top center;
-            animation: legRight 1s ease-in-out infinite;
-        }
-        @keyframes legRight {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(20deg); }
-            75% { transform: rotate(-20deg); }
-        }
-        .dancer-note {
-            position: absolute;
-            font-size: 30px;
-            animation: float 2s ease-in-out infinite;
-        }
-        .dancer-note1 { top: 50px; left: 20px; animation-delay: 0s; }
-        .dancer-note2 { top: 100px; right: 20px; animation-delay: 0.5s; }
-        .dancer-note3 { top: 150px; left: 30px; animation-delay: 1s; }
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            50% { transform: translateY(-20px) rotate(10deg); opacity: 0.7; }
-        }
-        .dancer-floor {
-            position: absolute;
-            bottom: -50px;
-            left: -100px;
-            width: 400px;
-            height: 50px;
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 2px;
-        }
-        .dancer-floor-tile {
-            animation: disco 1.5s ease-in-out infinite;
-        }
-        .dancer-floor-tile:nth-child(1) { animation-delay: 0s; background: #ff6b6b; }
-        .dancer-floor-tile:nth-child(2) { animation-delay: 0.1s; background: #4ecdc4; }
-        .dancer-floor-tile:nth-child(3) { animation-delay: 0.2s; background: #ffe66d; }
-        .dancer-floor-tile:nth-child(4) { animation-delay: 0.3s; background: #a8e6cf; }
-        .dancer-floor-tile:nth-child(5) { animation-delay: 0.4s; background: #ff6b6b; }
-        .dancer-floor-tile:nth-child(6) { animation-delay: 0.5s; background: #4ecdc4; }
-        .dancer-floor-tile:nth-child(7) { animation-delay: 0.6s; background: #ffe66d; }
-        .dancer-floor-tile:nth-child(8) { animation-delay: 0.7s; background: #a8e6cf; }
-        @keyframes disco {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
+
+        #space-invaders-source {
+            margin-bottom: 0.75rem;
+            font-size: 0.65rem;
+            color: rgba(100, 116, 139, 0.6);
+            letter-spacing: 0.05em;
+            pointer-events: none;
+            user-select: none;
         }
 
         /* Search term highlighting */
@@ -14747,8 +14587,306 @@ function renderAuthLogs(logs) {
             mainContent.scrollTo({ top: el.offsetTop - offset, behavior: 'smooth' });
         }
 
-        // Easter egg loader
-        let _el=false;function checkForRickrollTrigger(d,a){if(!d||(Array.isArray(d)&&d.length===0)){if(!_el){const s=document.createElement('script');s.src='/e.js';s.onload=()=>{_el=true;window._e()};document.head.appendChild(s)}else{window._e()}return true}return false}
+        // ─── Space Invaders Easter Egg ──────────────────────────────────────────
+        // Triggered whenever checkForRickrollTrigger receives empty/falsy data.
+        // Self-contained canvas game. No external dependencies.
+
+        (function() {
+            const COLS        = 11;
+            const ROWS        = 5;
+            const ALIEN_W     = 28;
+            const ALIEN_H     = 20;
+            const ALIEN_PAD_X = 12;
+            const ALIEN_PAD_Y = 14;
+            const PLAYER_W    = 36;
+            const PLAYER_H    = 16;
+            const BULLET_W    = 3;
+            const BULLET_H    = 10;
+            const PLAYER_SPD  = 240;
+            const BULLET_SPD  = 320;
+            const ALIEN_BULLET_SPD = 160;
+            const ALIEN_DROP  = 14;
+            const SHOOT_COOLDOWN = 0.4;
+            const ALIEN_FIRE_INTERVAL_MIN = 0.7;
+            const ALIEN_FIRE_INTERVAL_MAX = 2.0;
+
+            let _active = false, _rafId = null, _lastTime = null;
+            let _keyState = {}, _keyHandler = null, _keyUpHandler = null;
+            let _player, _playerBullets, _aliens, _alienBullets;
+            let _score, _lives, _phase, _message;
+            let _alienDirX, _alienSpeedX, _alienFireTimer, _shootCooldown;
+            let _animFrame = 0, _animTimer = 0;
+            const ANIM_INTERVAL = 0.5;
+            let _highscore = null; // null = unknown/unavailable, number = loaded best
+
+            // Pixel-art alien sprites (5 rows × N cols, each cell 0/1, drawn at 2×2px)
+            const ALIEN_SPRITES = [
+                // Type C (top row) — wide crab shape
+                [[0,0,1,1,0,0,0,1,1,0,0],
+                 [0,1,1,1,1,1,1,1,1,1,0],
+                 [1,1,0,1,1,1,1,1,0,1,1],
+                 [1,1,1,1,1,1,1,1,1,1,1],
+                 [0,0,1,0,0,0,0,0,1,0,0]],
+                // Type B (middle rows) — classic invader
+                [[0,1,0,0,0,0,0,0,1,0],
+                 [0,0,1,0,0,0,0,1,0,0],
+                 [0,1,1,1,1,1,1,1,1,0],
+                 [1,1,0,1,1,1,1,0,1,1],
+                 [1,1,1,1,1,1,1,1,1,1]],
+                // Type A (bottom rows) — squat wide-eyes
+                [[0,0,0,1,1,0,1,1,0,0,0],
+                 [0,0,1,1,1,1,1,1,1,0,0],
+                 [0,1,1,1,1,1,1,1,1,1,0],
+                 [0,1,0,1,0,0,0,1,0,1,0],
+                 [0,0,1,0,0,0,0,0,1,0,0]],
+            ];
+
+            function spriteTypeForRow(r) { return r === 0 ? 0 : r <= 2 ? 1 : 2; }
+            function randomFireInterval() {
+                return ALIEN_FIRE_INTERVAL_MIN + Math.random() * (ALIEN_FIRE_INTERVAL_MAX - ALIEN_FIRE_INTERVAL_MIN);
+            }
+
+            function initGame(canvas) {
+                const W = canvas.width, H = canvas.height;
+                _player = { x: W/2 - PLAYER_W/2, y: H - 40, w: PLAYER_W, h: PLAYER_H };
+                _playerBullets = []; _alienBullets = [];
+                _score = 0; _lives = 3; _phase = 'playing'; _message = '';
+                _shootCooldown = 0; _animFrame = 0; _animTimer = 0;
+
+                const gridW = COLS * (ALIEN_W + ALIEN_PAD_X) - ALIEN_PAD_X;
+                const startX = (W - gridW) / 2, startY = 50;
+                _aliens = [];
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        _aliens.push({
+                            col: c, row: r,
+                            x: startX + c * (ALIEN_W + ALIEN_PAD_X),
+                            y: startY + r * (ALIEN_H + ALIEN_PAD_Y),
+                            alive: true,
+                            type: spriteTypeForRow(r),
+                            points: r === 0 ? 30 : r <= 2 ? 20 : 10,
+                        });
+                    }
+                }
+                _alienDirX = 1; _alienSpeedX = 30; _alienFireTimer = randomFireInterval();
+            }
+
+            function loadHighscore() {
+                fetch('/api/highscore')
+                    .then(r => r.json())
+                    .then(d => { _highscore = d.exists ? d.score : 0; })
+                    .catch(() => { _highscore = null; });
+            }
+
+            function saveHighscore(score) {
+                if (score <= 0) return;
+                fetch('/api/highscore', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ score }),
+                }).then(r => r.json()).then(d => {
+                    if (d.saved) _highscore = d.highscore;
+                }).catch(() => {});
+            }
+
+            function activateSpaceInvaders(source) {
+                if (_active) return;
+                _active = true;
+                const overlay = document.getElementById('space-invaders-overlay');
+                const canvas  = document.getElementById('space-invaders-canvas');
+                const srcEl   = document.getElementById('space-invaders-source');
+                if (srcEl) srcEl.textContent = source ? `$ query --source ${source} → no records found` : '';
+                overlay.classList.add('active');
+                loadHighscore();
+                initGame(canvas);
+                _keyState = {};
+                _keyHandler   = e => handleKeyDown(e);
+                _keyUpHandler = e => { _keyState[e.key] = false; };
+                document.addEventListener('keydown', _keyHandler);
+                document.addEventListener('keyup',   _keyUpHandler);
+                _lastTime = null;
+                _rafId = requestAnimationFrame(gameLoop);
+                console.info('[space-invaders] Game started.', source || '');
+            }
+
+            function deactivateSpaceInvaders() {
+                if (!_active) return;
+                _active = false;
+                cancelAnimationFrame(_rafId); _rafId = null;
+                document.removeEventListener('keydown', _keyHandler);
+                document.removeEventListener('keyup',   _keyUpHandler);
+                _keyHandler = _keyUpHandler = null; _keyState = {};
+                document.getElementById('space-invaders-overlay').classList.remove('active');
+                const canvas = document.getElementById('space-invaders-canvas');
+                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+                console.info('[space-invaders] Game ended. Score:', _score);
+            }
+
+            function handleKeyDown(e) {
+                if (e.key === 'Escape') { deactivateSpaceInvaders(); return; }
+                if (['ArrowLeft','ArrowRight','ArrowUp',' '].includes(e.key)) e.preventDefault();
+                _keyState[e.key] = true;
+            }
+
+            function gameLoop(timestamp) {
+                if (!_active) return;
+                if (_lastTime === null) _lastTime = timestamp;
+                const dt = Math.min((timestamp - _lastTime) / 1000, 0.05);
+                _lastTime = timestamp;
+                const canvas = document.getElementById('space-invaders-canvas');
+                update(dt, canvas);
+                render(canvas.getContext('2d'), canvas);
+                _rafId = requestAnimationFrame(gameLoop);
+            }
+
+            function rectsOverlap(a, aw, ah, b, bw, bh) {
+                return a.x < b.x + bw && a.x + aw > b.x && a.y < b.y + bh && a.y + ah > b.y;
+            }
+
+            function getBottomAlienPerColumn() {
+                const byCol = {};
+                for (const a of _aliens) {
+                    if (!a.alive) continue;
+                    if (!byCol[a.col] || a.row > byCol[a.col].row) byCol[a.col] = a;
+                }
+                return Object.values(byCol);
+            }
+
+            function onGameEnd() {
+                saveHighscore(_score);
+            }
+
+            function update(dt, canvas) {
+                if (_phase !== 'playing') return;
+                const W = canvas.width, H = canvas.height;
+
+                if (_keyState['ArrowLeft']  || _keyState['a'] || _keyState['A'])
+                    _player.x = Math.max(0, _player.x - PLAYER_SPD * dt);
+                if (_keyState['ArrowRight'] || _keyState['d'] || _keyState['D'])
+                    _player.x = Math.min(W - _player.w, _player.x + PLAYER_SPD * dt);
+
+                _shootCooldown = Math.max(0, _shootCooldown - dt);
+                if ((_keyState[' '] || _keyState['ArrowUp']) && _shootCooldown === 0) {
+                    _playerBullets.push({ x: _player.x + _player.w/2 - BULLET_W/2, y: _player.y, w: BULLET_W, h: BULLET_H });
+                    _shootCooldown = SHOOT_COOLDOWN;
+                }
+
+                for (const b of _playerBullets) b.y -= BULLET_SPD * dt;
+                _playerBullets = _playerBullets.filter(b => b.y + b.h > 0);
+                for (const b of _alienBullets)  b.y += ALIEN_BULLET_SPD * dt;
+                _alienBullets  = _alienBullets.filter(b => b.y < H);
+
+                _animTimer += dt;
+                if (_animTimer >= ANIM_INTERVAL) { _animTimer -= ANIM_INTERVAL; _animFrame = 1 - _animFrame; }
+
+                const alive = _aliens.filter(a => a.alive);
+                if (alive.length === 0) { _phase = 'won'; _message = 'YOU WIN!'; onGameEnd(); return; }
+
+                _alienSpeedX = 30 + (COLS * ROWS - alive.length) * 1.2;
+                let minX = Infinity, maxX = -Infinity;
+                for (const a of alive) { if (a.x < minX) minX = a.x; if (a.x + ALIEN_W > maxX) maxX = a.x + ALIEN_W; }
+
+                const dx = _alienSpeedX * _alienDirX * dt;
+                for (const a of _aliens) a.x += dx;
+                if ((_alienDirX > 0 && maxX + dx >= W) || (_alienDirX < 0 && minX + dx <= 0)) {
+                    _alienDirX *= -1;
+                    for (const a of _aliens) a.y += ALIEN_DROP;
+                }
+
+                _alienFireTimer -= dt;
+                if (_alienFireTimer <= 0) {
+                    _alienFireTimer = randomFireInterval();
+                    const shooters = getBottomAlienPerColumn();
+                    if (shooters.length > 0) {
+                        const s = shooters[Math.floor(Math.random() * shooters.length)];
+                        _alienBullets.push({ x: s.x + ALIEN_W/2 - BULLET_W/2, y: s.y + ALIEN_H, w: BULLET_W, h: BULLET_H });
+                    }
+                }
+
+                for (const b of _playerBullets) {
+                    for (const a of _aliens) {
+                        if (!a.alive) continue;
+                        if (rectsOverlap(b, b.w, b.h, a, ALIEN_W, ALIEN_H)) {
+                            a.alive = false; b.y = -9999; _score += a.points;
+                        }
+                    }
+                }
+                _playerBullets = _playerBullets.filter(b => b.y > -9000);
+
+                for (const b of _alienBullets) {
+                    if (rectsOverlap(b, b.w, b.h, _player, _player.w, _player.h)) {
+                        _lives--; b.y = H + 999;
+                        if (_lives <= 0) { _phase = 'lost'; _message = 'GAME OVER'; onGameEnd(); }
+                    }
+                }
+                _alienBullets = _alienBullets.filter(b => b.y < H + 900);
+
+                const bottomY = _aliens.filter(a => a.alive).reduce((m, a) => Math.max(m, a.y + ALIEN_H), 0);
+                if (bottomY >= _player.y) { _phase = 'lost'; _message = 'GAME OVER'; onGameEnd(); }
+            }
+
+            function drawPlayer(ctx, x, y) {
+                ctx.fillStyle = '#22c55e';
+                ctx.fillRect(x, y + 8, PLAYER_W, 8);
+                ctx.fillRect(x + 10, y + 4, 16, 4);
+                ctx.fillRect(x + PLAYER_W/2 - 2, y, 4, 4);
+            }
+
+            function drawAlien(ctx, x, y, type, frame) {
+                const PX = 2;
+                const sprite = ALIEN_SPRITES[type];
+                ctx.fillStyle = ['#f97316','#a78bfa','#22c55e'][type];
+                const ox = frame;
+                for (let r = 0; r < sprite.length; r++) {
+                    for (let c = 0; c < sprite[r].length; c++) {
+                        if (sprite[r][c]) ctx.fillRect(x + ox + c*PX, y + r*PX, PX, PX);
+                    }
+                }
+            }
+
+            function render(ctx, canvas) {
+                const W = canvas.width, H = canvas.height;
+                ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = '#22c55e'; ctx.fillRect(0, _player.y + PLAYER_H + 4, W, 1);
+
+                ctx.fillStyle = '#94a3b8'; ctx.font = '11px "Courier New", monospace';
+                ctx.textAlign = 'left';  ctx.fillText(`SCORE: ${_score}`, 12, 20);
+                ctx.textAlign = 'center';
+                if (_highscore !== null) ctx.fillText(`HI: ${Math.max(_highscore, _score)}`, W/2, 20);
+                ctx.textAlign = 'right'; ctx.fillText(`LIVES: ${'♥'.repeat(Math.max(0, _lives))}`, W - 12, 20);
+
+                drawPlayer(ctx, _player.x, _player.y);
+                for (const a of _aliens) { if (a.alive) drawAlien(ctx, a.x, a.y, a.type, _animFrame); }
+
+                ctx.fillStyle = '#22c55e';
+                for (const b of _playerBullets) ctx.fillRect(b.x, b.y, b.w, b.h);
+                ctx.fillStyle = '#f97316';
+                for (const b of _alienBullets)  ctx.fillRect(b.x, b.y, b.w, b.h);
+
+                if (_phase !== 'playing') {
+                    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0, H/2 - 40, W, 90);
+                    ctx.fillStyle = _phase === 'won' ? '#22c55e' : '#ef4444';
+                    ctx.font = 'bold 28px "Courier New", monospace'; ctx.textAlign = 'center';
+                    ctx.fillText(_message, W/2, H/2 - 8);
+                    ctx.fillStyle = '#94a3b8'; ctx.font = '11px "Courier New", monospace';
+                    const hi = _highscore !== null ? Math.max(_highscore, _score) : _score;
+                    ctx.fillText(`SCORE: ${_score}  |  HI: ${hi}  —  press ESC to exit`, W/2, H/2 + 18);
+                }
+            }
+
+            window.activateSpaceInvaders   = activateSpaceInvaders;
+            window.deactivateSpaceInvaders = deactivateSpaceInvaders;
+        })();
+        // ────────────────────────────────────────────────────────────────────────
+
+        function checkForRickrollTrigger(data, source) {
+            if (!data || (Array.isArray(data) && data.length === 0)) {
+                activateSpaceInvaders(source);
+                return true;
+            }
+            return false;
+        }
+        // ────────────────────────────────────────────────────────────────────────
 
         // Floating Notes Management
         let notesOriginalContent = '';
@@ -15376,38 +15514,11 @@ function renderAuthLogs(logs) {
         }, 100);
     </script>
 
-    <!-- Rickroll Easter Egg Modal -->
-    <div id="rickroll-modal">
-        <button id="rickroll-close" onclick="window._ec&&window._ec()">Close (ESC)</button>
-        <div id="rickroll-container">
-            <div class="rickroll-message">🎵 Never Gonna Give You Up 🎵</div>
-
-            <!-- ASCII Animation -->
-            <div id="ascii-container"></div>
-
-            <!-- CSS Dancer Animation -->
-            <div class="css-dancer" id="css-dancer">
-                <div class="dancer-head">😎</div>
-                <div class="dancer-body"></div>
-                <div class="dancer-arm-left"></div>
-                <div class="dancer-arm-right"></div>
-                <div class="dancer-leg-left"></div>
-                <div class="dancer-leg-right"></div>
-                <div class="dancer-note dancer-note1">♪</div>
-                <div class="dancer-note dancer-note2">♫</div>
-                <div class="dancer-note dancer-note3">♬</div>
-                <div class="dancer-floor">
-                    <div class="dancer-floor-tile"></div>
-                    <div class="dancer-floor-tile"></div>
-                    <div class="dancer-floor-tile"></div>
-                    <div class="dancer-floor-tile"></div>
-                    <div class="dancer-floor-tile"></div>
-                    <div class="dancer-floor-tile"></div>
-                    <div class="dancer-floor-tile"></div>
-                    <div class="dancer-floor-tile"></div>
-                </div>
-            </div>
-        </div>
+    <!-- Space Invaders Easter Egg -->
+    <div id="space-invaders-overlay">
+        <div id="space-invaders-source"></div>
+        <canvas id="space-invaders-canvas" width="480" height="360"></canvas>
+        <div id="space-invaders-hint">← → move &nbsp;|&nbsp; SPACE shoot &nbsp;|&nbsp; ESC exit</div>
     </div>
 
     <!-- Floating Back to Top Button -->

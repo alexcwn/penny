@@ -197,6 +197,7 @@ func Start(port int, data *models.ArchiveData, pennyVersion string) error {
 	http.HandleFunc("/api/interface-graphs-check", handleInterfaceGraphsCheck)
 	http.HandleFunc("/api/save-notes", handleSaveNotes)
 	http.HandleFunc("/api/load-notes", handleLoadNotes)
+	http.HandleFunc("/api/highscore", handleHighscore)
 
 	// Backup API
 	http.HandleFunc("/api/backup", handleBackupData)

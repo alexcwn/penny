@@ -1654,6 +1654,114 @@ func handleByos(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, archiveData.ByosResults)
 }
 
+func handleHighscore(w http.ResponseWriter, r *http.Request) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		http.Error(w, "cannot determine home directory", http.StatusInternalServerError)
+		return
+	}
+	pennyDir := filepath.Join(home, ".penny")
+
+	// Check .penny exists — if not, signal unavailable without creating it
+	if _, err := os.Stat(pennyDir); os.IsNotExist(err) {
+		if r.Method == http.MethodGet {
+			respondJSON(w, map[string]interface{}{"exists": false})
+		} else {
+			http.Error(w, ".penny directory does not exist", http.StatusNotFound)
+		}
+		return
+	}
+
+	switch r.Method {
+	case http.MethodGet:
+		// Find the single hs_* file (there should only ever be one)
+		entries, err := os.ReadDir(pennyDir)
+		if err != nil {
+			http.Error(w, "cannot read .penny directory", http.StatusInternalServerError)
+			return
+		}
+		for _, e := range entries {
+			if !strings.HasPrefix(e.Name(), "hs_") {
+				continue
+			}
+			content, err := os.ReadFile(filepath.Join(pennyDir, e.Name()))
+			if err != nil {
+				continue
+			}
+			score, err := strconv.ParseInt(strings.TrimSpace(string(content)), 10, 64)
+			if err != nil {
+				continue
+			}
+			respondJSON(w, map[string]interface{}{"exists": true, "score": score})
+			return
+		}
+		respondJSON(w, map[string]interface{}{"exists": false})
+
+	case http.MethodPost:
+		body, err := io.ReadAll(r.Body)
+		defer r.Body.Close()
+		if err != nil {
+			http.Error(w, "failed to read body", http.StatusBadRequest)
+			return
+		}
+		var req struct {
+			Score int64 `json:"score"`
+		}
+		if err := json.Unmarshal(body, &req); err != nil {
+			http.Error(w, "invalid JSON", http.StatusBadRequest)
+			return
+		}
+
+		// Read existing best score
+		entries, _ := os.ReadDir(pennyDir)
+		var bestScore int64 = -1
+		var bestFile string
+		for _, e := range entries {
+			if !strings.HasPrefix(e.Name(), "hs_") {
+				continue
+			}
+			content, err := os.ReadFile(filepath.Join(pennyDir, e.Name()))
+			if err != nil {
+				continue
+			}
+			s, err := strconv.ParseInt(strings.TrimSpace(string(content)), 10, 64)
+			if err != nil {
+				continue
+			}
+			if s > bestScore {
+				bestScore = s
+				bestFile = e.Name()
+			}
+		}
+
+		if req.Score <= bestScore {
+			// Not a new record — nothing to write
+			respondJSON(w, map[string]interface{}{"saved": false, "highscore": bestScore})
+			return
+		}
+
+		// Write new record file
+		newName := fmt.Sprintf("hs_%d", time.Now().Unix())
+		if err := os.WriteFile(filepath.Join(pennyDir, newName), []byte(strconv.FormatInt(req.Score, 10)), 0644); err != nil {
+			http.Error(w, "failed to write highscore", http.StatusInternalServerError)
+			return
+		}
+
+		// Remove old best file (and any other stale hs_* files)
+		for _, e := range entries {
+			if strings.HasPrefix(e.Name(), "hs_") && e.Name() != newName {
+				_ = os.Remove(filepath.Join(pennyDir, e.Name()))
+			}
+		}
+		_ = bestFile // referenced above for clarity
+
+		respondJSON(w, map[string]interface{}{"saved": true, "highscore": req.Score})
+
+	default:
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
 func respondJSON(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(data); err != nil {

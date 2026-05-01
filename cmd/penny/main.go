@@ -106,10 +106,10 @@ var magicNumbers = []MagicNumber{
 func main() {
 	// Define CLI flags
 	setup := flag.Bool("setup", false, "Start setup page only (no archive required)")
-	archiveFile := flag.String("f", "", "Archive file path (.tbz2)")
+	archiveFile := flag.String("f", "", "Optional. Archive file path (.tbz2|.nozomini_backup)")
 	outputDir := flag.String("o", "", "Output directory for extraction")
 	analyzeDir := flag.String("d", "", "Directory to analyze (existing extraction)")
-	port := flag.Int("port", 8080, "HTTP server port")
+	port := flag.Int("port", 8080, "Optional. HTTP server port")
 
 	flag.Parse()
 
@@ -829,15 +829,17 @@ func printUsage() {
 	fmt.Println("Support Archive Analyzer")
 	fmt.Println("Version: " + version)
 	fmt.Println("\nUsage:")
-	fmt.Println("  Extract and analyze archive:")
+	fmt.Println("  Extract and analyze archive or database backup:")
 	fmt.Println("    penny -f archive.tbz2 [-o output-dir] [-port 8080]")
-	fmt.Println("\n  Analyze existing directory:")
+	fmt.Println("    penny -f backup.nozomi_backup [-o output-dir] [-port 8080]")
+	fmt.Println("\n  Analyze existing directory of the support archive/database backup:")
 	fmt.Println("    penny -d directory [-port 8080]")
 	fmt.Println("\nFlags:")
 	flag.PrintDefaults()
 	fmt.Println("\nExamples:")
 	fmt.Println("  penny -f archive.tbz2")
-	fmt.Println("  penny -f archive.tbz2 -o my-analysis")
+	fmt.Println("  penny -f backup.nozomi_backup")
+	fmt.Println("  penny -f archive.tbz2 -o archive")
 	fmt.Println("  penny -d ./support/")
 	fmt.Println("  penny -d ./support/ -port 9000")
 }
