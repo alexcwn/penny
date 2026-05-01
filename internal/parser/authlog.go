@@ -2,45 +2,163 @@ package parser
 
 import (
 	"bufio"
+	"compress/bzip2"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"penny/internal/models"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 )
 
-// ParseAuthLog parses the auth.log file and returns structured auth log entries
+// ParseAuthLog parses auth.log, all rotated files (.0–.6), and the security file,
+// returning all entries chronologically sorted.
 func ParseAuthLog(dir string) ([]models.AuthLogEntry, error) {
-	authLogPath := filepath.Join(dir, "data", "log", "auth.log")
-	file, err := os.Open(authLogPath)
+	logDir := resolveLogDir(dir)
+
+	var allEntries []models.AuthLogEntry
+
+	// Parse rotated auth logs oldest first (.6 → .0)
+	for i := 6; i >= 0; i-- {
+		src := fmt.Sprintf("auth.%d", i)
+		path := filepath.Join(logDir, fmt.Sprintf("auth.log.%d", i))
+		if entries, err := parseAuthLogFile(path, src); err == nil {
+			allEntries = append(allEntries, entries...)
+		}
+	}
+
+	// Parse current auth.log
+	if entries, err := parseAuthLogFile(filepath.Join(logDir, "auth.log"), "auth"); err == nil {
+		allEntries = append(allEntries, entries...)
+	}
+
+	// Parse security rotations (bzip2-compressed: security.0.bz2, security.1.bz2, …)
+	for i := 9; i >= 0; i-- {
+		src := fmt.Sprintf("security.%d", i)
+		bzPath := filepath.Join(logDir, fmt.Sprintf("security.%d.bz2", i))
+		if f, err := os.Open(bzPath); err == nil {
+			entries, _ := parseSecurityLogReader(bzip2.NewReader(f), src)
+			allEntries = append(allEntries, entries...)
+			f.Close()
+		} else {
+			// Also try plain (no compression)
+			plainPath := filepath.Join(logDir, fmt.Sprintf("security.%d", i))
+			if entries, err := parseSecurityLogFile(plainPath, src); err == nil {
+				allEntries = append(allEntries, entries...)
+			}
+		}
+	}
+	if entries, err := parseSecurityLogFile(filepath.Join(logDir, "security"), "security"); err == nil {
+		allEntries = append(allEntries, entries...)
+	}
+
+	sort.Slice(allEntries, func(i, j int) bool {
+		return allEntries[i].Timestamp.Before(allEntries[j].Timestamp)
+	})
+
+	return allEntries, nil
+}
+
+func parseAuthLogFile(path, source string) ([]models.AuthLogEntry, error) {
+	file, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open auth.log: %w", err)
+		return nil, err
 	}
 	defer file.Close()
 
 	var entries []models.AuthLogEntry
 	scanner := bufio.NewScanner(file)
+	scanner.Buffer(make([]byte, 1024*1024), 1024*1024)
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		entry, err := parseAuthLogLine(line)
 		if err != nil {
-			// Skip lines that can't be parsed rather than failing entirely
 			continue
 		}
+		entry.Source = source
 		entries = append(entries, entry)
 	}
 
-	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("error reading auth.log: %w", err)
+	return entries, scanner.Err()
+}
+
+func parseSecurityLogFile(path, source string) ([]models.AuthLogEntry, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	return parseSecurityLogReader(file, source)
+}
+
+// parseSecurityLogReader parses BSD security log lines from any io.Reader.
+// Format: 2026-04-14T03:12:31.771968+00:00 HOSTNAME process[PID] message
+func parseSecurityLogReader(r io.Reader, source string) ([]models.AuthLogEntry, error) {
+	tsRegex  := regexp.MustCompile(`^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[.\d]*[+-]\d{2}:\d{2})\s+(\S+)\s+(\S+?)\[(\d+)\]\s+(.*)`)
+	tsRegex2 := regexp.MustCompile(`^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[.\d]*[+-]\d{2}:\d{2})\s+(\S+)\s+(.*)`)
+
+	var entries []models.AuthLogEntry
+	scanner := bufio.NewScanner(r)
+	scanner.Buffer(make([]byte, 1024*1024), 1024*1024)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "" {
+			continue
+		}
+		entry := models.AuthLogEntry{
+			RawLine: line,
+			Level:   "INFO",
+			Source:  source,
+		}
+		if m := tsRegex.FindStringSubmatch(line); m != nil {
+			if t, err := time.Parse(time.RFC3339Nano, m[1]); err == nil {
+				entry.Timestamp = t
+			}
+			entry.Hostname = m[2]
+			entry.Process  = m[3]
+			entry.PID      = m[4]
+			entry.Message  = m[5]
+		} else if m := tsRegex2.FindStringSubmatch(line); m != nil {
+			if t, err := time.Parse(time.RFC3339Nano, m[1]); err == nil {
+				entry.Timestamp = t
+			}
+			entry.Hostname = m[2]
+			entry.Message  = m[3]
+		} else {
+			entry.Message = line
+		}
+		entry = classifySecurityEvent(entry)
+		entries = append(entries, entry)
 	}
 
-	// Sort by timestamp (most recent first)
-	sortAuthLogsByTimestamp(entries)
+	return entries, scanner.Err()
+}
 
-	return entries, nil
+// classifySecurityEvent assigns EventType and Level based on message content.
+func classifySecurityEvent(e models.AuthLogEntry) models.AuthLogEntry {
+	msg := e.Message
+	proc := e.Process
+	switch {
+	case strings.Contains(proc, "sshd") && strings.Contains(msg, "Accepted"):
+		e.EventType = models.AuthEventSSHSuccess
+		e = parseSSHLoginEvent(e, e.RawLine)
+	case strings.Contains(proc, "sshd") && (strings.Contains(msg, "Failed") || strings.Contains(msg, "Invalid")):
+		e.EventType = models.AuthEventSSHFailed
+		e.Level = "ERROR"
+		e = parseSSHLoginEvent(e, e.RawLine)
+	case strings.Contains(proc, "sshd"):
+		e.EventType = models.AuthEventSecurity
+	case strings.Contains(proc, "login") || strings.Contains(proc, "shutdown") || strings.Contains(proc, "reboot") || strings.Contains(proc, "init"):
+		e.EventType = models.AuthEventLogin
+	default:
+		e.EventType = models.AuthEventSecurity
+	}
+	return e
 }
 
 // parseAuthLogLine parses a single auth.log line into a structured entry
@@ -227,7 +345,7 @@ func sortAuthLogsByTimestamp(entries []models.AuthLogEntry) {
 
 // FindLatestSupportArchiveTime finds the latest timestamp of /usr/local/sbin/n2os-asksupport command
 func FindLatestSupportArchiveTime(dir string) (time.Time, error) {
-	authLogPath := filepath.Join(dir, "data", "log", "auth.log")
+	authLogPath := filepath.Join(resolveLogDir(dir), "auth.log")
 	file, err := os.Open(authLogPath)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("failed to open auth.log: %w", err)

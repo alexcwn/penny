@@ -11,7 +11,7 @@ import (
 
 // ParseN2OSConfig parses the n2os.conf.user file
 func ParseN2OSConfig(baseDir string, data *models.ArchiveData) error {
-	configPath := filepath.Join(baseDir, "data", "cfg", "n2os.conf.user")
+	configPath := filepath.Join(resolveCfgDir(baseDir), "n2os.conf.user")
 
 	// Read raw content
 	rawContent, err := os.ReadFile(configPath)
@@ -50,13 +50,17 @@ func ParseN2OSConfig(baseDir string, data *models.ArchiveData) error {
 
 	data.N2OSConfig.Settings = settings
 
-	// Extract timezone from settings and set in SystemInfo
-	// Look for "system time tz" setting
+	// Extract timezone and hardware model from settings
 	timezone := "UTC" // Default to UTC if not found
 	for _, setting := range settings {
-		if setting.Key == "system time tz" {
+		switch setting.Key {
+		case "system time tz":
 			timezone = setting.Value
-			break
+		case "system hardware_model":
+			if data.SystemInfo.Platform == "" {
+				data.SystemInfo.Platform = setting.Value
+				data.Metadata.Platform = setting.Value
+			}
 		}
 	}
 	data.SystemInfo.Timezone = timezone
@@ -173,6 +177,10 @@ func parseN2OSLine(line string) *models.N2OSSetting {
 		// "system time tz Asia/Tokyo"
 		key = parts[0] + " " + parts[1] + " " + parts[2]
 		value = strings.Join(parts[3:], " ")
+	} else if parts[0] == "system" && len(parts) >= 3 {
+		// "system hardware_model NS1" or other two-word system keys
+		key = parts[0] + " " + parts[1]
+		value = strings.Join(parts[2:], " ")
 	} else if parts[0] == "cmc" && len(parts) >= 3 {
 		// "cmc sync-to value" or "cmc sync-conf nodes true"
 		if parts[1] == "sync-conf" && len(parts) >= 4 {

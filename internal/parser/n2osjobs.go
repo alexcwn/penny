@@ -41,7 +41,7 @@ func compareJobSources(sourceA, sourceB string) bool {
 
 // ParseN2OSJobLogs parses all n2osjobs.log files (including rotated logs)
 func ParseN2OSJobLogs(baseDir string, data *models.ArchiveData) error {
-	logDir := filepath.Join(baseDir, "data", "log", "n2os")
+	logDir := resolveN2OSLogDir(baseDir)
 
 	var allEntries []models.N2OSJobLogEntry
 

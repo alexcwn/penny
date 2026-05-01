@@ -2,7 +2,6 @@ package parser
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"path/filepath"
 	"penny/internal/models"
@@ -10,29 +9,14 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // ParseN2OSIDSLogs parses all n2os_ids.log files (including rotated logs)
 func ParseN2OSIDSLogs(baseDir string, data *models.ArchiveData) error {
-	logDir := filepath.Join(baseDir, "data", "log", "n2os")
+	logDir := resolveN2OSLogDir(baseDir)
 
-	var allEntries []models.N2OSIDSLogEntry
+	allEntries := collectRotatedLogs(logDir, "n2os_ids.log", 5, parseN2OSIDSLogFile)
 
-	// Parse rotated logs in reverse order (oldest first: n2os_ids.log.5 -> n2os_ids.log.0)
-	for i := 5; i >= 0; i-- {
-		logPath := filepath.Join(logDir, fmt.Sprintf("n2os_ids.log.%d", i))
-		if entries, err := parseN2OSIDSLogFile(logPath); err == nil {
-			allEntries = append(allEntries, entries...)
-		}
-		// Silently skip if file doesn't exist
-	}
-
-	// Parse current log last (newest)
-	currentLogPath := filepath.Join(logDir, "n2os_ids.log")
-	if entries, err := parseN2OSIDSLogFile(currentLogPath); err == nil {
-		allEntries = append(allEntries, entries...)
-	}
 
 	// Sort all entries by timestamp to ensure chronological order
 	sort.Slice(allEntries, func(i, j int) bool {
@@ -60,7 +44,7 @@ func parseN2OSIDSLogFile(path string) ([]models.N2OSIDSLogEntry, error) {
 	// "n2os_ids.log.0" -> "ids.0"
 	// "n2os_ids.log.1" -> "ids.1"
 	filename := filepath.Base(path)
-	source := extractIDSSourceFromFilename(filename)
+	source := extractLogSource(filename, "n2os_ids.log", "ids")
 
 	var entries []models.N2OSIDSLogEntry
 	scanner := bufio.NewScanner(file)
@@ -93,7 +77,7 @@ func parseN2OSIDSLogFile(path string) ([]models.N2OSIDSLogEntry, error) {
 
 			// Parse timestamp
 			// Format: 2025-10-01T08:02:08.280 +0200
-			if ts, err := parseN2OSIDSTimestamp(timestampMatch[1]); err == nil {
+			if ts, err := parseN2OSTimestamp(timestampMatch[1]); err == nil {
 				entry.Timestamp = ts
 			}
 
@@ -120,44 +104,6 @@ func parseN2OSIDSLogFile(path string) ([]models.N2OSIDSLogEntry, error) {
 	}
 
 	return entries, scanner.Err()
-}
-
-// parseN2OSIDSTimestamp parses timestamps in n2os_ids format
-// Example: 2025-10-01T08:02:08.280 +0200
-func parseN2OSIDSTimestamp(ts string) (time.Time, error) {
-	// Try parsing with milliseconds and timezone
-	t, err := time.Parse("2006-01-02T15:04:05.000 -0700", ts)
-	if err == nil {
-		return t, nil
-	}
-
-	// Try without milliseconds
-	t, err = time.Parse("2006-01-02T15:04:05 -0700", ts)
-	if err == nil {
-		return t, nil
-	}
-
-	return time.Time{}, err
-}
-
-// extractIDSSourceFromFilename converts a log filename to its source identifier
-// "n2os_ids.log" -> "ids"
-// "n2os_ids.log.0" -> "ids.0"
-// "n2os_ids.log.1" -> "ids.1"
-func extractIDSSourceFromFilename(filename string) string {
-	// Remove "n2os_ids" prefix and ".log" extension
-	if filename == "n2os_ids.log" {
-		return "ids"
-	}
-
-	// Handle rotated logs: "n2os_ids.log.0" -> "ids.0"
-	if strings.HasPrefix(filename, "n2os_ids.log.") {
-		suffix := strings.TrimPrefix(filename, "n2os_ids.log.")
-		return "ids." + suffix
-	}
-
-	// Fallback (shouldn't happen with standard log rotation)
-	return "ids"
 }
 
 // extractNetworkElementLimit scans log entries for the Network elements limit value

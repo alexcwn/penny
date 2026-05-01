@@ -167,7 +167,7 @@ func detectLevel(message string) string {
 
 // ParseMessagesLog parses all messages log files (including compressed rotated logs)
 func ParseMessagesLog(baseDir string) ([]models.LogEntry, error) {
-	logDir := filepath.Join(baseDir, "data", "log")
+	logDir := resolveLogDir(baseDir)
 	var allEntries []models.LogEntry
 
 	// Parse rotated compressed logs in reverse order (oldest first: messages.6.bz2 -> messages.0.bz2)

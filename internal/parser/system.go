@@ -45,6 +45,10 @@ func ParseSystemInfo(baseDir string, data *models.ArchiveData) error {
 		data.SystemInfo.MachineID = strings.TrimSpace(machineID)
 	}
 
+	if applianceUUID, err := readFile(filepath.Join(resolveCfgDir(baseDir), ".appliance-uuid")); err == nil {
+		data.SystemInfo.ApplianceUUID = strings.TrimSpace(applianceUUID)
+	}
+
 	// Parse asset metrics from meta.json
 	if err := parseMetaJSON(baseDir, data); err == nil {
 		// Successfully parsed meta.json
@@ -61,7 +65,7 @@ func ParseSystemInfo(baseDir string, data *models.ArchiveData) error {
 	}
 
 	// Get creation time from n2os.conf.gz last modified time
-	n2osConfPath := filepath.Join(baseDir, "data", "cfg", "n2os.conf.gz")
+	n2osConfPath := filepath.Join(resolveCfgDir(baseDir), "n2os.conf.gz")
 	if fileInfo, err := os.Stat(n2osConfPath); err == nil {
 		// Convert to UTC
 		data.SystemInfo.CreationTimestamp = fileInfo.ModTime().UTC()
@@ -112,7 +116,90 @@ func ParseNetworkConfig(baseDir string, data *models.ArchiveData) error {
 		data.NetworkConfig.DNS = dns
 	}
 
+	_ = ParseNetstatDrops(baseDir, data)
+	_ = ParseNetstatRoutes(baseDir, data)
+
 	return nil
+}
+
+// ParseNetstatDrops parses netstat_drops.txt into NetworkConfig.NetstatDrops
+func ParseNetstatDrops(baseDir string, data *models.ArchiveData) error {
+	path := filepath.Join(baseDir, "netstat_drops.txt")
+	file, err := os.Open(path)
+	if err != nil {
+		return nil
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(strings.TrimSpace(line), "Name") {
+			continue
+		}
+		fields := strings.Fields(line)
+		if len(fields) < 13 {
+			continue
+		}
+		entry := models.NetstatDropEntry{
+			Name:    strPtr(fields[0]),
+			Mtu:     strPtr(fields[1]),
+			Network: strPtr(fields[2]),
+			Address: strPtr(fields[3]),
+			Ipkts:   strPtr(fields[4]),
+			Ierrs:   strPtr(fields[5]),
+			Idrop:   strPtr(fields[6]),
+			Ibytes:  strPtr(fields[7]),
+			Opkts:   strPtr(fields[8]),
+			Oerrs:   strPtr(fields[9]),
+			Obytes:  strPtr(fields[10]),
+			Coll:    strPtr(fields[11]),
+			Drop:    strPtr(fields[12]),
+		}
+		data.NetworkConfig.NetstatDrops = append(data.NetworkConfig.NetstatDrops, entry)
+	}
+	return scanner.Err()
+}
+
+func strPtr(s string) *string {
+	return &s
+}
+
+// ParseNetstatRoutes parses netstat_routing.txt into NetworkConfig.NetstatRoutes
+func ParseNetstatRoutes(baseDir string, data *models.ArchiveData) error {
+	path := filepath.Join(baseDir, "netstat_routing.txt")
+	file, err := os.Open(path)
+	if err != nil {
+		return nil
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" ||
+			strings.HasPrefix(trimmed, "Routing") ||
+			strings.HasPrefix(trimmed, "Internet") ||
+			strings.HasPrefix(trimmed, "Destination") {
+			continue
+		}
+		fields := strings.Fields(trimmed)
+		if len(fields) < 4 {
+			continue
+		}
+		entry := models.NetstatRouteEntry{
+			Destination: strPtr(fields[0]),
+			Gateway:     strPtr(fields[1]),
+			Flags:       strPtr(fields[2]),
+			Netif:       strPtr(fields[3]),
+		}
+		if len(fields) >= 5 {
+			entry.Expire = strPtr(fields[4])
+		}
+		data.NetworkConfig.NetstatRoutes = append(data.NetworkConfig.NetstatRoutes, entry)
+	}
+	return scanner.Err()
 }
 
 // parseResolvConf parses resolv.conf for DNS nameservers
@@ -256,7 +343,8 @@ func ParseStorage(baseDir string, data *models.ArchiveData) error {
 	}
 
 	// Parse SMART data
-	if disks, err := parseSmartctl(filepath.Join(baseDir, "smartctl.txt")); err == nil {
+	passMap := parseCamcontrolPassMap(filepath.Join(baseDir, "camcontrol_devlist.txt"))
+	if disks, err := parseSmartctl(filepath.Join(baseDir, "smartctl.txt"), passMap); err == nil {
 		data.Storage.DiskInfo = disks
 	}
 
@@ -366,14 +454,35 @@ func extractInterfaces(rcConf map[string]string) []models.NetworkInterface {
 	return interfaces
 }
 
+// splitPoolBlocks splits raw zpool_status.txt content into one string per pool block
+func splitPoolBlocks(content string) []string {
+	var blocks []string
+	var current []string
+	for _, line := range strings.Split(content, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "pool:") && current != nil {
+			blocks = append(blocks, strings.Join(current, "\n"))
+			current = nil
+		}
+		current = append(current, line)
+	}
+	if current != nil {
+		blocks = append(blocks, strings.Join(current, "\n"))
+	}
+	return blocks
+}
+
 func parseZpoolStatus(path string) ([]models.ZpoolStatus, error) {
 	content, err := readFile(path)
 	if err != nil {
 		return nil, err
 	}
 
+	// Pre-compute raw output per pool block by splitting on "pool:" boundaries
+	poolRawBlocks := splitPoolBlocks(content)
+
 	var zpools []models.ZpoolStatus
 	var currentPool *models.ZpoolStatus
+	poolIndex := -1
 
 	lines := strings.Split(content, "\n")
 	inConfig := false
@@ -386,8 +495,12 @@ func parseZpoolStatus(path string) ([]models.ZpoolStatus, error) {
 			if currentPool != nil {
 				zpools = append(zpools, *currentPool)
 			}
+			poolIndex++
 			currentPool = &models.ZpoolStatus{
 				Pool: strings.TrimSpace(strings.TrimPrefix(trimmed, "pool:")),
+			}
+			if poolIndex < len(poolRawBlocks) {
+				currentPool.RawOutput = poolRawBlocks[poolIndex]
 			}
 			inConfig = false
 			inErrors = false
@@ -439,7 +552,40 @@ func parseZpoolStatus(path string) ([]models.ZpoolStatus, error) {
 	return zpools, nil
 }
 
-func parseSmartctl(path string) ([]models.DiskInfo, error) {
+// parseCamcontrolPassMap parses camcontrol_devlist.txt and returns a map from
+// pass device number to the primary device name, e.g. "pass0" -> "ada0".
+func parseCamcontrolPassMap(path string) map[string]string {
+	m := make(map[string]string)
+	content, err := readFile(path)
+	if err != nil {
+		return m
+	}
+	for _, line := range strings.Split(content, "\n") {
+		// Lines look like: <Model ...>   at scbus... (ada0,pass0)
+		start := strings.LastIndex(line, "(")
+		end := strings.LastIndex(line, ")")
+		if start == -1 || end <= start {
+			continue
+		}
+		devs := strings.Split(line[start+1:end], ",")
+		// Find the pass device and map it to the first non-pass device
+		var primary, passdev string
+		for _, d := range devs {
+			d = strings.TrimSpace(d)
+			if strings.HasPrefix(d, "pass") {
+				passdev = d
+			} else if primary == "" {
+				primary = d
+			}
+		}
+		if passdev != "" && primary != "" {
+			m[passdev] = primary
+		}
+	}
+	return m
+}
+
+func parseSmartctl(path string, passMap map[string]string) ([]models.DiskInfo, error) {
 	content, err := readFile(path)
 	if err != nil {
 		return nil, err
@@ -452,9 +598,10 @@ func parseSmartctl(path string) ([]models.DiskInfo, error) {
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
 
-		// New smartctl command starts
-		if strings.HasPrefix(trimmed, "smartctl") {
-			if currentDisk != nil {
+		// New smartctl command starts — match "smartctl -a /dev/..." only, not the version banner
+		if strings.HasPrefix(trimmed, "smartctl") && strings.Contains(trimmed, "/dev/") {
+			if currentDisk != nil && currentDisk.Model != "" {
+				finalizeSmartDisk(currentDisk)
 				disks = append(disks, *currentDisk)
 			}
 			currentDisk = &models.DiskInfo{}
@@ -464,7 +611,17 @@ func parseSmartctl(path string) ([]models.DiskInfo, error) {
 				parts := strings.Fields(trimmed)
 				for _, part := range parts {
 					if strings.HasPrefix(part, "/dev/") {
-						currentDisk.Device = part
+						// Resolve /dev/pass* via camcontrol map; fall back to the pass name if unmapped
+						if strings.HasPrefix(part, "/dev/pass") {
+							passName := strings.TrimPrefix(part, "/dev/")
+							if primary, ok := passMap[passName]; ok {
+								currentDisk.Device = "/dev/" + primary
+							} else {
+								currentDisk.Device = part
+							}
+						} else {
+							currentDisk.Device = part
+						}
 						break
 					}
 				}
@@ -472,10 +629,45 @@ func parseSmartctl(path string) ([]models.DiskInfo, error) {
 		} else if currentDisk != nil {
 			if strings.HasPrefix(trimmed, "Device Model:") {
 				currentDisk.Model = strings.TrimSpace(strings.TrimPrefix(trimmed, "Device Model:"))
+			} else if strings.HasPrefix(trimmed, "Product:") {
+				// SCSI/VM disks report Product: instead of Device Model:
+				currentDisk.Model = strings.TrimSpace(strings.TrimPrefix(trimmed, "Product:"))
 			} else if strings.HasPrefix(trimmed, "Serial Number:") {
 				currentDisk.Serial = strings.TrimSpace(strings.TrimPrefix(trimmed, "Serial Number:"))
 			} else if strings.HasPrefix(trimmed, "User Capacity:") {
-				currentDisk.Capacity = strings.TrimSpace(strings.TrimPrefix(trimmed, "User Capacity:"))
+				raw := strings.TrimSpace(strings.TrimPrefix(trimmed, "User Capacity:"))
+				// Extract human-readable size from brackets, e.g. "[64.0 GB, 59.6 GiB]" or "[1.09 TB]"
+				if start := strings.Index(raw, "["); start != -1 {
+					if end := strings.Index(raw, "]"); end != -1 {
+						bracket := raw[start+1 : end] // e.g. "64.0 GB, 59.6 GiB" or "1.09 TB"
+						// Use only the first unit (before comma)
+						first := strings.SplitN(bracket, ",", 2)[0]
+						currentDisk.Capacity = strings.TrimSpace(first) // e.g. "64.0 GB" or "1.09 TB"
+					}
+				}
+				if currentDisk.Capacity == "" {
+					currentDisk.Capacity = raw // fallback to full string
+				}
+				// Parse CapacityGB: handle both GB and TB
+				if strings.Contains(raw, " GB") {
+					if start := strings.Index(raw, "["); start != -1 {
+						if end := strings.Index(raw[start:], " GB"); end != -1 {
+							gbStr := strings.ReplaceAll(strings.TrimSpace(raw[start+1:start+end]), ",", "")
+							if gb, err := strconv.ParseFloat(gbStr, 64); err == nil {
+								currentDisk.CapacityGB = int(gb)
+							}
+						}
+					}
+				} else if strings.Contains(raw, " TB") {
+					if start := strings.Index(raw, "["); start != -1 {
+						if end := strings.Index(raw[start:], " TB"); end != -1 {
+							tbStr := strings.ReplaceAll(strings.TrimSpace(raw[start+1:start+end]), ",", "")
+							if tb, err := strconv.ParseFloat(tbStr, 64); err == nil {
+								currentDisk.CapacityGB = int(tb * 1024)
+							}
+						}
+					}
+				}
 			} else if strings.Contains(trimmed, "overall-health") && strings.Contains(trimmed, "PASSED") {
 				currentDisk.Health = "PASSED"
 			} else if strings.Contains(trimmed, "overall-health") && strings.Contains(trimmed, "FAILED") {
@@ -490,15 +682,78 @@ func parseSmartctl(path string) ([]models.DiskInfo, error) {
 				if len(fields) > 9 {
 					currentDisk.PowerOnHours = fields[9]
 				}
+			} else if strings.HasPrefix(trimmed, "SMART support is:") {
+				// Only set true on the availability line; ignore subsequent "Enabled" line
+				if strings.Contains(trimmed, "Available - device has SMART capability.") {
+					currentDisk.SMARTAvailable = true
+				}
+			} else {
+				// Parse SMART attribute table rows by leading attribute ID
+				fields := strings.Fields(trimmed)
+				if len(fields) >= 10 {
+					switch fields[0] {
+					case "169":
+						if v, err := strconv.ParseInt(fields[len(fields)-1], 10, 64); err == nil {
+							currentDisk.RemainingLifePct = int(v)
+						}
+					case "241":
+						if v, err := strconv.ParseInt(fields[len(fields)-1], 10, 64); err == nil {
+							currentDisk.HostWritesLBA = v
+						}
+					case "242":
+						if v, err := strconv.ParseInt(fields[len(fields)-1], 10, 64); err == nil {
+							currentDisk.HostReadsLBA = v
+						}
+					}
+				}
 			}
 		}
 	}
 
-	if currentDisk != nil && currentDisk.Device != "" {
+	if currentDisk != nil && currentDisk.Device != "" && currentDisk.Model != "" {
+		finalizeSmartDisk(currentDisk)
 		disks = append(disks, *currentDisk)
 	}
 
 	return disks, nil
+}
+
+// finalizeSmartDisk computes derived health fields after a disk block has been fully parsed.
+func finalizeSmartDisk(d *models.DiskInfo) {
+	if !d.SMARTAvailable {
+		d.DiskHealthStatus = "VM"
+		return
+	}
+
+	// Remaining lifetime check (attr 169) — only flag if attr was actually present (non-zero)
+	if d.RemainingLifePct > 100 || (d.RemainingLifePct > 0 && d.RemainingLifePct < 20) {
+		d.LifetimeCritical = true
+	}
+
+	// Write cycles (attr 241 formula)
+	if d.CapacityGB > 0 && d.HostWritesLBA > 0 {
+		d.WriteCycles = int((d.HostWritesLBA * 32 / 1024) / int64(d.CapacityGB))
+	}
+
+	// Device-specific threshold
+	if limit, ok := models.DiskWriteCycleLimits[d.Model]; ok {
+		d.WriteCycleLimit = limit
+		if d.WriteCycles > limit {
+			d.CyclesExceeded = true
+		}
+	}
+
+	// Final verdict
+	switch {
+	case d.LifetimeCritical && d.RemainingLifePct > 100:
+		d.DiskHealthStatus = "FRIED"
+	case d.LifetimeCritical || d.CyclesExceeded:
+		d.DiskHealthStatus = "Critical"
+	case d.RemainingLifePct > 0 || d.HostWritesLBA > 0:
+		d.DiskHealthStatus = "Healthy"
+	default:
+		d.DiskHealthStatus = "Unknown"
+	}
 }
 
 func parseFstab(path string) ([]models.FstabEntry, error) {
@@ -651,7 +906,7 @@ func readFile(path string) (string, error) {
 
 // parseMetaJSON parses the meta.json file containing asset metrics
 func parseMetaJSON(baseDir string, data *models.ArchiveData) error {
-	metaPath := filepath.Join(baseDir, "data", "cfg", "meta.json")
+	metaPath := filepath.Join(resolveCfgDir(baseDir), "meta.json")
 
 	content, err := os.ReadFile(metaPath)
 	if err != nil {
@@ -705,13 +960,13 @@ func parseLicensesJSON(baseDir string, data *models.ArchiveData) error {
 
 		// Define a struct to unmarshal the JSON
 		var rawLicense struct {
-			Licensee  string `json:"licensee"`
-			Type      string `json:"type"`
-			Status    string `json:"status"`
-			Bundle    string `json:"bundle_name"`
-			Purpose   string `json:"purpose"`
-			IsDisabled bool  `json:"is_disabled"`
-			Extra     struct {
+			Licensee   string `json:"licensee"`
+			Type       string `json:"type"`
+			Status     string `json:"status"`
+			Bundle     string `json:"bundle_name"`
+			Purpose    string `json:"purpose"`
+			IsDisabled bool   `json:"is_disabled"`
+			Extra      struct {
 				ExpireDate          string `json:"expire_date"`
 				ActualLicensedNodes string `json:"actual_licensed_nodes"`
 				SupportedNodes      string `json:"supported_nodes"`
@@ -780,44 +1035,22 @@ func parseSysctl(baseDir string, data *models.ArchiveData) error {
 			continue
 		}
 
-		// If we're in msgbuf, look for CPU info
+		// If we're in msgbuf, skip until we see a top-level sysctl key again.
+		// Sysctl keys start at column 0 and look like "word.word...: value".
+		// Msgbuf content lines are either indented or don't contain a dot before the colon.
 		if inMsgbuf {
-			// Extract CPU model from boot message
-			if strings.HasPrefix(line, "CPU: ") {
-				cpuLine := strings.TrimPrefix(line, "CPU: ")
-				// Extract just the model name (before the speed)
-				if idx := strings.Index(cpuLine, " ("); idx != -1 {
-					data.SystemInfo.CPUModel = cpuLine[:idx]
-				} else {
-					data.SystemInfo.CPUModel = cpuLine
+			if !strings.HasPrefix(line, " ") && !strings.HasPrefix(line, "\t") {
+				if idx := strings.Index(line, ": "); idx > 0 {
+					key := line[:idx]
+					if strings.Contains(key, ".") && !strings.Contains(key, " ") {
+						inMsgbuf = false
+						// Fall through to parse this line as a key-value pair
+					}
 				}
 			}
-
-			// Extract memory info from boot message
-			if strings.HasPrefix(line, "real memory  = ") {
-				memLine := strings.TrimPrefix(line, "real memory  = ")
-				// Format: "17179869184 (16384 MB)"
-				if idx := strings.Index(memLine, "("); idx != -1 {
-					readable := strings.TrimSpace(memLine[idx+1:])
-					readable = strings.TrimSuffix(readable, ")")
-					data.SystemInfo.PhysicalMemory = readable
-				}
+			if inMsgbuf {
+				continue
 			}
-
-			if strings.HasPrefix(line, "avail memory = ") {
-				memLine := strings.TrimPrefix(line, "avail memory = ")
-				if idx := strings.Index(memLine, "("); idx != -1 {
-					readable := strings.TrimSpace(memLine[idx+1:])
-					readable = strings.TrimSuffix(readable, ")")
-					data.SystemInfo.AvailableMemory = readable
-				}
-			}
-
-			// Stop parsing msgbuf after we get the key info
-			if strings.HasPrefix(line, "Security policy loaded:") {
-				inMsgbuf = false
-			}
-			continue
 		}
 
 		// Parse key-value pairs
@@ -830,6 +1063,15 @@ func parseSysctl(baseDir string, data *models.ArchiveData) error {
 		value := strings.TrimSpace(parts[1])
 
 		switch key {
+		case "hw.model":
+			data.SystemInfo.CPUModel = value
+
+		case "hw.physmem":
+			data.SystemInfo.AvailableMemory = value
+
+		case "hw.realmem":
+			data.SystemInfo.PhysicalMemory = value
+
 		case "kern.smp.cpus":
 			if cores, err := strconv.Atoi(value); err == nil {
 				data.SystemInfo.CPUCores = cores

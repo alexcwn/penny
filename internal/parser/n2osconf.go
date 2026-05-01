@@ -15,7 +15,7 @@ import (
 
 // ParseN2OSConf parses the n2os.conf.gz file
 func ParseN2OSConf(baseDir string, data *models.ArchiveData) error {
-	confPath := filepath.Join(baseDir, "data", "cfg", "n2os.conf.gz")
+	confPath := filepath.Join(resolveCfgDir(baseDir), "n2os.conf.gz")
 
 	// Open gzip file
 	file, err := os.Open(confPath)
@@ -187,7 +187,7 @@ func extractTimezoneFromConf(baseDir string, data *models.ArchiveData) {
 	// Default to UTC if extraction fails
 	data.Metadata.Timezone = "UTC"
 
-	confPath := filepath.Join(baseDir, "data", "cfg", "n2os.conf.user")
+	confPath := filepath.Join(resolveCfgDir(baseDir), "n2os.conf.user")
 
 	file, err := os.Open(confPath)
 	if err != nil {

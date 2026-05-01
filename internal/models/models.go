@@ -207,6 +207,213 @@ type N2OSIDSEventsLogEntry struct {
 	RawLine    string    `json:"raw_line"`    // Original log line
 }
 
+// N2OSPumaLogEntry represents a parsed puma.log entry
+type N2OSPumaLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	PID        string    `json:"pid"`
+	Level      string    `json:"level"`    // "INFO", "WARN", or ""
+	Message    string    `json:"message"`
+	Source     string    `json:"source"`   // "puma", "puma.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSPumaErrLogEntry represents a parsed puma-err.log entry
+type N2OSPumaErrLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	Message    string    `json:"message"`
+	Source     string    `json:"source"`   // "puma-err", "puma-err.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSSpLogEntry represents a parsed n2ossp.log entry (Ruby logger format)
+type N2OSSpLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	Level      string    `json:"level"`
+	PID        string    `json:"pid"`
+	Message    string    `json:"message"`
+	Source     string    `json:"source"`      // "sp", "sp.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSStrategistLogEntry represents a parsed n2os_strategist.log entry
+type N2OSStrategistLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	Level      string    `json:"level"`
+	Component  string    `json:"component"`
+	Message    string    `json:"message"`
+	Source     string    `json:"source"`      // "strategist", "strategist.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSStixDBLogEntry represents a parsed n2os_stixdb.log entry
+type N2OSStixDBLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	Message    string    `json:"message"`
+	Source     string    `json:"source"`      // "stixdb", "stixdb.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSVALogEntry represents a parsed n2os_va.log entry
+type N2OSVALogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	ProcessID  string    `json:"process_id"`
+	ThreadID   string    `json:"thread_id"`
+	Level      string    `json:"level"`
+	Message    string    `json:"message"`
+	Source     string    `json:"source"`      // "va", "va.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSVAEventsLogEntry represents a parsed n2os_va_events.log entry
+type N2OSVAEventsLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	ProcessID  string    `json:"process_id"`
+	ThreadID   string    `json:"thread_id"`
+	Event      string    `json:"event"`       // payload after "EVENT:"
+	Source     string    `json:"source"`      // "va_events", "va_events.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSTraceLogEntry represents a parsed n2os_trace.log entry
+type N2OSTraceLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	ProcessID  string    `json:"process_id"`
+	ThreadID   string    `json:"thread_id"`
+	Level      string    `json:"level"`
+	Message    string    `json:"message"`
+	Source     string    `json:"source"`      // "trace", "trace.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSTraceEventsLogEntry represents a parsed n2os_trace_events.log entry
+type N2OSTraceEventsLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	ProcessID  string    `json:"process_id"`
+	ThreadID   string    `json:"thread_id"`
+	Event      string    `json:"event"`       // payload after "EVENT:"
+	Source     string    `json:"source"`      // "trace_events", "trace_events.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSSandboxLogEntry represents a parsed n2os_sandbox.log entry
+type N2OSSandboxLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	ProcessID  string    `json:"process_id"`
+	ThreadID   string    `json:"thread_id"`
+	Level      string    `json:"level"`
+	Message    string    `json:"message"`
+	Source     string    `json:"source"`      // "sandbox", "sandbox.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSSandboxEventsLogEntry represents a parsed n2os_sandbox_events.log entry
+type N2OSSandboxEventsLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	ProcessID  string    `json:"process_id"`
+	ThreadID   string    `json:"thread_id"`
+	Event      string    `json:"event"`       // payload after "EVENT:"
+	Source     string    `json:"source"`      // "sandbox_events", "sandbox_events.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSReverseLogEntry represents a parsed n2os_reverse.log entry
+type N2OSReverseLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	ProcessID  string    `json:"process_id"`
+	ThreadID   string    `json:"thread_id"`
+	Level      string    `json:"level"`
+	Message    string    `json:"message"`
+	Source     string    `json:"source"`      // "reverse", "reverse.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSReverseEventsLogEntry represents a parsed n2os_reverse_events.log entry
+type N2OSReverseEventsLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	ProcessID  string    `json:"process_id"`
+	ThreadID   string    `json:"thread_id"`
+	Event      string    `json:"event"`       // payload after "EVENT:"
+	Source     string    `json:"source"`      // "reverse_events", "reverse_events.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSJobDelayedLogEntry represents a parsed n2osdelayedjobs.log entry
+type N2OSJobDelayedLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	TaskName   string    `json:"task_name"`   // e.g., "IDSApi::CMC::SyncTask"
+	DurationMS float64   `json:"duration_ms"` // Task execution duration in milliseconds
+	Source     string    `json:"source"`      // "delayed_jobs"
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSJobDILogEntry represents a parsed n2osjobs_di.log entry
+type N2OSJobDILogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	TaskName   string    `json:"task_name"`   // e.g., "IDSApi::DataIntegrationTask"
+	DurationMS float64   `json:"duration_ms"` // Task execution duration in milliseconds
+	Source     string    `json:"source"`      // "jobs_di", "jobs_di.0", etc.
+	LineNumber int       `json:"line_number"` // Line number within the source file
+	RawLine    string    `json:"raw_line"`    // Original log line
+}
+
+// N2OSOtelcolLogEntry represents a parsed n2os_otelcol.log entry
+type N2OSOtelcolLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	Level      string    `json:"level"`   // info, error, warn, debug
+	Caller     string    `json:"caller"`  // e.g. "internal/queue_sender.go:50"
+	Message    string    `json:"message"` // human-readable message
+	Fields     string    `json:"fields"`  // raw JSON fields blob (everything after message)
+	Source     string    `json:"source"`  // "otelcol", "otelcol.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSRCLogEntry represents a parsed n2os_rc.log entry
+type N2OSRCLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	ProcessID  string    `json:"process_id"`
+	ThreadID   string    `json:"thread_id"`
+	Level      string    `json:"level"`
+	Message    string    `json:"message"`
+	Source     string    `json:"source"`    // "rc", "rc.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSRCEventsLogEntry represents a parsed n2os_rc_events.log entry
+type N2OSRCEventsLogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	ProcessID  string    `json:"process_id"`
+	ThreadID   string    `json:"thread_id"`
+	Event      string    `json:"event"`      // full payload after "EVENT:"
+	Source     string    `json:"source"`     // "rc_events", "rc_events.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
+// N2OSCPE2CVELogEntry represents a parsed n2os_cpe2cve.log entry
+type N2OSCPE2CVELogEntry struct {
+	Timestamp  time.Time `json:"timestamp"`
+	Message    string    `json:"message"`   // Full message text
+	Source     string    `json:"source"`    // "cpe2cve", "cpe2cve.0", etc.
+	LineNumber int       `json:"line_number"`
+	RawLine    string    `json:"raw_line"`
+}
+
 // N2OSAlertLogEntry represents a parsed n2os_alert.log entry
 type N2OSAlertLogEntry struct {
 	Timestamp  time.Time `json:"timestamp"`
@@ -322,14 +529,57 @@ type ArchiveData struct {
 	BPFSnapshots       []BPFSnapshot
 	BPFComparisons     []BPFComparison
 	N2OSJobLogs        []N2OSJobLogEntry
+	N2OSJobDILogs      []N2OSJobDILogEntry
+	N2OSJobDelayedLogs []N2OSJobDelayedLogEntry
 	N2OSProductionLogs []N2OSProductionLogEntry
 	N2OSMigrateLogs    []N2OSMigrateLogEntry
 	N2OSMigrateSummary N2OSMigrateSummary
 	N2OSIDSLogs        []N2OSIDSLogEntry
 	N2OSIDSEventsLogs  []N2OSIDSEventsLogEntry
-	N2OSAlertLogs      []N2OSAlertLogEntry
+	N2OSAlertLogs       []N2OSAlertLogEntry
 	N2OSAlertEventsLogs []N2OSAlertEventsLogEntry
-	Appliances         []Appliance
+	N2OSCPE2CVELogs     []N2OSCPE2CVELogEntry
+	N2OSRCLogs           []N2OSRCLogEntry
+	N2OSRCEventsLogs     []N2OSRCEventsLogEntry
+	N2OSReverseLogs       []N2OSReverseLogEntry
+	N2OSReverseEventsLogs []N2OSReverseEventsLogEntry
+	N2OSTraceLogs         []N2OSTraceLogEntry
+	N2OSTraceEventsLogs   []N2OSTraceEventsLogEntry
+	N2OSSandboxLogs       []N2OSSandboxLogEntry
+	N2OSSandboxEventsLogs []N2OSSandboxEventsLogEntry
+	N2OSVALogs            []N2OSVALogEntry
+	N2OSVAEventsLogs      []N2OSVAEventsLogEntry
+	N2OSStixDBLogs        []N2OSStixDBLogEntry
+	N2OSStrategistLogs    []N2OSStrategistLogEntry
+	N2OSSpLogs            []N2OSSpLogEntry
+	N2OSPumaLogs          []N2OSPumaLogEntry
+	N2OSPumaErrLogs       []N2OSPumaErrLogEntry
+	N2OSOtelcolLogs      []N2OSOtelcolLogEntry
+	Appliances          []Appliance
+	HCUpgradePath       string // Output from hc_upgrade_path.sh, empty if script not found or not run
+	HCDisks             string // Output from hc_disks.sh, empty if script not found or not run
+	ByosResults         []ByosResult
+	LandingView         string // resolved landing view, defaults to "system"
+	Theme               string // "dark" or "light", defaults to "light"
+	KnownIssueResults   []KnownIssueResult
+}
+
+// ByosResult holds the output of a single BYOS script execution
+type ByosResult struct {
+	Name   string `json:"name"`
+	Tag    string `json:"tag,omitempty"`
+	Output string `json:"output"`
+	Error  string `json:"error,omitempty"`
+}
+
+// KnownIssueResult is a matched known issue with details extracted by its script.
+type KnownIssueResult struct {
+	ID          string `json:"id"`
+	Severity    string `json:"severity"`
+	Title       string `json:"title"`
+	Description string `json:"description,omitempty"`
+	Workaround  string `json:"workaround,omitempty"`
+	URL         string `json:"url,omitempty"`
 }
 
 // ArchiveMetadata contains basic info about the archive
@@ -390,6 +640,7 @@ type SystemInfo struct {
 	Uptime            string
 	Hostname          string
 	MachineID         string
+	ApplianceUUID     string
 	FreeBSDRelease    string
 	KernelVersion     string
 	Timezone          string // e.g., "America/New_York", "UTC" (default if not configured)
@@ -424,7 +675,7 @@ const (
 	AuthEventOther       AuthEventType = "other"
 )
 
-// AuthLogEntry represents a parsed auth.log entry
+// AuthLogEntry represents a parsed auth.log or security entry
 type AuthLogEntry struct {
 	Timestamp time.Time
 	Hostname  string
@@ -439,6 +690,7 @@ type AuthLogEntry struct {
 	Message   string // Raw message
 	Level     string // INFO, WARNING, ERROR
 	RawLine   string // Original log line
+	Source    string // "auth", "auth.0", "security", etc.
 }
 
 // Logs contains all parsed log data
@@ -497,6 +749,32 @@ type Process struct {
 	Command string
 }
 
+// NetstatDropEntry represents one row from netstat_drops.txt
+type NetstatDropEntry struct {
+	Name    *string `json:"Name"`
+	Mtu     *string `json:"Mtu"`
+	Network *string `json:"Network"`
+	Address *string `json:"Address"`
+	Ipkts   *string `json:"Ipkts"`
+	Ierrs   *string `json:"Ierrs"`
+	Idrop   *string `json:"Idrop"`
+	Ibytes  *string `json:"Ibytes"`
+	Opkts   *string `json:"Opkts"`
+	Oerrs   *string `json:"Oerrs"`
+	Obytes  *string `json:"Obytes"`
+	Coll    *string `json:"Coll"`
+	Drop    *string `json:"Drop"`
+}
+
+// NetstatRouteEntry represents one row from netstat_routing.txt
+type NetstatRouteEntry struct {
+	Destination *string `json:"Destination"`
+	Gateway     *string `json:"Gateway"`
+	Flags       *string `json:"Flags"`
+	Netif       *string `json:"Netif"`
+	Expire      *string `json:"Expire"`
+}
+
 // NetworkConfig contains network configuration
 type NetworkConfig struct {
 	RcConf          map[string]string
@@ -505,6 +783,8 @@ type NetworkConfig struct {
 	DefaultGW       string
 	DNS             string // DNS servers separated by " / "
 	RawIfconfigData string
+	NetstatDrops    []NetstatDropEntry
+	NetstatRoutes   []NetstatRouteEntry
 }
 
 // NetworkInterface represents a network interface config
@@ -608,6 +888,16 @@ type ZpoolDevice struct {
 	Cksum string
 }
 
+// DiskWriteCycleLimits maps Device Model strings to their rated write cycle limits.
+// Source: Nozomi appliance SSD specifications.
+var DiskWriteCycleLimits = map[string]int{
+	`2.5" SATA SSD 3IE4`:   20000, // NSG-L
+	`2.5" SATA SSD 3IE2-P`: 20000, // NSG-H mk1 / NSG-HS mk1
+	"SSO064GTLSW-SDC":      20000, // NS20
+	"TS640GSSD550I":        20000, // NS20
+	"TS64GSSD420I":         20000, // NS1R / RS1R
+}
+
 // DiskInfo represents SMART disk information
 type DiskInfo struct {
 	Device       string
@@ -618,6 +908,22 @@ type DiskInfo struct {
 	Temperature  string
 	PowerOnHours string
 	RawOutput    string
+
+	// SMART attributes (raw values from smartctl output)
+	SMARTAvailable  bool  // Whether SMART is supported (false = likely a VM)
+	RemainingLifePct int  // Attr 169 RAW_VALUE — remaining lifetime percentage
+	HostWritesLBA   int64 // Attr 241 RAW_VALUE — total LBAs written by host
+	HostReadsLBA    int64 // Attr 242 RAW_VALUE — total LBAs read by host
+	CapacityGB      int   // Numeric capacity in GB (parsed from User Capacity)
+
+	// Computed health results
+	WriteCycles     int  // Calculated: (HostWritesLBA * 32 / 1024) / CapacityGB
+	WriteCycleLimit int  // Device-specific rated write cycle limit (0 = unknown)
+
+	// Health assessment
+	DiskHealthStatus string // "Healthy", "Critical", "FRIED", "Unknown", "VM"
+	LifetimeCritical bool   // true if RemainingLifePct < 20 or > 100
+	CyclesExceeded   bool   // true if WriteCycles > WriteCycleLimit
 }
 
 // FstabEntry represents an entry in /etc/fstab

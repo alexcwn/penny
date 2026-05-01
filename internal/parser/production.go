@@ -15,7 +15,7 @@ import (
 
 // ParseN2OSProductionLogs parses all production.log files (including rotated logs)
 func ParseN2OSProductionLogs(baseDir string, data *models.ArchiveData) error {
-	logDir := filepath.Join(baseDir, "data", "log", "n2os")
+	logDir := resolveN2OSLogDir(baseDir)
 
 	// Get timezone from metadata (already parsed by ParseN2OSConf)
 	timezone := data.Metadata.Timezone

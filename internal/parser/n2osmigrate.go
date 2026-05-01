@@ -11,7 +11,7 @@ import (
 
 // ParseN2OSMigrateLogs parses the n2osmigrate.log file
 func ParseN2OSMigrateLogs(baseDir string, data *models.ArchiveData) error {
-	logPath := filepath.Join(baseDir, "data", "log", "n2os", "n2osmigrate.log")
+	logPath := filepath.Join(resolveN2OSLogDir(baseDir), "n2osmigrate.log")
 
 	entries, summary, err := parseN2OSMigrateLogFile(logPath)
 	if err != nil {

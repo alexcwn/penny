@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -13,39 +14,60 @@ import (
 	"penny/internal/models"
 )
 
-// ParseN2OSAlertLogs parses both n2os_alert.log and n2os_alert_events.log files
+// ParseN2OSAlertLogs parses both n2os_alert.log* and n2os_alert_events.log* files
 func ParseN2OSAlertLogs(baseDir string, data *models.ArchiveData) error {
-	// Parse main alert logs
-	if err := parseN2OSAlertLogFile(baseDir, data); err != nil {
-		// Non-fatal error
+	logDir := resolveN2OSLogDir(baseDir)
+
+	var alertEntries []models.N2OSAlertLogEntry
+	var eventsEntries []models.N2OSAlertEventsLogEntry
+
+	// Parse rotated alert logs oldest first
+	for i := 5; i >= 0; i-- {
+		path := filepath.Join(logDir, fmt.Sprintf("n2os_alert.log.%d", i))
+		source := fmt.Sprintf("alert.%d", i)
+		if entries, err := readN2OSAlertLogFile(path, source); err == nil {
+			alertEntries = append(alertEntries, entries...)
+		}
+	}
+	if entries, err := readN2OSAlertLogFile(filepath.Join(logDir, "n2os_alert.log"), "alert"); err == nil {
+		alertEntries = append(alertEntries, entries...)
 	}
 
-	// Parse alert events logs
-	if err := parseN2OSAlertEventsLogFile(baseDir, data); err != nil {
-		// Non-fatal error
+	// Parse rotated alert events logs oldest first
+	for i := 5; i >= 0; i-- {
+		path := filepath.Join(logDir, fmt.Sprintf("n2os_alert_events.log.%d", i))
+		source := fmt.Sprintf("alert_events.%d", i)
+		if entries, err := readN2OSAlertEventsLogFile(path, source); err == nil {
+			eventsEntries = append(eventsEntries, entries...)
+		}
+	}
+	if entries, err := readN2OSAlertEventsLogFile(filepath.Join(logDir, "n2os_alert_events.log"), "alert_events"); err == nil {
+		eventsEntries = append(eventsEntries, entries...)
 	}
 
+	sort.Slice(alertEntries, func(i, j int) bool {
+		return alertEntries[i].Timestamp.Before(alertEntries[j].Timestamp)
+	})
+	sort.Slice(eventsEntries, func(i, j int) bool {
+		return eventsEntries[i].Timestamp.Before(eventsEntries[j].Timestamp)
+	})
+
+	data.N2OSAlertLogs = alertEntries
+	data.N2OSAlertEventsLogs = eventsEntries
 	return nil
 }
 
-// parseN2OSAlertLogFile parses n2os_alert.log
-func parseN2OSAlertLogFile(baseDir string, data *models.ArchiveData) error {
-	alertPath := filepath.Join(baseDir, "data", "log", "n2os", "n2os_alert.log")
-
-	file, err := os.Open(alertPath)
+func readN2OSAlertLogFile(path, source string) ([]models.N2OSAlertLogEntry, error) {
+	file, err := os.Open(path)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return nil // File doesn't exist, not an error
-		}
-		return err
+		return nil, err
 	}
 	defer file.Close()
 
 	var entries []models.N2OSAlertLogEntry
 	scanner := bufio.NewScanner(file)
+	scanner.Buffer(make([]byte, 1024*1024), 1024*1024)
 
-	// Regex pattern for alert log lines
-	// Format: [TIMESTAMP] n2os_alert[PID][ThreadID] LEVEL: Message
 	alertLogRegex := regexp.MustCompile(`^\[([^\]]+)\]\s+n2os_alert\[(\d+)\]\[(\d+)\]\s+([A-Z_]+):\s*(.*)`)
 
 	var currentEntry *models.N2OSAlertLogEntry
@@ -55,64 +77,43 @@ func parseN2OSAlertLogFile(baseDir string, data *models.ArchiveData) error {
 		line := scanner.Text()
 		lineNumber++
 
-		// Try to match alert log pattern
 		matches := alertLogRegex.FindStringSubmatch(line)
 		if len(matches) > 0 {
-			// Save previous entry
 			if currentEntry != nil {
 				entries = append(entries, *currentEntry)
 			}
-
-			// Create new entry
-			timestamp := parseN2OSAlertTimestamp(matches[1])
 			currentEntry = &models.N2OSAlertLogEntry{
-				Timestamp:  timestamp,
+				Timestamp:  parseN2OSAlertTimestamp(matches[1]),
 				ProcessID:  matches[2],
 				ThreadID:   matches[3],
 				Level:      matches[4],
 				Message:    matches[5],
-				Source:     "alert",
+				Source:     source,
 				LineNumber: lineNumber,
 				RawLine:    line,
 			}
 		} else if currentEntry != nil && strings.TrimSpace(line) != "" {
-			// Continue previous message (multi-line)
 			currentEntry.Message += "\n" + line
 			currentEntry.RawLine += "\n" + line
 		}
 	}
-
-	// Save last entry
 	if currentEntry != nil {
 		entries = append(entries, *currentEntry)
 	}
-
-	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("error scanning alert log: %w", err)
-	}
-
-	data.N2OSAlertLogs = entries
-	return nil
+	return entries, scanner.Err()
 }
 
-// parseN2OSAlertEventsLogFile parses n2os_alert_events.log
-func parseN2OSAlertEventsLogFile(baseDir string, data *models.ArchiveData) error {
-	eventsPath := filepath.Join(baseDir, "data", "log", "n2os", "n2os_alert_events.log")
-
-	file, err := os.Open(eventsPath)
+func readN2OSAlertEventsLogFile(path, source string) ([]models.N2OSAlertEventsLogEntry, error) {
+	file, err := os.Open(path)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return nil // File doesn't exist, not an error
-		}
-		return err
+		return nil, err
 	}
 	defer file.Close()
 
 	var entries []models.N2OSAlertEventsLogEntry
 	scanner := bufio.NewScanner(file)
+	scanner.Buffer(make([]byte, 1024*1024), 1024*1024)
 
-	// Regex pattern for alert events log lines
-	// Format: [TIMESTAMP] n2os_alert[PID][ThreadID] EVENT: {JSON_DATA}
 	eventLogRegex := regexp.MustCompile(`^\[([^\]]+)\]\s+n2os_alert\[(\d+)\]\[(\d+)\]\s+EVENT:\s*(.*)`)
 
 	var currentEntry *models.N2OSAlertEventsLogEntry
@@ -122,47 +123,31 @@ func parseN2OSAlertEventsLogFile(baseDir string, data *models.ArchiveData) error
 		line := scanner.Text()
 		lineNumber++
 
-		// Try to match event log pattern
 		matches := eventLogRegex.FindStringSubmatch(line)
 		if len(matches) > 0 {
-			// Save previous entry
 			if currentEntry != nil {
 				entries = append(entries, *currentEntry)
 			}
-
-			// Create new entry
-			timestamp := parseN2OSAlertTimestamp(matches[1])
 			eventData := matches[4]
-			eventType := extractAlertEventType(eventData)
-
 			currentEntry = &models.N2OSAlertEventsLogEntry{
-				Timestamp:  timestamp,
+				Timestamp:  parseN2OSAlertTimestamp(matches[1]),
 				ProcessID:  matches[2],
 				ThreadID:   matches[3],
-				EventType:  eventType,
+				EventType:  extractAlertEventType(eventData),
 				Event:      eventData,
-				Source:     "alert_events",
+				Source:     source,
 				LineNumber: lineNumber,
 				RawLine:    line,
 			}
 		} else if currentEntry != nil && strings.TrimSpace(line) != "" {
-			// Continue previous event (multi-line JSON)
 			currentEntry.Event += "\n" + line
 			currentEntry.RawLine += "\n" + line
 		}
 	}
-
-	// Save last entry
 	if currentEntry != nil {
 		entries = append(entries, *currentEntry)
 	}
-
-	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("error scanning alert events log: %w", err)
-	}
-
-	data.N2OSAlertEventsLogs = entries
-	return nil
+	return entries, scanner.Err()
 }
 
 // parseN2OSAlertTimestamp parses timestamp from alert log format

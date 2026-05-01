@@ -169,7 +169,7 @@ func extractField(message, prefix string) string {
 
 // ParseNginxErrorLogs parses all nginx error log files (including compressed rotated logs)
 func ParseNginxErrorLogs(baseDir string) ([]models.NginxLogEntry, error) {
-	logDir := filepath.Join(baseDir, "data", "log")
+	logDir := resolveLogDir(baseDir)
 	var allEntries []models.NginxLogEntry
 
 	// Parse rotated compressed logs in reverse order (oldest first: nginx-error.log.10 -> nginx-error.log.0)
@@ -289,7 +289,7 @@ func parseNginxAccessLine(line string, source string, lineNumber int) *models.Lo
 
 // ParseNginxAccessLogs parses all nginx access log files (including compressed rotated logs)
 func ParseNginxAccessLogs(baseDir string) ([]models.LogEntry, error) {
-	logDir := filepath.Join(baseDir, "data", "log")
+	logDir := resolveLogDir(baseDir)
 	var allEntries []models.LogEntry
 
 	// Parse rotated compressed logs in reverse order (oldest first: nginx-access.log.10 -> nginx-access.log.0)

@@ -2,9 +2,7 @@ package parser
 
 import (
 	"bufio"
-	"fmt"
 	"os"
-	"path/filepath"
 	"penny/internal/models"
 	"penny/internal/validator"
 	"regexp"
@@ -15,24 +13,10 @@ import (
 
 // ParseN2OpLogs parses all n2op.log files (including rotated logs)
 func ParseN2OpLogs(baseDir string, data *models.ArchiveData) error {
-	logDir := filepath.Join(baseDir, "data", "log", "n2os")
+	logDir := resolveN2OSLogDir(baseDir)
 
-	var allEntries []models.N2OpLogEntry
+	allEntries := collectRotatedLogs(logDir, "n2op.log", 6, parseN2OpLogFile)
 
-	// Parse rotated logs in reverse order (oldest first: n2op.log.6 -> n2op.log.0)
-	for i := 6; i >= 0; i-- {
-		logPath := filepath.Join(logDir, fmt.Sprintf("n2op.log.%d", i))
-		if entries, err := parseN2OpLogFile(logPath); err == nil {
-			allEntries = append(allEntries, entries...)
-		}
-		// Silently skip if file doesn't exist
-	}
-
-	// Parse current log last (newest)
-	currentLogPath := filepath.Join(logDir, "n2op.log")
-	if entries, err := parseN2OpLogFile(currentLogPath); err == nil {
-		allEntries = append(allEntries, entries...)
-	}
 
 	// Sort all entries by timestamp to ensure chronological order
 	sort.Slice(allEntries, func(i, j int) bool {
